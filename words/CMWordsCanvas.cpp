@@ -53,7 +53,6 @@ void CMWordsCanvas::setFile(const QString& file)
     KWDocument* doc = new KWDocument();
     d->file = file;
     d->doc = doc;
-    d->updateCanvas();
 
     setMargin(10);
 

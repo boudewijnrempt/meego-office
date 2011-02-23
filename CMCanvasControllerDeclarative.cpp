@@ -326,18 +326,20 @@ void CMCanvasControllerDeclarative::scrollContentsBy(int dx, int dy)
 
 bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event )
 {
-    if(event->type() == QEvent::GraphicsSceneMousePress) {
-        return true;
-    } else if(event->type() == QEvent::GraphicsSceneMouseMove) {
-	if(d->updateCanvas)
-            d->handleMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
-        return true;
-    } else if(event->type() == QEvent::TouchBegin) {
-        event->accept();
-        return true;
-    } else if(event->type() == QEvent::Gesture) {
-        d->handleGesture(static_cast<QGestureEvent*>(event));
-        return true;
+    if(target == this || target == d->canvas->canvasItem()) {
+        if(event->type() == QEvent::GraphicsSceneMousePress) {
+            return true;
+        } else if(event->type() == QEvent::GraphicsSceneMouseMove) {
+            if(d->updateCanvas)
+                d->handleMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
+            return true;
+        } else if(event->type() == QEvent::TouchBegin) {
+            event->accept();
+            return true;
+        } else if(event->type() == QEvent::Gesture) {
+            d->handleGesture(static_cast<QGestureEvent*>(event));
+            return true;
+        }
     }
     return QDeclarativeItem::eventFilter(target, event);
 }

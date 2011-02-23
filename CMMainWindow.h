@@ -11,6 +11,9 @@ public:
     explicit CMMainWindow( const QString &ui, const QString &file = QString(), QWidget *parent = 0, Qt::WindowFlags flags = 0);
     virtual ~CMMainWindow();
 
+public Q_SLOTS:
+    void toggleFullScreen();
+
 private:
     class Private;
     Private * const d;

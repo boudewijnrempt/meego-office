@@ -55,6 +55,7 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
     qmlRegisterType<CMRecentFilesModel>("org.calligra.mobile", 1, 0, "RecentFilesModel");
     qmlRegisterType<CMFileSystemModel>("org.calligra.mobile", 1, 0, "FileSystemModel");
     d->view->rootContext()->setContextProperty("KOFFICE_VERSION_STRING", KOFFICE_VERSION_STRING);
+    d->view->rootContext()->setContextProperty("window", this);
 
     d->view->setSource(QUrl(ui));
     d->view->setResizeMode(QDeclarativeView::SizeRootObjectToView);
@@ -75,6 +76,11 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
 CMMainWindow::~CMMainWindow()
 {
     delete d;
+}
+
+void CMMainWindow::toggleFullScreen()
+{
+    setWindowState(windowState() ^ Qt::WindowFullScreen);
 }
 
 void CMMainWindow::checkMultiTouch()

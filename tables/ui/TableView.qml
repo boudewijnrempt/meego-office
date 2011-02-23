@@ -24,7 +24,8 @@ Rectangle {
 
         anchors.left: parent.left;
         anchors.right: parent.right;
-        anchors.top: parent.top;
+
+        y: 0;
         height: parent.height * 0.1;
 
         color: "#eeeeee";
@@ -70,7 +71,8 @@ Rectangle {
         anchors.left: parent.left;
         anchors.right: parent.right;
         anchors.top:  document.bottom;
-        anchors.bottom: parent.bottom;
+
+        height: parent.height * 0.1;
 
         Row {
             anchors.fill: parent;
@@ -168,8 +170,22 @@ Rectangle {
                 imageHeight: 32;
 
                 onTriggered: {
+                    window.toggleFullScreen();
                     base.state = "fullscreen";
                 }
+            }
+        }
+    }
+
+    MouseArea {
+        id: mouseArea;
+
+        anchors.fill: parent;
+
+        onPressed: {
+            mouse.accepted = false;
+            if(base.state == "fullscreen") {
+                exitFullscreen.opacity = 1;
             }
         }
     }
@@ -187,17 +203,38 @@ Rectangle {
         labelPosition: 0;
 
         opacity: 0;
+        Behavior on opacity {
+            NumberAnimation { duration: 500; }
+        }
+
+        onOpacityChanged: {
+            if(exitFullscreen.opacity > 0) {
+                exitFullscreenHideTimer.restart();
+            }
+        }
 
         onTriggered: {
+            window.toggleFullScreen();
             base.state = "";
+        }
+
+        Timer {
+            id: exitFullscreenHideTimer;
+            interval: 5000;
+            running: false;
+            repeat: false;
+
+            onTriggered: {
+                exitFullscreen.opacity = 0;
+            }
         }
     }
 
     states: [
         State {
             name: "fullscreen";
-            PropertyChanges { target: topBar; height: 0; }
-            PropertyChanges { target: document; height: base.height; }
+            PropertyChanges { target: topBar; y: -topBar.height; }
+            PropertyChanges { target: document; height: base.height + 2; }
             PropertyChanges { target: exitFullscreen; opacity: 1; }
         }
     ]
@@ -205,9 +242,8 @@ Rectangle {
     transitions: [
         Transition {
             ParallelAnimation {
-                NumberAnimation { target: topBar; properties: "height"; duration: 500; }
+                NumberAnimation { target: topBar; properties: "y"; duration: 500; }
                 NumberAnimation { target: document; properties: "height"; duration: 500; }
-                NumberAnimation { target: exitFullscreen; properties: "opacity"; duration: 500; }
             }
         }
     ]

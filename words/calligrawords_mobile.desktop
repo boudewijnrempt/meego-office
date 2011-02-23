@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Calligra Words Viewer
+Exec=calligrawords_mobile %u
+GenericName=Word Document Viewer
+Comment=View word documents
+MimeType=application/vnd.oasis.opendocument.text;application/vnd.oasis.opendocument.text-template;application/x-kword;application/msword;application/rtf;text/plain;application/x-mswrite;application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/vnd.openxmlformats-officedocument.wordprocessingml.template;
+X-KDE-ServiceTypes=Calligra/Application
+Icon=kword
+X-KDE-NativeMimeType=application/vnd.oasis.opendocument.text
+X-Calligra-DefaultMimeTypes=application/vnd.oasis.opendocument.text,application/vnd.oasis.opendocument.text-template,application/x-kword,application/msword,application/rtf,text/plain,application/x-mswrite,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.wordprocessingml.template
+X-KDE-StartupNotify=true
+Categories=Qt;KDE;Office;
+

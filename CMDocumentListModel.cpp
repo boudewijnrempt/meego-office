@@ -143,7 +143,7 @@ QVariant CMDocumentListModel::headerData(int section, Qt::Orientation orientatio
     }
 }
 
-void CMDocumentListModel::groupBy(int role)
+void CMDocumentListModel::groupBy(GroupBy role)
 {
     if (m_groupBy == role)
         return;

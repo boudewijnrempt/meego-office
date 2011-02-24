@@ -9,6 +9,8 @@ class SearchThread;
 class CMDocumentListModel : public QAbstractListModel
 {
     Q_OBJECT
+    Q_ENUMS(GroupBy)
+
 public:
     CMDocumentListModel(QObject *parent = 0);
     ~CMDocumentListModel();
@@ -19,6 +21,8 @@ public:
         DocTypeRole,
         SectionCategoryRole
     };
+
+    enum GroupBy { GroupByName, GroupByDocType };
 
     struct DocumentInfo {
         QString filePath;
@@ -37,15 +41,14 @@ public slots:
     void addDocument(const CMDocumentListModel::DocumentInfo &info);
 
 public:
-    Q_INVOKABLE void groupBy(int role);
+    Q_INVOKABLE void groupBy(GroupBy role);
 
 private:
     void relayout();
 
     QList<DocumentInfo> m_documentInfos;
     SearchThread *m_searchThread;
-    enum { GroupByName, GroupByDocType };
-    int m_groupBy;
+    GroupBy m_groupBy;
 };
 
 Q_DECLARE_METATYPE(CMDocumentListModel::DocumentInfo);

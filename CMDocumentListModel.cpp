@@ -3,35 +3,68 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDirIterator>
+#include <QRunnable>
+#include <QThreadPool>
 
-CMDocumentListModel::CMDocumentListModel(QObject *parent)
-    : QAbstractListModel(parent)
+SearchThread::SearchThread(QObject *parent) : QObject(parent)
 {
-    QHash<int, QByteArray> roleNames = QAbstractListModel::roleNames();
-    roleNames[FileNameRole] = "fileName";
-    roleNames[FilePathRole] = "filePath";
-    setRoleNames(roleNames);
+}
 
+SearchThread::~SearchThread()
+{
+}
+
+void SearchThread::run()
+{
     // ## FIXME: Among other things
-    // 1. Make this a thread/runnable
-    // 2. Entries must be sorted depending on the current sort
-    // 3. Fetch metadata from the documents
-    // 4. nameFilters must query Calligra for supported document types
+    // 1. Entries must be sorted depending on the current sort
+    // 2. Fetch metadata from the documents
+    // 3. nameFilters must query Calligra for supported document types
     QString documentsDir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
     QStringList nameFilters;
     nameFilters << "*.odt" << "*.doc" << "*.odp" << "*.ppt" << "*.xls";
     QDirIterator it(documentsDir, nameFilters, QDir::Files, QDirIterator::Subdirectories);
     while (it.hasNext()) {
         it.next();
-        DocumentInfo info;
+        CMDocumentListModel::DocumentInfo info;
         info.fileName = it.fileName();
         info.filePath = it.filePath();
-        m_documentInfos.append(info);
+        emit documentFound(info);
     }
+}
+
+CMDocumentListModel::CMDocumentListModel(QObject *parent)
+    : QAbstractListModel(parent), m_searchThread(0)
+{
+    qRegisterMetaType<DocumentInfo>();
+
+    QHash<int, QByteArray> roleNames = QAbstractListModel::roleNames();
+    roleNames[FileNameRole] = "fileName";
+    roleNames[FilePathRole] = "filePath";
+    setRoleNames(roleNames);
 }
 
 CMDocumentListModel::~CMDocumentListModel()
 {
+}
+
+void CMDocumentListModel::startSearch()
+{
+    if (m_searchThread) {
+        qDebug() << "Already searching or finished search";
+        return;
+    }
+    m_searchThread = new SearchThread(this);
+    connect(m_searchThread, SIGNAL(documentFound(CMDocumentListModel::DocumentInfo)), this, SLOT(addDocument(CMDocumentListModel::DocumentInfo)));
+    m_searchThread->setAutoDelete(true);
+    QThreadPool::globalInstance()->start(m_searchThread);
+}
+
+void CMDocumentListModel::addDocument(const DocumentInfo &info)
+{
+    beginInsertRows(QModelIndex(), m_documentInfos.count(), m_documentInfos.count());
+    m_documentInfos.append(info);
+    endInsertRows();
 }
 
 int CMDocumentListModel::rowCount(const QModelIndex &parent) const

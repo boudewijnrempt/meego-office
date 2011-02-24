@@ -85,6 +85,8 @@ static bool fileNameLessThan(const CMDocumentListModel::DocumentInfo &info1, con
 
 static bool docTypeLessThan(const CMDocumentListModel::DocumentInfo &info1, const CMDocumentListModel::DocumentInfo &info2)
 {
+    if (info1.docType == info2.docType)
+        return info1.fileName.toLower() < info2.fileName.toLower();
     return info1.docType < info2.docType;
 }
 

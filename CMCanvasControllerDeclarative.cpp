@@ -328,10 +328,16 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
 {
     if(target == this || target == d->canvas->canvasItem()) {
         if(event->type() == QEvent::GraphicsSceneMousePress) {
+            d->velocityX = 0;
+            d->velocityY = 0;
+            d->timeLine->stop();
             return true;
         } else if(event->type() == QEvent::GraphicsSceneMouseMove) {
             if(d->updateCanvas)
                 d->handleMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
+            return true;
+        } else if(event->type() == QEvent::GraphicsSceneMouseRelease) {
+            d->timeLine->start();
             return true;
         } else if(event->type() == QEvent::TouchBegin) {
             event->accept();
@@ -399,11 +405,13 @@ void CMCanvasControllerDeclarative::Private::handleMouseMoveEvent(QGraphicsScene
     velocityX = (prev.x() - cur.x());
     velocityY = (prev.y() - cur.y());
 
-    if(timeLine->state() != QTimeLine::Running) {
-        timeLine->start();
-    } else {
-        timeLine->setCurrentTime(0);
-    }
+    q->scrollContentsBy(velocityX, velocityY);
+
+//     if(timeLine->state() != QTimeLine::Running) {
+//         timeLine->start();
+//     } else {
+//         timeLine->setCurrentTime(0);
+//     }
 }
 
 void CMCanvasControllerDeclarative::Private::handleGesture(QGestureEvent* event)

@@ -23,7 +23,8 @@ public:
 
     virtual void scrollContentsBy(int dx, int dy);
     virtual QSize viewportSize() const;
-    virtual void resetDocumentOffset();
+
+    virtual void resetDocumentOffset(const QPoint& offset = QPoint());
 
     virtual void setDrawShadow(bool drawShadow);
 
@@ -70,6 +71,7 @@ private Q_SLOTS:
     void onHeightChanged();
     void onWidthChanged();
     void documentOffsetMoved(const QPoint& point);
+    void bounceValueChanged(qreal value);
 };
 
 #endif // CALLIGRAMOBILE_CANVASCONTROLLERDECLARATIVE_H

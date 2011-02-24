@@ -40,6 +40,7 @@ public:
     void handleGesture(QGestureEvent* event);
     void updateMinMax();
     void updateCanvasSize();
+    void checkBounce(const QPoint& offset);
 
     CMCanvasControllerDeclarative* q;
     KoCanvasBase* canvas;
@@ -47,6 +48,7 @@ public:
     KoZoomController* zoomController;
 
     QTimeLine* timeLine;
+    QTimeLine* bounceTimeLine;
 
     qreal vastScrollingFactor;
 
@@ -68,6 +70,8 @@ public:
     qreal zoom;
     qreal zoomMax;
     qreal zoomMin;
+
+    QPointF bounceDistance;
 };
 
 CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* parent)
@@ -82,6 +86,10 @@ CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* p
     d->timeLine = new QTimeLine(1000, this);
     connect(d->timeLine, SIGNAL(valueChanged(qreal)), this, SLOT(valueChanged(qreal)));
     connect(d->timeLine, SIGNAL(finished()), this, SLOT(timeLineFinished()));
+
+    d->bounceTimeLine = new QTimeLine(500, this);
+    connect(d->bounceTimeLine, SIGNAL(valueChanged(qreal)), this, SLOT(bounceValueChanged(qreal)));
+    connect(d->bounceTimeLine, SIGNAL(stateChanged(QTimeLine::State)), this, SLOT(bounceStateChanged(QTimeLine::State)));
 
     d->scaleProxy = new QGraphicsPixmapItem(QPixmap(), this);
     d->scaleProxy->setVisible(false);
@@ -118,11 +126,14 @@ void CMCanvasControllerDeclarative::updateDocumentSize(const QSize& sz, bool rec
     resetLayout();
 }
 
-void CMCanvasControllerDeclarative::resetDocumentOffset()
+void CMCanvasControllerDeclarative::resetDocumentOffset(const QPoint& offset)
 {
-    QPoint offset(0, 0);
-    setDocumentOffset(offset);
+    QPoint o = offset;
+    setDocumentOffset(o);
     proxyObject->emitMoveDocumentOffset(offset);
+    if(d->updateCanvas) {
+        d->updateCanvasSize();
+    }
 }
 
 void CMCanvasControllerDeclarative::setScrollBarValue(const QPoint& value)
@@ -165,6 +176,7 @@ void CMCanvasControllerDeclarative::zoomBy(const QPoint& center, qreal zoom)
 
     if(tempZoom > KoZoomMode::minimumZoom() && tempZoom < KoZoomMode::maximumZoom()) {
         proxyObject->emitZoomBy(zoom);
+        d->zoom = tempZoom;
         
         QPointF offset = documentOffset();
         QPointF position;
@@ -173,15 +185,10 @@ void CMCanvasControllerDeclarative::zoomBy(const QPoint& center, qreal zoom)
 
         QPoint oNew = (-position).toPoint();
 
-        setDocumentOffset(oNew);
-        proxyObject->emitMoveDocumentOffset(oNew);
-
-        d->zoom = tempZoom;
-
         d->updateMinMax();
         d->updateCanvasSize();
-        if(d->updateCanvas)
-            d->canvas->updateCanvas(QRectF(0, 0, width(), height()));
+        resetDocumentOffset(oNew);
+        d->checkBounce(oNew);
     }
 }
 
@@ -208,8 +215,6 @@ void CMCanvasControllerDeclarative::resetZoom()
     d->zoomController->setZoom(KoZoomMode::ZOOM_CONSTANT, 1.0);
     d->updateMinMax();
     d->updateCanvasSize();
-    if(d->updateCanvas)
-        d->canvas->updateCanvas(QRectF(0, 0, width(), height()));
 }
 
 void CMCanvasControllerDeclarative::ensureVisible(KoShape* shape)
@@ -298,30 +303,13 @@ void CMCanvasControllerDeclarative::scrollContentsBy(int dx, int dy)
 
     if(d->minX == d->maxX || d->minY == d->maxY)
         d->updateMinMax();
+
+
     QPoint offset = documentOffset();
     offset.setX(offset.x() + dx);
     offset.setY(offset.y() + dy);
 
-    if(offset.x() > d->maxX) {
-        offset.setX(d->maxX);
-    }
-
-    if(offset.y() > d->maxY) {
-        offset.setY(d->maxY);
-    }
-
-    if(offset.x() < d->minX) {
-        offset.setX(d->minX);
-    }
-
-    if(offset.y() < d->minY) {
-        offset.setY(d->minY);
-    }
-
-    setDocumentOffset(offset);
-    proxyObject->emitMoveDocumentOffset(offset);
-
-    d->updateCanvasSize();
+    resetDocumentOffset(offset);
 }
 
 bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event )
@@ -337,6 +325,7 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
                 d->handleMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
             return true;
         } else if(event->type() == QEvent::GraphicsSceneMouseRelease) {
+            d->checkBounce(documentOffset());
             d->timeLine->start();
             return true;
         } else if(event->type() == QEvent::TouchBegin) {
@@ -376,15 +365,37 @@ void CMCanvasControllerDeclarative::setMargin(int margin)
 
 void CMCanvasControllerDeclarative::valueChanged(qreal value)
 {
-    scrollContentsBy(d->velocityX, d->velocityY);
+    if(d->bounceTimeLine->state() != QTimeLine::Running) {
+        scrollContentsBy(d->velocityX, d->velocityY);
+    }
+    
     d->velocityX *= (1.0 - value);
     d->velocityY *= (1.0 - value);
+
+    if(qFuzzyCompare(1. + d->velocityX, 1.) && qFuzzyCompare(1. + d->velocityY, 1.)) {
+        d->timeLine->stop();
+    }
+}
+
+void CMCanvasControllerDeclarative::bounceValueChanged(qreal value)
+{
+    QPoint newOffset = -(d->bounceDistance - (value * d->bounceDistance)).toPoint();
+    if(qFuzzyCompare(1. + newOffset.x(), 1.)) {
+        newOffset.setX(documentOffset().x());
+    }
+    if(qFuzzyCompare(1. + newOffset.y(), 1.)) {
+        newOffset.setY(documentOffset().y());
+    }
+    newOffset.rx() += d->velocityX;
+    newOffset.ry() += d->velocityY;
+    resetDocumentOffset(newOffset);
 }
 
 void CMCanvasControllerDeclarative::timeLineFinished()
 {
     d->velocityX = 0;
     d->velocityY = 0;
+    d->checkBounce(documentOffset());
 }
 
 void CMCanvasControllerDeclarative::onHeightChanged()
@@ -406,12 +417,6 @@ void CMCanvasControllerDeclarative::Private::handleMouseMoveEvent(QGraphicsScene
     velocityY = (prev.y() - cur.y());
 
     q->scrollContentsBy(velocityX, velocityY);
-
-//     if(timeLine->state() != QTimeLine::Running) {
-//         timeLine->start();
-//     } else {
-//         timeLine->setCurrentTime(0);
-//     }
 }
 
 void CMCanvasControllerDeclarative::Private::handleGesture(QGestureEvent* event)
@@ -476,6 +481,32 @@ void CMCanvasControllerDeclarative::Private::updateCanvasSize()
         canvas->canvasItem()->setGeometry(0, 0, q->width(), q->height());
         canvas->updateCanvas(canvas->viewConverter()->viewToDocument(QRectF(0, 0, q->width(), q->height())));
         canvas->canvasItem()->update();
+    }
+}
+
+void CMCanvasControllerDeclarative::Private::checkBounce(const QPoint& offset)
+{
+    QPointF o = offset;
+    bounceDistance.setX(0.f);
+    bounceDistance.setY(0.f);
+    
+    if(o.x() > maxX) {
+        bounceDistance.rx() = maxX - offset.x();
+    }
+    if(o.x() < minX || bounceDistance.x() < minX ) {
+        bounceDistance.rx() = minX - offset.x();
+    }
+    
+    if(o.y() > maxY) {
+        bounceDistance.ry() = maxY - offset.y();
+    }
+    if(o.y() < minY || bounceDistance.y() < minY ) {
+        bounceDistance.ry() = minY - offset.y();
+    }
+
+    if(!bounceDistance.isNull()) {
+        bounceTimeLine->stop();
+        bounceTimeLine->start();
     }
 }
 

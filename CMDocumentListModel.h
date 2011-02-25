@@ -25,11 +25,10 @@ public:
     enum GroupBy { GroupByName, GroupByDocType };
 
     struct DocumentInfo {
-        DocumentInfo() : isRecent(false) { }
+        bool operator==(const DocumentInfo &other) const { return filePath == other.filePath; }
         QString filePath;
         QString fileName;
         QString docType;
-        bool isRecent;
     };
 
     // reimp
@@ -49,6 +48,7 @@ public:
 private:
     void relayout();
 
+    QList<DocumentInfo> m_recentDocuments;
     QList<DocumentInfo> m_documentInfos;
     SearchThread *m_searchThread;
     GroupBy m_groupBy;

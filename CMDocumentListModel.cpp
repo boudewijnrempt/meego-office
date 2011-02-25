@@ -98,7 +98,7 @@ void CMDocumentListModel::addDocument(const DocumentInfo &info)
     else
         lessThanFunc = docTypeLessThan;
     QList<DocumentInfo>::iterator it = qLowerBound(m_documentInfos.begin(), m_documentInfos.end(), info, fileNameLessThan);
-    const int pos = it - m_documentInfos.begin();
+    const int pos = it - m_documentInfos.begin() + m_recentDocuments.count();
     beginInsertRows(QModelIndex(), pos, pos);
     m_documentInfos.insert(it, info);
     endInsertRows();
@@ -108,7 +108,7 @@ int CMDocumentListModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    return m_documentInfos.count();
+    return m_recentDocuments.count() + m_documentInfos.count();
 }
 
 int CMDocumentListModel::columnCount(const QModelIndex &parent) const
@@ -123,14 +123,15 @@ QVariant CMDocumentListModel::data(const QModelIndex &index, int role) const
     if (!index.isValid() || m_documentInfos.isEmpty())
         return QVariant();
     const int row = index.row();
-    const DocumentInfo &info = m_documentInfos[row];
+    const DocumentInfo &info = (row >= m_recentDocuments.count()) ? m_documentInfos[row - m_recentDocuments.count()] : m_recentDocuments[row];
+
     switch (role) {
     case FileNameRole: // intentional fall through
     case Qt::DisplayRole: return info.fileName;
     case FilePathRole: return info.filePath;
     case DocTypeRole: return info.docType;
     case SectionCategoryRole: 
-        if (info.isRecent)
+        if (row < m_recentDocuments.count())
             return tr("Recently viewed");
         return m_groupBy == GroupByName ? info.fileName[0].toUpper() : info.docType;
     default: return QVariant();
@@ -183,33 +184,31 @@ void CMDocumentListModel::addRecent(int index)
     Q_ASSERT(index >= 0 && index < m_documentInfos.count());
     const int MAX_RECENT = 5;
 
-    DocumentInfo info = m_documentInfos[index];
+    DocumentInfo info = (index >= m_recentDocuments.count()) ? m_documentInfos[index - m_recentDocuments.count()] : m_recentDocuments[index];
+
     int toRemove = -1;
-    if (info.isRecent) {
+    if (index < m_recentDocuments.count()) {
         toRemove = index;
     } else {
         int i;
-        for (i = 0; i < qMin(m_documentInfos.count(), MAX_RECENT); i++) {
-            if (!m_documentInfos[i].isRecent)
-                break;
-            if (m_documentInfos[i].filePath == info.filePath) {
+        for (i = 0; i < m_recentDocuments.count(); i++) {
+            if (info == m_recentDocuments[i]) {
                 toRemove = i;
                 break;
             }
         }
         if (i == MAX_RECENT)
-            i = MAX_RECENT - 1;
+            toRemove = MAX_RECENT-1;
     }
 
     if (toRemove != -1) {
         beginRemoveRows(QModelIndex(), toRemove, toRemove);
-        m_documentInfos.removeAt(toRemove);
+        m_recentDocuments.removeAt(toRemove);
         endRemoveRows();
     }
-
+ 
     beginInsertRows(QModelIndex(), 0, 0);
-    info.isRecent = true;
-    m_documentInfos.prepend(info);
+    m_recentDocuments.prepend(info);
     endInsertRows();
 }
 

@@ -5,6 +5,11 @@
 #include <QDirIterator>
 #include <QRunnable>
 #include <QThreadPool>
+#include <QTimer>
+
+#include <KDE/KGlobal>
+#include <KDE/KSharedConfig>
+#include <KDE/KConfigGroup>
 
 SearchThread::SearchThread(QObject *parent) : QObject(parent)
 {
@@ -16,25 +21,9 @@ SearchThread::~SearchThread()
 
 void SearchThread::run()
 {
-    // ## FIXME : Get this from the parts
-    static const char *docTypesText[] = {
-        QT_TRANSLATE_NOOP("CMDocumentListModel", "Words Document"),
-        QT_TRANSLATE_NOOP("CMDocumentListModel", "Stage Document"),
-        QT_TRANSLATE_NOOP("CMDocumentListModel", "Tables Document")
-    };
-    QHash<QString, QString> docTypes;
-    docTypes["odt"] = CMDocumentListModel::tr(docTypesText[0]);
-    docTypes["doc"] = CMDocumentListModel::tr(docTypesText[0]);
-    docTypes["odp"] = CMDocumentListModel::tr(docTypesText[1]);
-    docTypes["ppt"] = CMDocumentListModel::tr(docTypesText[1]);
-    docTypes["ods"] = CMDocumentListModel::tr(docTypesText[2]);
-    docTypes["xls"] = CMDocumentListModel::tr(docTypesText[2]);
-
-    // ## FIXME: Among other things
-    // 1. Entries must be sorted depending on the current sort
-    // 2. Fetch metadata from the documents
     QString documentsDir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
     QStringList nameFilters;
+    const QHash<QString, QString> &docTypes = static_cast<CMDocumentListModel *>(parent())->m_docTypes;
     for (QHash<QString, QString>::const_iterator it = docTypes.constBegin(); it != docTypes.constEnd(); ++it)
         nameFilters.append("*." + it.key());
 
@@ -60,10 +49,26 @@ CMDocumentListModel::CMDocumentListModel(QObject *parent)
     roleNames[DocTypeRole] = "docType";
     roleNames[SectionCategoryRole] = "sectionCategory";
     setRoleNames(roleNames);
+
+    // ## FIXME : Get this from the parts
+    QString docTypesText[] = { tr("Words Document"), tr("Stage Document"), tr("Tables Document") };
+    m_docTypes["odt"] = docTypesText[0];
+    m_docTypes["doc"] = docTypesText[0];
+    m_docTypes["odp"] = docTypesText[1];
+    m_docTypes["ppt"] = docTypesText[1];
+    m_docTypes["ods"] = docTypesText[2];
+    m_docTypes["xls"] = docTypesText[2];
 }
 
 CMDocumentListModel::~CMDocumentListModel()
 {
+    KConfigGroup group(KGlobal::config(), "Recent Files");
+    int index = 0;
+    foreach(const DocumentInfo &info, m_recentDocuments) {
+        group.writeEntry(QString().setNum(index), info.filePath);
+        index++;
+    }
+    group.sync();
 }
 
 void CMDocumentListModel::startSearch()
@@ -120,7 +125,7 @@ int CMDocumentListModel::columnCount(const QModelIndex &parent) const
 
 QVariant CMDocumentListModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid() || m_documentInfos.isEmpty())
+    if (!index.isValid())
         return QVariant();
     const int row = index.row();
     const DocumentInfo &info = (row >= m_recentDocuments.count()) ? m_documentInfos[row - m_recentDocuments.count()] : m_recentDocuments[row];
@@ -197,7 +202,6 @@ void CMDocumentListModel::addRecent(int index)
                 break;
             }
         }
-        if (i == MAX_RECENT)
             toRemove = MAX_RECENT-1;
     }
 
@@ -210,5 +214,30 @@ void CMDocumentListModel::addRecent(int index)
     beginInsertRows(QModelIndex(), 0, 0);
     m_recentDocuments.prepend(info);
     endInsertRows();
+}
+
+void CMDocumentListModel::classBegin()
+{
+}
+
+void CMDocumentListModel::componentComplete()
+{
+    KConfigGroup group(KGlobal::config(), "Recent Files");
+
+    QStringList keys = group.keyList();
+    for (int i = keys.count() - 1; i >= 0; --i) {
+        DocumentInfo info;
+        info.filePath = group.readEntry(keys[i]);
+        QFileInfo fi(info.filePath);
+        if (!fi.exists())
+            continue;
+        info.fileName = fi.fileName();
+        info.docType = m_docTypes.value(info.fileName.right(3));
+        beginInsertRows(QModelIndex(), 0, 0);
+        m_recentDocuments.prepend(info);
+        endInsertRows();
+    }
+
+    startSearch();
 }
 

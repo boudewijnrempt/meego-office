@@ -2,14 +2,16 @@
 #define CALLIGRAMOBILE_DOCUMENTLISTMODEL_H
 
 #include <QAbstractListModel>
+#include <QDeclarativeParserStatus>
 #include <QRunnable>
 
 class SearchThread;
 
-class CMDocumentListModel : public QAbstractListModel
+class CMDocumentListModel : public QAbstractListModel, public QDeclarativeParserStatus
 {
     Q_OBJECT
     Q_ENUMS(GroupBy)
+    Q_INTERFACES(QDeclarativeParserStatus)
 
 public:
     CMDocumentListModel(QObject *parent = 0);
@@ -31,11 +33,15 @@ public:
         QString docType;
     };
 
-    // reimp
+    // reimp from QAbstractListModel
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+
+    // reimp from QDeclarativeParserStatus
+    void classBegin();
+    void componentComplete();
 
 public slots:
     void startSearch();
@@ -48,10 +54,12 @@ public:
 private:
     void relayout();
 
+    QHash<QString, QString> m_docTypes;
     QList<DocumentInfo> m_recentDocuments;
     QList<DocumentInfo> m_documentInfos;
     SearchThread *m_searchThread;
     GroupBy m_groupBy;
+    friend class SearchThread;
 };
 
 Q_DECLARE_METATYPE(CMDocumentListModel::DocumentInfo);

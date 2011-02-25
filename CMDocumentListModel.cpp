@@ -202,6 +202,7 @@ void CMDocumentListModel::addRecent(int index)
                 break;
             }
         }
+        if (i == MAX_RECENT)
             toRemove = MAX_RECENT-1;
     }
 

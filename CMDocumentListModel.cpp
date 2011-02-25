@@ -130,6 +130,8 @@ QVariant CMDocumentListModel::data(const QModelIndex &index, int role) const
     case FilePathRole: return info.filePath;
     case DocTypeRole: return info.docType;
     case SectionCategoryRole: 
+        if (info.isRecent)
+            return tr("Recently viewed");
         return m_groupBy == GroupByName ? info.fileName[0].toUpper() : info.docType;
     default: return QVariant();
     }
@@ -174,5 +176,40 @@ void CMDocumentListModel::relayout()
     }
     m_documentInfos = newList;
     emit layoutChanged();
+}
+
+void CMDocumentListModel::addRecent(int index)
+{
+    Q_ASSERT(index >= 0 && index < m_documentInfos.count());
+    const int MAX_RECENT = 5;
+
+    DocumentInfo info = m_documentInfos[index];
+    int toRemove = -1;
+    if (info.isRecent) {
+        toRemove = index;
+    } else {
+        int i;
+        for (i = 0; i < qMin(m_documentInfos.count(), MAX_RECENT); i++) {
+            if (!m_documentInfos[i].isRecent)
+                break;
+            if (m_documentInfos[i].filePath == info.filePath) {
+                toRemove = i;
+                break;
+            }
+        }
+        if (i == MAX_RECENT)
+            i = MAX_RECENT - 1;
+    }
+
+    if (toRemove != -1) {
+        beginRemoveRows(QModelIndex(), toRemove, toRemove);
+        m_documentInfos.removeAt(toRemove);
+        endRemoveRows();
+    }
+
+    beginInsertRows(QModelIndex(), 0, 0);
+    info.isRecent = true;
+    m_documentInfos.prepend(info);
+    endInsertRows();
 }
 

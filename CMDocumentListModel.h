@@ -25,9 +25,11 @@ public:
     enum GroupBy { GroupByName, GroupByDocType };
 
     struct DocumentInfo {
+        DocumentInfo() : isRecent(false) { }
         QString filePath;
         QString fileName;
         QString docType;
+        bool isRecent;
     };
 
     // reimp
@@ -39,6 +41,7 @@ public:
 public slots:
     void startSearch();
     void addDocument(const CMDocumentListModel::DocumentInfo &info);
+    void addRecent(int index);
 
 public:
     Q_INVOKABLE void groupBy(GroupBy role);

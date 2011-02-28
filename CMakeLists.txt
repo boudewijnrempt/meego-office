@@ -8,7 +8,7 @@ project(calligra_mobile)
 set(KDE_MIN_VERSION "4.3.0")
 find_package(KDE4 4.3.0 REQUIRED)
 
-find_package(Qt4 4.6.0 REQUIRED)
+find_package(Qt4 4.7.1 REQUIRED)
 
 include(KDE4Defaults)
 include(MacroLibrary)

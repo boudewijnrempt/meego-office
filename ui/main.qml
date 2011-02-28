@@ -1,4 +1,4 @@
-import QtQuick 1.0
+import Qt 4.7
 import org.calligra.mobile 1.0
 
 ViewStack
@@ -6,8 +6,6 @@ ViewStack
     id: root;
     width: 1024;
     height: 800;
-
-    property string file: "";
 
     OpenFileView {
         id: view;
@@ -29,14 +27,11 @@ ViewStack
     }
 
     function openFile(file) {
-        // FIXME: Make this a hash
         var ext = file.substr(-3)
         if (!viewmap.hasOwnProperty(ext)) {
             console.log('Unsupported document type')
             return
         }
-        console.log(ext)
-        console.log(viewmap[ext])
         var comp = Qt.createComponent(viewmap[ext])
         if(comp.status == Component.Ready) {
             var tv = comp.createObject(null);

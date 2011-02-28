@@ -7,19 +7,22 @@
 #include <KDE/KStandardDirs>
 #include <KDE/KComponentData>
 
-#include "../CMMainWindow.h"
-#include "CMTablesCanvas.h"
+#include "CMMainWindow.h"
+
+#include "words/CMWordsCanvas.h"
+#include "tables/CMTablesCanvas.h"
+#include "stage/CMStageCanvas.h"
 
 int main(int argc, char *argv[])
 {
     QApplication::setGraphicsSystem("raster");
     
     KAboutData aboutData(
-        "calligratables_mobile",
+        "calligramobile",
         0,
-        ki18n("Calligra Tables"),
+        ki18n("Calligra Mobile"),
         "0.1",
-        ki18n("Mobile version of Calligra Tables"),
+        ki18n("Mobile version of Calligra"),
         KAboutData::License_GPL,
         ki18n("(c) 2010"),
         ki18n("Some text..."),
@@ -28,7 +31,7 @@ int main(int argc, char *argv[])
 
     KCmdLineArgs::init( argc, argv, &aboutData );
     KCmdLineOptions options;
-    options.add( "+[file]", ki18n( "Document to open (.odt or .doc)" ) );
+    options.add( "+[file]", ki18n( "Document to open" ) );
     KCmdLineArgs::addCmdLineOptions( options );
 
     KCmdLineArgs* args = KCmdLineArgs::parsedArgs();
@@ -37,10 +40,12 @@ int main(int argc, char *argv[])
         fileName = args->arg(0);
     
     KApplication app;
-
+ 
+    qmlRegisterType<CMWordsCanvas>("org.calligra.mobile", 1, 0, "WordsCanvas");
     qmlRegisterType<CMTablesCanvas>("org.calligra.mobile", 1, 0, "TablesCanvas");
+    qmlRegisterType<CMStageCanvas>("org.calligra.mobile", 1, 0, "StageCanvas");
 
-    CMMainWindow window(KStandardDirs::locate("appdata", "Tables.qml"), fileName);
+    CMMainWindow window(KStandardDirs::locate("appdata", "main.qml"), fileName);
     window.show();
 
     return app.exec();

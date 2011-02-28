@@ -36,14 +36,30 @@ set(calligramobile_SRCS
     CMRecentFilesModel.cpp
     CMViewStack.cpp
     CMFileSystemModel.cpp
+
+    words/CMWordsCanvas.cpp
+    
+    tables/CMTablesCanvas.cpp
+
+    stage/CMStageCanvas.cpp
+    stage/CMStageDeclarativeView.cpp
+
+    main.cpp
 )
 
-set(calligramobile_ui_SRCS
+set(calligramobile_ui_components_SRCS
     components/qmldir
     components/AboutDialog.qml
     components/Button.qml
     components/OpenFileDialog.qml
     components/OpenFileView.qml
+)
+
+set(calligramobile_ui_SRCS
+    ui/main.qml
+    words/ui/WordsView.qml
+    tables/ui/TableView.qml
+    stage/ui/StageView.qml
 )
 
 set(calligramobile_headers
@@ -53,9 +69,16 @@ set(calligramobile_headers
     CMRecentFilesModel.h
     CMViewStack.h
     calligramobile_export.h
+
+    words/CMWordsCanvas.h
+
+    tables/CMTablesCanvas.h
+    
+    stage/CMStageCanvas.h
+    stage/CMStageDeclarativeView.h
 )
 
-kde4_add_library(calligramobile SHARED ${calligramobile_SRCS})
+kde4_add_executable(calligramobile ${calligramobile_SRCS})
 target_link_libraries(calligramobile
     ${QT_QTCORE_LIBRARY}
     ${QT_QTGUI_LIBRARY}
@@ -65,6 +88,10 @@ target_link_libraries(calligramobile
     ${FLAKE_LIBRARY}
     ${KOWIDGETS_LIBRARY}
     ${KOPAGEAPP_LIBRARY}
+
+    wordsprivate
+    calligratablescommon
+    calligrastageprivate
 )
 
 set(CALLIGRA_MOBILE_LIBRARIES
@@ -83,22 +110,10 @@ if(QTMOBILITY_FOUND)
     set(CALLIGRA_MOBILE_LIBRARIES ${CALLIGRA_MOBILE_LIBRARIES} ${QT_MOBILITY_SYSTEMINFO_LIBRARY})
 endif()
 
-option(SHOULD_BUILD_WORDS "Build Words" ON)
-option(SHOULD_BUILD_TABLES "Build Tables" ON)
-option(SHOULD_BUILD_STAGE "Build Stage" ON)
-if(SHOULD_BUILD_WORDS)
-    add_subdirectory(words)
-endif()
-if(SHOULD_BUILD_TABLES)
-    add_subdirectory(tables)
-endif()
-if(SHOULD_BUILD_STAGE)
-    add_subdirectory(stage)
-endif()
-
 set_target_properties(calligramobile PROPERTIES VERSION ${GENERIC_KOFFICE_LIB_VERSION} SOVERSION ${GENERIC_KOFFICE_LIB_SOVERSION})
 
 install(TARGETS calligramobile ${INSTALL_TARGETS_DEFAULT_ARGS})
-install(FILES ${calligramobile_ui_SRCS} DESTINATION ${DATA_INSTALL_DIR}/calligramobile/org/calligra/mobile)
+install(FILES ${calligramobile_ui_SRCS} DESTINATION ${DATA_INSTALL_DIR}/calligramobile)
+install(FILES ${calligramobile_ui_components_SRCS} DESTINATION ${DATA_INSTALL_DIR}/calligramobile/org/calligra/mobile)
 install(FILES ${calligramobile_headers} DESTINATION ${INCLUDE_INSTALL_DIR})
 

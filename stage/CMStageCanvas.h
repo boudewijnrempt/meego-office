@@ -1,5 +1,5 @@
-#ifndef CALLIGRAMOBILE_WORDSCANVAS_H
-#define CALLIGRAMOBILE_WORDSCANVAS_H
+#ifndef CALLIGRAMOBILE_STAGECANVAS_H
+#define CALLIGRAMOBILE_STAGECANVAS_H
 
 #include "../CMCanvasControllerDeclarative.h"
 
@@ -22,4 +22,4 @@ private:
     Private * const d;
 };
 
-#endif // CALLIGRAMOBILE_WORDSCANVAS_H
+#endif // CALLIGRAMOBILE_STAGECANVAS_H

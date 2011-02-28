@@ -1,48 +1,76 @@
 import Qt 4.7
 import org.calligra.mobile 1.0
 
-ViewStack
-{
-    id: root;
-    width: 1024;
-    height: 800;
+Rectangle {
+    id: root
+    width: 1024
+    height: 800
 
-    OpenFileView {
-        id: view;
+    state: "showingDocumentPicker"
 
-        onOpenFileDialog: {
-            var od = Qt.createQmlObject("import org.calligra.mobile 1.0; OpenFileDialog { }", root, "dynamic");
-            od.filter = "*.odt *.doc *.ods *.xls *.odp *.ppt";
-            root.push(od);
-        }
-        onOpenFile: {
-            root.openFile(view.file);
+    DocumentPicker {
+        id: documentPicker
+        anchors.fill: parent
+
+        onSelected: {
+            model.addRecent(index)
+            viewLoader.openFile(filePath) 
+            root.state = "showingDocumentViewer"
         }
     }
+    
+    ViewLoader {
+        id: viewLoader
+        anchors.fill: parent
 
-   function openFile(file) {
-        var viewmap = { 
-            'odt': 'WordsView.qml', 'doc': 'WordsView.qml',
-            'ods': 'TableView.qml', 'xls': 'TableView.qml',
-            'odp': 'StageView.qml', 'ppt': 'StageView.qml'
-        }
- 
-        var ext = file.substr(-3)
-        if (!viewmap.hasOwnProperty(ext)) {
-            console.log('Unsupported document type')
-            return
-        }
-        var comp = Qt.createComponent(viewmap[ext])
-        if(comp.status == Component.Ready) {
-            var tv = comp.createObject(null);
-            tv.file = file;
-            view.recentFiles.addFile(tv.file);
-            root.popAll();
-            root.push(tv);
-        } else {
-            console.log("Error creating view instance");
-            console.log(comp.errorString());
-        }
+        onViewingFinished: root.state = "showingDocumentPicker"
     }
+
+    states: [
+        State {
+            name: "showingDocumentPicker"
+            PropertyChanges {
+                target: documentPicker
+                opacity: 1
+            }
+            PropertyChanges {
+                target: viewLoader
+                scale: 0
+            }
+            StateChangeScript {
+                name: "unloadViewer"
+                script: if (viewLoader.sourceComponent) viewLoader.sourceComponent = undefined
+            }
+        },
+        State {
+            name: "showingDocumentViewer"
+            PropertyChanges {
+                target: documentPicker
+                opacity: 0
+            }
+            PropertyChanges {
+                target: viewLoader
+                scale: 1
+            }
+        }
+            ]
+
+    transitions: [
+        Transition {
+            to: "showingDocumentPicker"
+            SequentialAnimation {
+                PropertyAction { target: documentPicker; property: "opacity" }
+                NumberAnimation { target: viewLoader; property: "scale"; duration: 400 }
+                ScriptAction { scriptName: "unloaderViewer" }
+            }
+        },
+        Transition {
+            to: "showingDocumentViewer"
+            SequentialAnimation {
+                NumberAnimation { target: viewLoader; property: "scale"; duration: 400 }
+                PropertyAction { target: documentPicker; property: "opacity"  }
+            }
+        }
+            ]
 }
 

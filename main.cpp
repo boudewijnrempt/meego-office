@@ -8,6 +8,7 @@
 #include <KDE/KComponentData>
 
 #include "CMMainWindow.h"
+#include "CMDocumentListModel.h"
 
 #include "words/CMWordsCanvas.h"
 #include "tables/CMTablesCanvas.h"
@@ -41,6 +42,7 @@ int main(int argc, char *argv[])
     
     KApplication app;
  
+    qmlRegisterType<CMDocumentListModel>("org.calligra.mobile", 1, 0, "DocumentListModel");
     qmlRegisterType<CMWordsCanvas>("org.calligra.mobile", 1, 0, "WordsCanvas");
     qmlRegisterType<CMTablesCanvas>("org.calligra.mobile", 1, 0, "TablesCanvas");
     qmlRegisterType<CMStageCanvas>("org.calligra.mobile", 1, 0, "StageCanvas");

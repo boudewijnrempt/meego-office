@@ -17,7 +17,6 @@
 #include <kofficeversion.h>
 
 #include "CMIconImageProvider.h"
-#include "CMViewStack.h"
 #include "CMCanvasControllerDeclarative.h"
 #include "CMRecentFilesModel.h"
 #include "CMFileSystemModel.h"
@@ -50,7 +49,6 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
         d->engine->addImportPath(path);
     }
     d->engine->addImageProvider("icon", new CMIconImageProvider);
-    qmlRegisterType<CMViewStack>("org.calligra.mobile", 1, 0, "ViewStack");
     qmlRegisterType<CMCanvasControllerDeclarative>("org.calligra.mobile", 1, 0, "CanvasControllerDeclarative");
     qmlRegisterType<CMRecentFilesModel>("org.calligra.mobile", 1, 0, "RecentFilesModel");
     qmlRegisterType<CMFileSystemModel>("org.calligra.mobile", 1, 0, "FileSystemModel");

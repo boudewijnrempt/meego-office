@@ -34,8 +34,8 @@ set(calligramobile_SRCS
     CMIconImageProvider.cpp
     CMMainWindow.cpp
     CMRecentFilesModel.cpp
-    CMViewStack.cpp
     CMFileSystemModel.cpp
+    CMDocumentListModel.cpp
 
     words/CMWordsCanvas.cpp
     
@@ -50,16 +50,17 @@ set(calligramobile_SRCS
 set(calligramobile_ui_components_SRCS
     components/qmldir
     components/AboutDialog.qml
+    components/ActionBar.qml
     components/Button.qml
     components/OpenFileDialog.qml
     components/OpenFileView.qml
+    components/TitleBar.qml
 )
 
 set(calligramobile_ui_SRCS
     ui/main.qml
-    words/ui/WordsView.qml
-    tables/ui/TableView.qml
-    stage/ui/StageView.qml
+    ui/DocumentPicker.qml
+    ui/ViewLoader.qml
 )
 
 set(calligramobile_headers
@@ -67,8 +68,8 @@ set(calligramobile_headers
     CMIconImageProvider.h
     CMMainWindow.h
     CMRecentFilesModel.h
-    CMViewStack.h
     calligramobile_export.h
+    CMDocumentListModel.h
 
     words/CMWordsCanvas.h
 

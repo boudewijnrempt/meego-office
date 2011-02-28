@@ -13,10 +13,10 @@ Item {
 
     Rectangle {
         anchors.fill: parent;
-
         opacity: 0.5;
-
         color: "#000000";
+
+        MouseArea { anchors.fill: parent; onClicked: mouse.accepted = true }
     }
 
     Rectangle {

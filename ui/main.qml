@@ -35,11 +35,7 @@ ViewStack
         var comp = Qt.createComponent(viewmap[ext])
         if(comp.status == Component.Ready) {
             var tv = comp.createObject(null);
-            if(file) {
-                tv.file = file;
-            } else {
-                tv.file = root.file;
-            }
+            tv.file = file;
             view.recentFiles.addFile(tv.file);
             root.popAll();
             root.push(tv);

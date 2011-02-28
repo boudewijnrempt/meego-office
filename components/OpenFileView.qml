@@ -93,4 +93,12 @@ Rectangle {
             }
         }
     }
+
+    AboutDialog {
+        id: aboutDialog
+        icon: "image://icon/kspread" // ##: Show Calligra icon here
+        title: "Calligra Mobile"
+        opacity: 0
+        z: 1
+    }
 }

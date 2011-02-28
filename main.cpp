@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
         ki18n("Calligra Mobile"),
         "0.1",
         ki18n("Mobile version of Calligra"),
-        KAboutData::License_GPL,
+        KAboutData::License_Unknown,
         ki18n("(c) 2010"),
         ki18n("Some text..."),
         "http://www.calligra-suite.com/",

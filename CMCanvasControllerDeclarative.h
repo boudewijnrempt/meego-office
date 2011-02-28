@@ -66,12 +66,10 @@ private:
     QSize size() const;
 
 private Q_SLOTS:
-    void valueChanged(qreal value);
-    void timeLineFinished();
     void onHeightChanged();
     void onWidthChanged();
     void documentOffsetMoved(const QPoint& point);
-    void bounceValueChanged(qreal value);
+    void timerUpdate();
 };
 
 #endif // CALLIGRAMOBILE_CANVASCONTROLLERDECLARATIVE_H

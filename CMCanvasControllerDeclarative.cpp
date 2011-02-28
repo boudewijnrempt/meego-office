@@ -22,6 +22,7 @@
 #include <QStyleOptionGraphicsItem>
 #include <KoPACanvasItem.h>
 #include <KoPACanvasBase.h>
+#include <QVector2D>
 
 class CMCanvasControllerDeclarative::Private
 {
@@ -31,8 +32,7 @@ public:
         canvas(0), zoomHandler(0), zoomController(0),
         vastScrollingFactor(0.f),
         minX(0), minY(0), maxX(0), maxY(0),
-        dragging(false), velocityX(0), velocityY(0),
-        updateCanvas(true), zoom(1.0)
+        dragging(false), updateCanvas(true), zoom(1.0)
     { }
     ~Private() { }
 
@@ -41,14 +41,14 @@ public:
     void updateMinMax();
     void updateCanvasSize();
     void checkBounce(const QPoint& offset);
+    void frameChanged(int frame);
 
     CMCanvasControllerDeclarative* q;
     KoCanvasBase* canvas;
     KoZoomHandler* zoomHandler;
     KoZoomController* zoomController;
 
-    QTimeLine* timeLine;
-    QTimeLine* bounceTimeLine;
+    QTimer* timer;
 
     qreal vastScrollingFactor;
 
@@ -61,17 +61,20 @@ public:
     qreal distX;
     qreal distY;
 
-    qreal velocityX;
-    qreal velocityY;
-
     QGraphicsPixmapItem* scaleProxy;
     bool updateCanvas;
 
     qreal zoom;
     qreal zoomMax;
     qreal zoomMin;
-
-    QPointF bounceDistance;
+    
+    QVector2D force;
+    QVector2D velocity;
+    
+    float mass;
+    float dragCoeff;
+    float timeStep;
+    float springCoeff;
 };
 
 CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* parent)
@@ -83,13 +86,14 @@ CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* p
     setAcceptTouchEvents(true);
     grabGesture(Qt::PinchGesture);
 
-    d->timeLine = new QTimeLine(1000, this);
-    connect(d->timeLine, SIGNAL(valueChanged(qreal)), this, SLOT(valueChanged(qreal)));
-    connect(d->timeLine, SIGNAL(finished()), this, SLOT(timeLineFinished()));
+    d->timer = new QTimer(this);
+    d->timer->setInterval(40);
+    connect(d->timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
 
-    d->bounceTimeLine = new QTimeLine(500, this);
-    connect(d->bounceTimeLine, SIGNAL(valueChanged(qreal)), this, SLOT(bounceValueChanged(qreal)));
-    connect(d->bounceTimeLine, SIGNAL(stateChanged(QTimeLine::State)), this, SLOT(bounceStateChanged(QTimeLine::State)));
+    d->mass = 10.f;
+    d->dragCoeff = 0.05f;
+    d->springCoeff = 0.8f;
+    d->timeStep = 1000.f / d->timer->interval();
 
     d->scaleProxy = new QGraphicsPixmapItem(QPixmap(), this);
     d->scaleProxy->setVisible(false);
@@ -188,7 +192,7 @@ void CMCanvasControllerDeclarative::zoomBy(const QPoint& center, qreal zoom)
         d->updateMinMax();
         d->updateCanvasSize();
         resetDocumentOffset(oNew);
-        d->checkBounce(oNew);
+        d->timer->start();
     }
 }
 
@@ -316,17 +320,15 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
 {
     if(target == this || target == d->canvas->canvasItem()) {
         if(event->type() == QEvent::GraphicsSceneMousePress) {
-            d->velocityX = 0;
-            d->velocityY = 0;
-            d->timeLine->stop();
+            d->velocity = QVector2D();
+            d->timer->stop();
             return true;
         } else if(event->type() == QEvent::GraphicsSceneMouseMove) {
             if(d->updateCanvas)
                 d->handleMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
             return true;
         } else if(event->type() == QEvent::GraphicsSceneMouseRelease) {
-            d->checkBounce(documentOffset());
-            d->timeLine->start();
+            d->timer->start();
             return true;
         } else if(event->type() == QEvent::TouchBegin) {
             event->accept();
@@ -363,41 +365,6 @@ void CMCanvasControllerDeclarative::setMargin(int margin)
     d->updateMinMax();
 }
 
-void CMCanvasControllerDeclarative::valueChanged(qreal value)
-{
-    if(d->bounceTimeLine->state() != QTimeLine::Running) {
-        scrollContentsBy(d->velocityX, d->velocityY);
-    }
-    
-    d->velocityX *= (1.0 - value);
-    d->velocityY *= (1.0 - value);
-
-    if(qFuzzyCompare(1. + d->velocityX, 1.) && qFuzzyCompare(1. + d->velocityY, 1.)) {
-        d->timeLine->stop();
-    }
-}
-
-void CMCanvasControllerDeclarative::bounceValueChanged(qreal value)
-{
-    QPoint newOffset = -(d->bounceDistance - (value * d->bounceDistance)).toPoint();
-    if(qFuzzyCompare(1. + newOffset.x(), 1.)) {
-        newOffset.setX(documentOffset().x());
-    }
-    if(qFuzzyCompare(1. + newOffset.y(), 1.)) {
-        newOffset.setY(documentOffset().y());
-    }
-    newOffset.rx() += d->velocityX;
-    newOffset.ry() += d->velocityY;
-    resetDocumentOffset(newOffset);
-}
-
-void CMCanvasControllerDeclarative::timeLineFinished()
-{
-    d->velocityX = 0;
-    d->velocityY = 0;
-    d->checkBounce(documentOffset());
-}
-
 void CMCanvasControllerDeclarative::onHeightChanged()
 {
     d->updateCanvasSize();
@@ -413,10 +380,10 @@ void CMCanvasControllerDeclarative::Private::handleMouseMoveEvent(QGraphicsScene
     QPointF prev = event->lastPos();
     QPointF cur = event->pos();
 
-    velocityX = (prev.x() - cur.x());
-    velocityY = (prev.y() - cur.y());
+    force.setX(prev.x() - cur.x());
+    force.setY(prev.y() - cur.y());
 
-    q->scrollContentsBy(velocityX, velocityY);
+    q->scrollContentsBy(force.x(), force.y());
 }
 
 void CMCanvasControllerDeclarative::Private::handleGesture(QGestureEvent* event)
@@ -481,32 +448,6 @@ void CMCanvasControllerDeclarative::Private::updateCanvasSize()
         canvas->canvasItem()->setGeometry(0, 0, q->width(), q->height());
         canvas->updateCanvas(canvas->viewConverter()->viewToDocument(QRectF(0, 0, q->width(), q->height())));
         canvas->canvasItem()->update();
-    }
-}
-
-void CMCanvasControllerDeclarative::Private::checkBounce(const QPoint& offset)
-{
-    QPointF o = offset;
-    bounceDistance.setX(0.f);
-    bounceDistance.setY(0.f);
-    
-    if(o.x() > maxX) {
-        bounceDistance.rx() = maxX - offset.x();
-    }
-    if(o.x() < minX || bounceDistance.x() < minX ) {
-        bounceDistance.rx() = minX - offset.x();
-    }
-    
-    if(o.y() > maxY) {
-        bounceDistance.ry() = maxY - offset.y();
-    }
-    if(o.y() < minY || bounceDistance.y() < minY ) {
-        bounceDistance.ry() = minY - offset.y();
-    }
-
-    if(!bounceDistance.isNull()) {
-        bounceTimeLine->stop();
-        bounceTimeLine->start();
     }
 }
 
@@ -630,3 +571,34 @@ void CMCanvasControllerDeclarative::documentOffsetMoved(const QPoint& point)
     Q_UNUSED(point);
     resetLayout();
 }
+
+void CMCanvasControllerDeclarative::timerUpdate()
+{
+    QVector2D position = QVector2D(documentOffset());
+    QVector2D totalForce = d->force - (d->dragCoeff * d->velocity);
+    d->force = QVector2D();
+
+    QVector2D accel = totalForce / d->mass;
+
+    position += d->velocity;
+    if(position.x() < d->minX) {
+        position.setX(position.x() * d->springCoeff);
+    }
+    if(position.y() < d->minY) {
+        position.setY(position.y() * d->springCoeff);
+    }
+
+    if(position.x() > d->maxX) {
+        float diff = position.x() - d->maxX;
+        position.setX(d->maxX + diff * 0.9);
+    }
+    if(position.y() > d->maxY) {
+        float diff = position.y() - d->maxY;
+        position.setY(d->maxY + diff * 0.9);
+    }
+
+    d->velocity += accel * d->timeStep;
+
+    resetDocumentOffset(QPoint(position.x(), position.y()));
+}
+

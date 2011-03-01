@@ -1,8 +1,8 @@
 #include "CMCanvasControllerDeclarative.h"
 
 #include <QtCore/QTimer>
-#include <QtCore/QPropertyAnimation>
-#include <QtCore/QTimeLine>
+#include <QtGui/QGesture>
+#include <QtGui/QVector2D>
 #include <QtGui/QGraphicsWidget>
 #include <QtGui/QGraphicsSceneMouseEvent>
 #include <QtGui/QApplication>
@@ -12,17 +12,8 @@
 #include <KoCanvasBase.h>
 #include <KoViewConverter.h>
 #include <KoToolManager.h>
-#include <KoPanTool.h>
 #include <KoZoomHandler.h>
 #include <KoZoomController.h>
-#include <KoShapeManager.h>
-#include <qgesture.h>
-#include <QPainter>
-#include <QGraphicsScene>
-#include <QStyleOptionGraphicsItem>
-#include <KoPACanvasItem.h>
-#include <KoPACanvasBase.h>
-#include <QVector2D>
 
 class CMCanvasControllerDeclarative::Private
 {
@@ -126,8 +117,6 @@ void CMCanvasControllerDeclarative::updateDocumentSize(const QSize& sz, bool rec
     proxyObject->emitSizeChanged(sz);
     KoCanvasController::setDocumentSize(sz);
     d->updateMinMax();
-
-    resetLayout();
 }
 
 void CMCanvasControllerDeclarative::resetDocumentOffset(const QPoint& offset)
@@ -284,9 +273,10 @@ void CMCanvasControllerDeclarative::setCanvas(KoCanvasBase* canvas)
     d->updateCanvasSize();
     d->updateMinMax();
 
+    resetDocumentOffset(QPoint(d->minX, d->minY));
     setFocusProxy(d->canvas->canvasItem());
-    resetLayout();
     proxyObject->emitCanvasSet(this);
+    d->timer->start();
 }
 
 void CMCanvasControllerDeclarative::setDrawShadow(bool drawShadow)
@@ -296,8 +286,7 @@ void CMCanvasControllerDeclarative::setDrawShadow(bool drawShadow)
 
 QSize CMCanvasControllerDeclarative::viewportSize() const
 {
-    //return d->canvas->canvasItem()->size().toSize();
-    return size(); // because we are the viewport
+    return QSize(width(), height());
 }
 
 void CMCanvasControllerDeclarative::scrollContentsBy(int dx, int dy)
@@ -451,125 +440,10 @@ void CMCanvasControllerDeclarative::Private::updateCanvasSize()
     }
 }
 
-
-void CMCanvasControllerDeclarative::resetLayout()
-{
-    // Determine the area we have to show
-    QRect viewRect(documentOffset(), size());
-
-    const int viewH = viewRect.height();
-    const int viewW = viewRect.width();
-
-    const int docH = documentSize().height();
-    const int docW = documentSize().width();
-
-    int moveX = 0;
-    int moveY = 0;
-
-    int resizeW = viewW;
-    int resizeH = viewH;
-
-    //qDebug() << "resetLayout\n\tviewH:" << viewH << endl
-    //              << "\tdocH: " << docH << endl
-    //              << "\tviewW: " << viewW << endl
-    //              << "\tdocW: " << docW << endl;
-
-    QPointF newOrigin;
-    if (viewH == docH && viewW == docW) {
-        // Do nothing
-        resizeW = docW;
-        resizeH = docH;
-    }
-    else if (viewH > docH && viewW > docW) {
-
-        // Show entire canvas centered
-        moveX = (viewW - docW) / 2;
-        moveY = (viewH - docH) / 2;
-        resizeW = docW;
-        resizeH = docH;
-        newOrigin.setX(moveX * ((d->zoomHandler) ? d->zoomHandler->zoomedResolutionX():1));
-        newOrigin.setY(moveY * ((d->zoomHandler) ? d->zoomHandler->zoomedResolutionY():1));
-
-    }
-    else if (viewW > docW) {
-
-        // Center canvas horizontally
-        moveX = (viewW - docW) / 2;
-        resizeW = docW;
-
-        int marginTop = margin() - documentOffset().y();
-        int marginBottom = viewH  - (documentSize().height() - documentOffset().y());
-
-        if(marginTop > 0) moveY = marginTop;
-        if(marginTop > 0) resizeH = viewH - marginTop;
-        if(marginBottom > 0) resizeH = viewH - marginBottom;
-    }
-    else if (viewH > docH) {
-
-        // Center canvas vertically
-        moveY = (viewH - docH) / 2;
-        resizeH = docH;
-
-        int marginLeft = margin() - documentOffset().x();
-        int marginRight = viewW - (documentSize().width() - documentOffset().x());
-
-        if (marginLeft > 0) moveX = marginLeft;
-        if (marginLeft > 0) resizeW = viewW - marginLeft;
-        if (marginRight > 0) resizeW = viewW - marginRight;
-    }
-    else {
-        // Take care of the margin around the canvas
-        int marginTop = margin() - documentOffset().y();
-        int marginLeft = margin() - documentOffset().x();
-        int marginRight = viewW - (documentSize().width() - documentOffset().x());
-        int marginBottom = viewH  - (documentSize().height() - documentOffset().y());
-
-        if (marginTop > 0) moveY = marginTop;
-        if (marginLeft > 0) moveX = marginLeft;
-
-        if (marginTop > 0) resizeH = viewH - marginTop;
-        if (marginLeft > 0) resizeW = viewW - marginLeft;
-        if (marginRight > 0) resizeW = viewW - marginRight;
-        if (marginBottom > 0) resizeH = viewH - marginBottom;
-    }
-
-    if (canvasMode() == KoCanvasController::AlignTop) {
-        // have up to m_margin pixels at top.
-        moveY = qMin(margin(), moveY);
-    }
-
-    if (d->canvas) {
-        if (!newOrigin.isNull()) {
-            KoPACanvasItem *canvasItem = dynamic_cast<KoPACanvasItem*>(d->canvas);
-
-            if (canvasItem) {
-                canvasItem->setDocumentOrigin(newOrigin);
-            }
-        }
-
-        QRect rc;
-        if (canvasMode() == KoCanvasController::Infinite || canvasMode() == KoCanvasController::Spreadsheet) {
-            rc = QRect(0, 0, viewW, viewH);
-        }
-        else {
-            rc = QRect(moveX, moveY, resizeW, resizeH);
-        }
-
-        QGraphicsWidget *canvasItem = d->canvas->canvasItem();
-        canvasItem->setGeometry(rc);
-    }
-
-}
-
-QSize CMCanvasControllerDeclarative::size() const
-{
-    return QSize(visibleWidth(), visibleHeight());
-}
-
 void CMCanvasControllerDeclarative::documentOffsetMoved(const QPoint& point)
 {
     Q_UNUSED(point);
-    resetLayout();
+    d->updateMinMax();
 }
 
 void CMCanvasControllerDeclarative::timerUpdate()

@@ -62,9 +62,6 @@ private:
     class Private;
     Private * const d;
 
-    void resetLayout();
-    QSize size() const;
-
 private Q_SLOTS:
     void onHeightChanged();
     void onWidthChanged();

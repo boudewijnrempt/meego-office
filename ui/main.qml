@@ -20,13 +20,13 @@ ViewStack
         }
     }
 
-    property variant viewmap: { 
-        'odt': 'WordsView.qml', 'doc': 'WordsView.qml',
-        'ods': 'TableView.qml', 'xls': 'TableView.qml',
-        'odp': 'StageView.qml', 'ppt': 'StageView.qml',
-    }
-
-    function openFile(file) {
+   function openFile(file) {
+        var viewmap = { 
+            'odt': 'WordsView.qml', 'doc': 'WordsView.qml',
+            'ods': 'TableView.qml', 'xls': 'TableView.qml',
+            'odp': 'StageView.qml', 'ppt': 'StageView.qml'
+        }
+ 
         var ext = file.substr(-3)
         if (!viewmap.hasOwnProperty(ext)) {
             console.log('Unsupported document type')

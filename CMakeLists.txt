@@ -30,6 +30,7 @@ if(QTMOBILITY_FOUND)
 endif(QTMOBILITY_FOUND)
 
 set(calligramobile_SRCS
+    CMCanvasInputProxy.cpp
     CMCanvasControllerDeclarative.cpp
     CMIconImageProvider.cpp
     CMMainWindow.cpp

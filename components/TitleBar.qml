@@ -7,12 +7,18 @@ Rectangle {
     property alias rightArea: rightRow.children
 
     height: title.height + 20
-    color: "#cccccc"
+    gradient: Gradient {
+        GradientStop { position: 0.0; color: "#e9e9e9" }
+        GradientStop { position: 0.7; color: "#dddddd" }
+        GradientStop { position: 1.0; color: "#e9e8e8" }
+    }
+
+    Rectangle { id: topBorder; color: "#f9f9f9"; width: root.width; height: 1 }
 
     Text {
         id: title
         anchors.centerIn: parent
-        font.pointSize: 14
+        font.pixelSize: 14
     }
 
     Row {

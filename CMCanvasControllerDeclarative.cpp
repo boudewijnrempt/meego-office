@@ -14,6 +14,15 @@
 #include <KoToolManager.h>
 #include <KoZoomHandler.h>
 #include <KoZoomController.h>
+#include <KoShapeManager.h>
+#include <qgesture.h>
+#include <QPainter>
+#include <QGraphicsScene>
+#include <QStyleOptionGraphicsItem>
+#include <KoPACanvasItem.h>
+#include <KoPACanvasBase.h>
+#include <QVector2D>
+#include "CMCanvasInputProxy.h"
 
 class CMCanvasControllerDeclarative::Private
 {
@@ -23,7 +32,7 @@ public:
         canvas(0), zoomHandler(0), zoomController(0),
         vastScrollingFactor(0.f),
         minX(0), minY(0), maxX(0), maxY(0),
-        dragging(false), updateCanvas(true), zoom(1.0)
+        dragging(false), zoom(1.0)
     { }
     ~Private() { }
 
@@ -33,6 +42,8 @@ public:
     void updateCanvasSize();
     void checkBounce(const QPoint& offset);
     void frameChanged(int frame);
+
+    CMCanvasInputProxy* inputProxy;
 
     CMCanvasControllerDeclarative* q;
     KoCanvasBase* canvas;
@@ -51,9 +62,6 @@ public:
     bool dragging;
     qreal distX;
     qreal distY;
-
-    QGraphicsPixmapItem* scaleProxy;
-    bool updateCanvas;
 
     qreal zoom;
     qreal zoomMax;
@@ -85,9 +93,6 @@ CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* p
     d->dragCoeff = 0.05f;
     d->springCoeff = 0.8f;
     d->timeStep = 1000.f / d->timer->interval();
-
-    d->scaleProxy = new QGraphicsPixmapItem(QPixmap(), this);
-    d->scaleProxy->setVisible(false);
 
     connect(this, SIGNAL(heightChanged()), this, SLOT(onHeightChanged()));
     connect(this, SIGNAL(widthChanged()), this, SLOT(onWidthChanged()));
@@ -124,7 +129,7 @@ void CMCanvasControllerDeclarative::resetDocumentOffset(const QPoint& offset)
     QPoint o = offset;
     setDocumentOffset(o);
     proxyObject->emitMoveDocumentOffset(offset);
-    if(d->updateCanvas) {
+    if(d->inputProxy->updateCanvas()) {
         d->updateCanvasSize();
     }
 }
@@ -291,7 +296,7 @@ QSize CMCanvasControllerDeclarative::viewportSize() const
 
 void CMCanvasControllerDeclarative::scrollContentsBy(int dx, int dy)
 {
-    if(!d->updateCanvas)
+    if(!d->inputProxy->updateCanvas())
         return;
 
     if(d->minX == d->maxX || d->minY == d->maxY)
@@ -313,8 +318,8 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
             d->timer->stop();
             return true;
         } else if(event->type() == QEvent::GraphicsSceneMouseMove) {
-            if(d->updateCanvas)
-                d->handleMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
+            if(d->inputProxy->updateCanvas())
+                d->inputProxy->handleMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
             return true;
         } else if(event->type() == QEvent::GraphicsSceneMouseRelease) {
             d->timer->start();
@@ -323,7 +328,7 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
             event->accept();
             return true;
         } else if(event->type() == QEvent::Gesture) {
-            d->handleGesture(static_cast<QGestureEvent*>(event));
+            d->inputProxy->handleGesture(static_cast<QGestureEvent*>(event));
             return true;
         }
     }
@@ -377,48 +382,6 @@ void CMCanvasControllerDeclarative::Private::handleMouseMoveEvent(QGraphicsScene
 
 void CMCanvasControllerDeclarative::Private::handleGesture(QGestureEvent* event)
 {
-    QPinchGesture* pinch = qobject_cast<QPinchGesture*>(event->gesture(Qt::PinchGesture));
-
-    if(!pinch)
-        return;
-
-    switch(pinch->state())
-    {
-        case Qt::GestureStarted:
-        {
-	    updateCanvas = false;
-             
-            qreal zoomX, zoomY;
-            zoomHandler->zoom(&zoomX, &zoomY);
-            
-            zoomMax = 1.0 + (KoZoomMode::maximumZoom() - zoomX);
-            zoomMin = KoZoomMode::minimumZoom() / zoomX;
-  
-            scaleProxy->setPixmap(QPixmap::grabWindow(QApplication::activeWindow()->winId(), q->x(), q->y(), q->width(), q->height()));
-            scaleProxy->setScale(1.0);
-            scaleProxy->setVisible(true);
-            canvas->canvasItem()->setVisible(false);
-        }
-        case Qt::GestureUpdated:
-        {
-            scaleProxy->setTransformOriginPoint(pinch->centerPoint());
-            qreal newScale = scaleProxy->scale() + (pinch->scaleFactor() - pinch->lastScaleFactor());
-            if(newScale > scaleProxy->scale() && newScale > zoomMax) {
-                break;
-            } else if(newScale < scaleProxy->scale() && newScale < zoomMin) {
-                break;
-            }
-            scaleProxy->setScale(scaleProxy->scale() + (pinch->scaleFactor() - pinch->lastScaleFactor()));
-            break;
-        }
-        case Qt::GestureFinished:
-            scaleProxy->setVisible(false);
-            canvas->canvasItem()->setVisible(true);
-            q->zoomBy(pinch->centerPoint().toPoint(), scaleProxy->scale());
-	    updateCanvas = true;
-            break;
-    }
-    
 }
 
 void CMCanvasControllerDeclarative::Private::updateMinMax()
@@ -486,3 +449,37 @@ void CMCanvasControllerDeclarative::timerUpdate()
         d->timer->stop();
 }
 
+QVector2D CMCanvasControllerDeclarative::force() const
+{
+    return d->force;
+}
+
+void CMCanvasControllerDeclarative::setForce(const QVector2D& newForce)
+{
+    d->force = newForce;
+}
+
+void CMCanvasControllerDeclarative::setZoomMax(qreal newZoomMax)
+{
+    d->zoomMax = newZoomMax;
+}
+
+qreal CMCanvasControllerDeclarative::zoomMax() const
+{
+    return d->zoomMax;
+}
+
+void CMCanvasControllerDeclarative::setZoomMin(qreal newZoomMin)
+{
+    d->zoomMin = newZoomMin;
+}
+
+qreal CMCanvasControllerDeclarative::zoomMin() const
+{
+    return d->zoomMin;
+}
+
+KoZoomHandler* CMCanvasControllerDeclarative::zoomHandler() const
+{
+    return d->zoomHandler;
+}

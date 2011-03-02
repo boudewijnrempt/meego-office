@@ -7,6 +7,7 @@
 #include <KoViewConverter.h>
 
 #include "calligramobile_export.h"
+#include <QVector2D>
 
 class KoZoomHandler;
 class KoZoomController;
@@ -47,7 +48,13 @@ public:
     virtual KoCanvasBase* canvas() const;
     virtual void setCanvas(KoCanvasBase* canvas);
     virtual void setMargin(int margin);
-
+    
+    KoZoomHandler* zoomHandler() const;
+    void setZoomMax(qreal newZoomMax);
+    qreal zoomMax() const;
+    void setZoomMin(qreal newZoomMin);
+    qreal zoomMin() const;
+    
 public Q_SLOTS:
     virtual void zoomOut(const QPoint& center = QPoint());
     virtual void zoomIn(const QPoint& center = QPoint());
@@ -57,6 +64,9 @@ public Q_SLOTS:
 Q_SIGNALS:
     void progress(int progress);
     void completed();
+    
+    void setForce(const QVector2D& newForce);
+    QVector2D force() const;
     
 protected:
     virtual bool eventFilter(QObject* target, QEvent* event );

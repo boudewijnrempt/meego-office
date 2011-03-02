@@ -96,6 +96,9 @@ CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* p
     connect(this, SIGNAL(widthChanged()), this, SLOT(onWidthChanged()));
 
     connect(proxyObject, SIGNAL(moveDocumentOffset(QPoint)), this, SLOT(documentOffsetMoved(QPoint)));
+    
+    connect(d->inputProxy, SIGNAL(nextPage()), SIGNAL(nextPage()));
+    connect(d->inputProxy, SIGNAL(previousPage()), SIGNAL(previousPage()));
 }
 
 CMCanvasControllerDeclarative::~CMCanvasControllerDeclarative()

@@ -38,7 +38,8 @@ public:
 CMTablesCanvas::CMTablesCanvas(QDeclarativeItem* parent)
     : CMCanvasControllerDeclarative(parent), d(new Private(this))
 {
-
+    connect(this, SIGNAL(nextPage()), SLOT(nextSheet()));
+    connect(this, SIGNAL(previousPage()), SLOT(previousSheet()));
 }
 
 CMTablesCanvas::~CMTablesCanvas()

@@ -54,7 +54,11 @@ public:
     qreal zoomMax() const;
     void setZoomMin(qreal newZoomMin);
     qreal zoomMin() const;
-    
+
+Q_SIGNALS:
+    void nextPage();
+    void previousPage();
+
 public Q_SLOTS:
     virtual void zoomOut(const QPoint& center = QPoint());
     virtual void zoomIn(const QPoint& center = QPoint());

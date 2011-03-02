@@ -1,13 +1,16 @@
 #ifndef CMCANVASINPUTPROXY_H
 #define CMCANVASINPUTPROXY_H
 
+#include <QtCore/QObject>
+
 class QGestureEvent;
 class QGraphicsSceneMouseEvent;
 class CMCanvasControllerDeclarative;
-class CMCanvasInputProxy
+class CMCanvasInputProxy : public QObject
 {
+    Q_OBJECT
 public:
-    CMCanvasInputProxy(CMCanvasControllerDeclarative* controller);
+    CMCanvasInputProxy(CMCanvasControllerDeclarative* controller, QObject* parent = 0);
     virtual ~CMCanvasInputProxy();
 
     void handleMouseMoveEvent(QGraphicsSceneMouseEvent* event);
@@ -18,6 +21,10 @@ public:
 
     bool updateCanvas() const;
     void setUpdateCanvas(bool newUpdate);
+
+Q_SIGNALS:
+    void nextPage();
+    void previousPage();
 
 private:
     class Private;

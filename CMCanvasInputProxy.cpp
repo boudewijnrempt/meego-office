@@ -14,10 +14,15 @@
 class CMCanvasInputProxy::Private
 {
 public:
-    Private()
-        : updateCanvas(true)
+    Private(CMCanvasInputProxy* qq)
+        : q(qq), updateCanvas(true)
     { }
     ~Private() {}
+    
+    CMCanvasInputProxy* q;
+    
+    void handlePinchGesture(QPinchGesture* pinch);
+    void handleSwipeGesture(QSwipeGesture* swipe);
 
     CMCanvasControllerDeclarative* canvasController;
     QGraphicsPixmapItem* scaleProxy;
@@ -26,8 +31,9 @@ public:
 
 };
 
-CMCanvasInputProxy::CMCanvasInputProxy(CMCanvasControllerDeclarative* canvas)
-    : d(new Private())
+CMCanvasInputProxy::CMCanvasInputProxy(CMCanvasControllerDeclarative* canvas, QObject* parent)
+    : QObject(parent)
+    , d(new Private(this))
 {
     d->canvasController = canvas;
     
@@ -67,7 +73,16 @@ void CMCanvasInputProxy::handleMouseMoveEvent(QGraphicsSceneMouseEvent* event)
 void CMCanvasInputProxy::handleGesture(QGestureEvent* event)
 {
     QPinchGesture* pinch = qobject_cast<QPinchGesture*>(event->gesture(Qt::PinchGesture));
+    QSwipeGesture* swipe = qobject_cast<QSwipeGesture*>(event->gesture(Qt::SwipeGesture));
     
+    if(pinch)
+        d->handlePinchGesture(pinch);
+    else if(swipe)
+        d->handleSwipeGesture(swipe);
+}
+
+void CMCanvasInputProxy::Private::handlePinchGesture(QPinchGesture* pinch)
+{
     if(!pinch)
         return;
     
@@ -75,36 +90,63 @@ void CMCanvasInputProxy::handleGesture(QGestureEvent* event)
     {
         case Qt::GestureStarted:
         {
-            d->updateCanvas = false;
+            updateCanvas = false;
             
             qreal zoomX, zoomY;
-            d->canvasController->zoomHandler()->zoom(&zoomX, &zoomY);
+            canvasController->zoomHandler()->zoom(&zoomX, &zoomY);
             
-            d->canvasController->setZoomMax(1.0 + (KoZoomMode::maximumZoom() - zoomX));
-            d->canvasController->setZoomMin(KoZoomMode::minimumZoom() / zoomX);
+            canvasController->setZoomMax(1.0 + (KoZoomMode::maximumZoom() - zoomX));
+            canvasController->setZoomMin(KoZoomMode::minimumZoom() / zoomX);
             
-            d->scaleProxy->setPixmap(QPixmap::grabWindow(QApplication::activeWindow()->winId(), d->canvasController->x(), d->canvasController->y(), d->canvasController->width(), d->canvasController->height()));
-            d->scaleProxy->setScale(1.0);
-            d->scaleProxy->setVisible(true);
-            d->canvasController->canvas()->canvasItem()->setVisible(false);
+            scaleProxy->setPixmap(QPixmap::grabWindow(QApplication::activeWindow()->winId(),
+                                                      canvasController->x(), canvasController->y(),
+                                                      canvasController->width(), canvasController->height()));
+            scaleProxy->setScale(1.0);
+            scaleProxy->setVisible(true);
+            canvasController->canvas()->canvasItem()->setVisible(false);
         }
         case Qt::GestureUpdated:
         {
-            d->scaleProxy->setTransformOriginPoint(pinch->centerPoint());
-            qreal newScale = d->scaleProxy->scale() + (pinch->scaleFactor() - pinch->lastScaleFactor());
-            if(newScale > d->scaleProxy->scale() && newScale > d->canvasController->zoomMax()) {
+            scaleProxy->setTransformOriginPoint(pinch->centerPoint());
+            qreal newScale = scaleProxy->scale() + (pinch->scaleFactor() - pinch->lastScaleFactor());
+            if(newScale > scaleProxy->scale() && newScale > canvasController->zoomMax()) {
                 break;
-            } else if(newScale < d->scaleProxy->scale() && newScale < d->canvasController->zoomMin()) {
+            } else if(newScale < scaleProxy->scale() && newScale < canvasController->zoomMin()) {
                 break;
             }
-            d->scaleProxy->setScale(d->scaleProxy->scale() + (pinch->scaleFactor() - pinch->lastScaleFactor()));
+            scaleProxy->setScale(scaleProxy->scale() + (pinch->scaleFactor() - pinch->lastScaleFactor()));
             break;
         }
         case Qt::GestureFinished:
-            d->scaleProxy->setVisible(false);
-            d->canvasController->canvas()->canvasItem()->setVisible(true);
-            d->canvasController->zoomBy(pinch->centerPoint().toPoint(), d->scaleProxy->scale());
-            d->updateCanvas = true;
+        {
+            scaleProxy->setVisible(false);
+            canvasController->canvas()->canvasItem()->setVisible(true);
+            canvasController->zoomBy(pinch->centerPoint().toPoint(), scaleProxy->scale());
+            updateCanvas = true;
+            break;
+        }
+        default:
+            // Do nothing
+            break;
+    }
+}
+
+void CMCanvasInputProxy::Private::handleSwipeGesture(QSwipeGesture* swipe)
+{
+    if(!swipe)
+        return;
+
+    switch(swipe->state())
+    {
+        case Qt::GestureFinished:
+        {
+            if (swipe->horizontalDirection() == QSwipeGesture::Left
+                || swipe->verticalDirection() == QSwipeGesture::Up)
+                emit q->previousPage();
+            else
+                emit q->nextPage();
+        }
+        default:
             break;
     }
 }

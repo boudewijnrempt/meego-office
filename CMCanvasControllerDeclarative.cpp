@@ -28,7 +28,7 @@ class CMCanvasControllerDeclarative::Private
 {
 public:
     Private(CMCanvasControllerDeclarative* qq)
-        : q(qq),
+        : inputProxy( new CMCanvasInputProxy(qq)), q(qq),
         canvas(0), zoomHandler(0), zoomController(0),
         vastScrollingFactor(0.f),
         minX(0), minY(0), maxX(0), maxY(0),
@@ -36,8 +36,6 @@ public:
     { }
     ~Private() { }
 
-    void handleMouseMoveEvent(QGraphicsSceneMouseEvent* event);
-    void handleGesture(QGestureEvent* event);
     void updateMinMax();
     void updateCanvasSize();
     void checkBounce(const QPoint& offset);
@@ -367,21 +365,6 @@ void CMCanvasControllerDeclarative::onHeightChanged()
 void CMCanvasControllerDeclarative::onWidthChanged()
 {
     d->updateCanvasSize();
-}
-
-void CMCanvasControllerDeclarative::Private::handleMouseMoveEvent(QGraphicsSceneMouseEvent* event)
-{
-    QPointF prev = event->lastPos();
-    QPointF cur = event->pos();
-
-    force.setX(prev.x() - cur.x());
-    force.setY(prev.y() - cur.y());
-
-    q->scrollContentsBy(force.x(), force.y());
-}
-
-void CMCanvasControllerDeclarative::Private::handleGesture(QGestureEvent* event)
-{
 }
 
 void CMCanvasControllerDeclarative::Private::updateMinMax()

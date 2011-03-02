@@ -83,16 +83,16 @@ Item {
             onTriggered: loader.item.zoomOut()
         }
         Button {
-            id: zoomOriginal;
+            id: zoomOriginal
             image: "image://icon/zoom-original"
             text: qsTr("Original Size")
             width: imageWidth
             height: imageHeight
 
-            color: "#eeeeee";
+            color: "#eeeeee"
 
-            imageWidth: 32;
-            imageHeight: 32;
+            imageWidth: 32
+            imageHeight: 32
 
             opacity: (loader.item && loader.item.resetZoom) ? 1 : 0
             onTriggered: loader.item.resetZoom()
@@ -119,15 +119,30 @@ Item {
             height: imageWidth
             width: imageHeight
  
-            color: "#eeeeee";
+            color: "#eeeeee"
  
-            imageWidth: 32;
-            imageHeight: 32;
+            imageWidth: 32
+            imageHeight: 32
  
-            labelPosition: 2;
+            labelPosition: 2
             opacity: (loader.item && loader.item.previousSheet) ? 1 : 0
             //enabled: document.hasNextSheet;
             onTriggered: loader.item.nextSheet()
+        }
+        Button {
+            id: goFullScreen
+            image: "image://icon/view-fullscreen"
+            text: qsTr("FullScreen")
+            height: imageWidth
+            width: imageHeight
+ 
+            color: "#eeeeee";
+ 
+            imageWidth: 32
+            imageHeight: 32
+ 
+            labelPosition: 2
+            onTriggered: window.toggleFullScreen()
         }
     }
 

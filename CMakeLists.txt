@@ -50,8 +50,6 @@ set(calligramobile_ui_components_SRCS
     components/AboutDialog.qml
     components/ActionBar.qml
     components/Button.qml
-    components/OpenFileDialog.qml
-    components/OpenFileView.qml
     components/TitleBar.qml
 )
 

@@ -1,7 +1,5 @@
 AboutDialog 1.0 AboutDialog.qml
 Button 1.0 Button.qml
-OpenFileDialog 1.0 OpenFileDialog.qml
-OpenFileView 1.0 OpenFileView.qml
 TitleBar 1.0 TitleBar.qml
 ActionBar 1.0 ActionBar.qml
 

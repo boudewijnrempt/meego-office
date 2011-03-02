@@ -13,45 +13,20 @@ Item {
 
         rightArea: [
             // ## The two buttons below should become a popup component
-            Button {
+            ToolButton {
                 id: groupByName
-                height: imageHeight
-                width: imageWidth
-
-                labelPosition: 0
-
-                onTriggered: model.groupBy(DocumentListModel.GroupByName)
-
                 image: "image://icon/bookmarks-organize";
-                imageWidth: 32
-                imageHeight: 32
+                onClicked: model.groupBy(DocumentListModel.GroupByName)
             },
-
-            Button {
+            ToolButton {
                 id: groupByDocType
-                height: imageHeight
-                width: imageWidth
-
-                labelPosition: 0
-
-                onTriggered: model.groupBy(DocumentListModel.GroupByDocType)
-
                 image: "image://icon/view-list-details";
-                imageWidth: 32
-                imageHeight: 32
+                onClicked: model.groupBy(DocumentListModel.GroupByDocType)
             },
-            Button {
+            ToolButton {
                 id: aboutButton
-                height: imageHeight
-                width: imageWidth
-
-                labelPosition: 0
-
-                onTriggered: aboutDialog.opacity = 1;
-
                 image: "image://icon/help-about";
-                imageWidth: 32
-                imageHeight: 32
+                onClicked: aboutDialog.opacity = 1;
             }
             ]
     }

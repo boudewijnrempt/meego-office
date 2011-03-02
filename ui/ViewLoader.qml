@@ -28,18 +28,10 @@ Item {
         id: titleBar
         width: root.width
 
-        leftArea: Button {
+        leftArea: ToolButton {
             id: backButton
-            height: imageHeight
-            width: imageWidth
-
-            labelPosition: 0
-
-            onTriggered: root.viewingFinished()
-
             image: "image://icon/draw-arrow-back";
-            imageWidth: 32
-            imageHeight: 32
+            onClicked: root.viewingFinished()
         }
     }
 
@@ -56,93 +48,32 @@ Item {
         width: parent.width
         anchors.bottom: parent.bottom
 
-        Button {
+        ToolButton {
             image: "image://icon/zoom-in"
-            text: qsTr("Zoom In")
-            height: imageHeight
-            width: imageWidth
-
-            color: "#eeeeee"
-
-            imageWidth: 32
-            imageHeight: 32
-
-            onTriggered: loader.item.zoomIn()
+            onClicked: loader.item.zoomIn()
         }
-        Button {
+        ToolButton {
             image: "image://icon/zoom-out"
-            text: "Zoom Out";
-            width: imageWidth
-            height: imageHeight
-
-            color: "#eeeeee"
-
-            imageWidth: 32
-            imageHeight: 32
-
-            onTriggered: loader.item.zoomOut()
+            onClicked: loader.item.zoomOut()
         }
-        Button {
-            id: zoomOriginal
+        ToolButton {
             image: "image://icon/zoom-original"
-            text: qsTr("Original Size")
-            width: imageWidth
-            height: imageHeight
-
-            color: "#eeeeee"
-
-            imageWidth: 32
-            imageHeight: 32
-
             opacity: (loader.item && loader.item.resetZoom) ? 1 : 0
-            onTriggered: loader.item.resetZoom()
+            onClicked: loader.item.resetZoom()
         }
-        Button {
-            id: goPrevious
+        ToolButton {
             image: "image://icon/go-previous"
-            text: qsTr("Previous")
-            height: imageWidth
-            width: imageHeight
- 
-            color: "#eeeeee"
- 
-            imageWidth: 32
-            imageHeight: 32
             opacity: (loader.item && loader.item.previousSheet) ? 1 : 0
-            //enabled: document.hasPreviousSheet
-            onTriggered: loader.item.previousSheet()
+            onClicked: loader.item.previousSheet()
         }
-        Button {
-            id: goNext;
+        ToolButton {
             image: "image://icon/go-next"
-            text: qsTr("Next")
-            height: imageWidth
-            width: imageHeight
- 
-            color: "#eeeeee"
- 
-            imageWidth: 32
-            imageHeight: 32
- 
-            labelPosition: 2
             opacity: (loader.item && loader.item.previousSheet) ? 1 : 0
-            //enabled: document.hasNextSheet;
-            onTriggered: loader.item.nextSheet()
+            onClicked: loader.item.nextSheet()
         }
-        Button {
-            id: goFullScreen
+        ToolButton {
             image: "image://icon/view-fullscreen"
-            text: qsTr("FullScreen")
-            height: imageWidth
-            width: imageHeight
- 
-            color: "#eeeeee";
- 
-            imageWidth: 32
-            imageHeight: 32
- 
-            labelPosition: 2
-            onTriggered: window.toggleFullScreen()
+            onClicked: window.toggleFullScreen()
         }
     }
 

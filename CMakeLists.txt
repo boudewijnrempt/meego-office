@@ -51,6 +51,7 @@ set(calligramobile_ui_components_SRCS
     components/ActionBar.qml
     components/Button.qml
     components/TitleBar.qml
+    components/ToolButton.qml
 )
 
 set(calligramobile_ui_SRCS

@@ -1,5 +1,5 @@
 AboutDialog 1.0 AboutDialog.qml
+ActionBar 1.0 ActionBar.qml
 Button 1.0 Button.qml
 TitleBar 1.0 TitleBar.qml
-ActionBar 1.0 ActionBar.qml
-
+ToolButton 1.0 ToolButton.qml

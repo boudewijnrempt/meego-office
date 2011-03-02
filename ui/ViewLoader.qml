@@ -31,6 +31,7 @@ Item {
         leftArea: ToolButton {
             id: backButton
             image: "image://icon/draw-arrow-back";
+            borderPosition: "right"
             onClicked: root.viewingFinished()
         }
     }

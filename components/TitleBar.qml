@@ -26,7 +26,7 @@ Rectangle {
         anchors.left: root.left
         anchors.leftMargin: 10
         anchors.verticalCenter: parent.verticalCenter
-        spacing: 10
+        spacing: 5
     }
 
     Row {
@@ -34,7 +34,7 @@ Rectangle {
         anchors.right: root.right
         anchors.rightMargin: 10
         anchors.verticalCenter: parent.verticalCenter
-        spacing: 10
+        spacing: 5
     }
 }
 

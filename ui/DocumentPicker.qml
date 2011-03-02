@@ -16,16 +16,19 @@ Item {
             ToolButton {
                 id: groupByName
                 image: "image://icon/bookmarks-organize";
+                borderPosition: "left"
                 onClicked: model.groupBy(DocumentListModel.GroupByName)
             },
             ToolButton {
                 id: groupByDocType
                 image: "image://icon/view-list-details";
+                borderPosition: "left"
                 onClicked: model.groupBy(DocumentListModel.GroupByDocType)
             },
             ToolButton {
                 id: aboutButton
                 image: "image://icon/help-about";
+                borderPosition: "left"
                 onClicked: aboutDialog.opacity = 1;
             }
             ]

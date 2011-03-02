@@ -1,9 +1,8 @@
 #include "CMMainWindow.h"
 
-#include <QtDeclarative/QDeclarativeView>
-#include <QtDeclarative/QDeclarativeEngine>
-#include <QtDeclarative/QDeclarativeContext>
-#include <QtDeclarative/qdeclarative.h>
+#include <QtDeclarative>
+
+#include <QDir>
 
 #ifdef WITH_QT_SYSTEMINFO
 #include <QtCore/QTimer>
@@ -18,8 +17,6 @@
 
 #include "CMIconImageProvider.h"
 #include "CMCanvasControllerDeclarative.h"
-#include "CMRecentFilesModel.h"
-#include "CMFileSystemModel.h"
 #include <KMessageBox>
 
 class CMMainWindow::Private
@@ -49,9 +46,6 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
         d->engine->addImportPath(path);
     }
     d->engine->addImageProvider("icon", new CMIconImageProvider);
-    qmlRegisterType<CMCanvasControllerDeclarative>("org.calligra.mobile", 1, 0, "CanvasControllerDeclarative");
-    qmlRegisterType<CMRecentFilesModel>("org.calligra.mobile", 1, 0, "RecentFilesModel");
-    qmlRegisterType<CMFileSystemModel>("org.calligra.mobile", 1, 0, "FileSystemModel");
     d->view->rootContext()->setContextProperty("KOFFICE_VERSION_STRING", KOFFICE_VERSION_STRING);
     d->view->rootContext()->setContextProperty("window", this);
 

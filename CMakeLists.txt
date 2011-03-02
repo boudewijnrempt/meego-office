@@ -33,8 +33,6 @@ set(calligramobile_SRCS
     CMCanvasControllerDeclarative.cpp
     CMIconImageProvider.cpp
     CMMainWindow.cpp
-    CMRecentFilesModel.cpp
-    CMFileSystemModel.cpp
     CMDocumentListModel.cpp
 
     words/CMWordsCanvas.cpp
@@ -67,7 +65,6 @@ set(calligramobile_headers
     CMCanvasControllerDeclarative.h
     CMIconImageProvider.h
     CMMainWindow.h
-    CMRecentFilesModel.h
     calligramobile_export.h
     CMDocumentListModel.h
 

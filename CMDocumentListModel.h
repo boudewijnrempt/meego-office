@@ -45,11 +45,15 @@ public:
 
 public slots:
     void startSearch();
+    void stopSearch();
     void addDocument(const CMDocumentListModel::DocumentInfo &info);
     void addRecent(int index);
 
 public:
     Q_INVOKABLE void groupBy(GroupBy role);
+
+private slots:
+    void searchFinished();
 
 private:
     void relayout();
@@ -68,12 +72,20 @@ class SearchThread : public QObject, public QRunnable
 {
     Q_OBJECT
 public:
-    SearchThread(QObject *parent = 0);
+    SearchThread(const QHash<QString, QString> &docTypes, QObject *parent = 0);
     ~SearchThread();
+
     void run();
+    
+    void abort() { m_abort = true; }
 
 signals:
     void documentFound(const CMDocumentListModel::DocumentInfo &);
+    void finished();
+
+private:
+    bool m_abort;
+    QHash<QString, QString> m_docTypes;
 };
 
 #endif // CALLIGRAMOBILE_DOCUMENTLISTMODEL_H

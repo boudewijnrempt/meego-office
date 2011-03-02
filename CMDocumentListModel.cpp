@@ -11,7 +11,8 @@
 #include <KDE/KSharedConfig>
 #include <KDE/KConfigGroup>
 
-SearchThread::SearchThread(QObject *parent) : QObject(parent)
+SearchThread::SearchThread(const QHash<QString, QString> &docTypes, QObject *parent) 
+    : QObject(parent), m_abort(false), m_docTypes(docTypes)
 {
 }
 
@@ -23,23 +24,24 @@ void SearchThread::run()
 {
     QString documentsDir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
     QStringList nameFilters;
-    const QHash<QString, QString> &docTypes = static_cast<CMDocumentListModel *>(parent())->m_docTypes;
-    for (QHash<QString, QString>::const_iterator it = docTypes.constBegin(); it != docTypes.constEnd(); ++it)
+    for (QHash<QString, QString>::const_iterator it = m_docTypes.constBegin(); it != m_docTypes.constEnd(); ++it)
         nameFilters.append("*." + it.key());
 
     QDirIterator it(documentsDir, nameFilters, QDir::Files, QDirIterator::Subdirectories);
-    while (it.hasNext()) {
+    while (it.hasNext() && !m_abort) {
         it.next();
         CMDocumentListModel::DocumentInfo info;
         info.fileName = it.fileName();
         info.filePath = it.filePath();
-        info.docType = docTypes.value(info.fileName.right(3));
+        info.docType = m_docTypes.value(info.fileName.right(3));
         emit documentFound(info);
     }
+
+    emit finished();
 }
 
 CMDocumentListModel::CMDocumentListModel(QObject *parent)
-    : QAbstractListModel(parent), m_searchThread(0), m_groupBy(GroupByName)
+    : QAbstractListModel(parent), m_groupBy(GroupByName)
 {
     qRegisterMetaType<DocumentInfo>();
 
@@ -62,6 +64,8 @@ CMDocumentListModel::CMDocumentListModel(QObject *parent)
 
 CMDocumentListModel::~CMDocumentListModel()
 {
+    stopSearch();
+
     KConfigGroup group(KGlobal::config(), "Recent Files");
     int index = 0;
     foreach(const DocumentInfo &info, m_recentDocuments) {
@@ -77,10 +81,24 @@ void CMDocumentListModel::startSearch()
         qDebug() << "Already searching or finished search";
         return;
     }
-    m_searchThread = new SearchThread(this);
+    m_searchThread = new SearchThread(m_docTypes);
     connect(m_searchThread, SIGNAL(documentFound(CMDocumentListModel::DocumentInfo)), this, SLOT(addDocument(CMDocumentListModel::DocumentInfo)));
-    m_searchThread->setAutoDelete(true);
+    connect(m_searchThread, SIGNAL(finished()), this, SLOT(searchFinished()));
+    m_searchThread->setAutoDelete(false);
     QThreadPool::globalInstance()->start(m_searchThread);
+}
+
+void CMDocumentListModel::stopSearch()
+{
+    if (m_searchThread)
+        m_searchThread->abort();
+}
+
+void CMDocumentListModel::searchFinished()
+{
+    Q_ASSERT(m_searchThread);
+    delete m_searchThread;
+    m_searchThread = 0;
 }
 
 static bool fileNameLessThan(const CMDocumentListModel::DocumentInfo &info1, const CMDocumentListModel::DocumentInfo &info2)

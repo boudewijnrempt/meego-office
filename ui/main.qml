@@ -10,7 +10,8 @@ Rectangle {
 
     DocumentPicker {
         id: documentPicker
-        anchors.fill: parent
+        width: root.width
+        height: root.height
 
         onSelected: {
             model.addRecent(index)
@@ -21,7 +22,8 @@ Rectangle {
     
     ViewLoader {
         id: viewLoader
-        anchors.fill: parent
+        width: root.width
+        height: root.height
 
         onViewingFinished: root.state = "showingDocumentPicker"
     }
@@ -31,11 +33,11 @@ Rectangle {
             name: "showingDocumentPicker"
             PropertyChanges {
                 target: documentPicker
-                opacity: 1
+                x: 0
             }
             PropertyChanges {
                 target: viewLoader
-                scale: 0
+                x: root.width
             }
             StateChangeScript {
                 name: "unloadViewer"
@@ -46,11 +48,11 @@ Rectangle {
             name: "showingDocumentViewer"
             PropertyChanges {
                 target: documentPicker
-                opacity: 0
+                x: -root.width
             }
             PropertyChanges {
                 target: viewLoader
-                scale: 1
+                x: 0
             }
         }
             ]
@@ -59,16 +61,14 @@ Rectangle {
         Transition {
             to: "showingDocumentPicker"
             SequentialAnimation {
-                PropertyAction { target: documentPicker; property: "opacity" }
-                NumberAnimation { target: viewLoader; property: "scale"; duration: 400 }
+                NumberAnimation { property: "x"; duration: 400 }
                 ScriptAction { scriptName: "unloaderViewer" }
             }
         },
         Transition {
             to: "showingDocumentViewer"
             SequentialAnimation {
-                NumberAnimation { target: viewLoader; property: "scale"; duration: 400 }
-                PropertyAction { target: documentPicker; property: "opacity"  }
+                NumberAnimation { property: "x"; duration: 400 }
             }
         }
             ]

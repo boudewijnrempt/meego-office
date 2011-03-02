@@ -36,7 +36,7 @@ Rectangle {
         State {
             name: "pressed"
             when: mouseArea.pressed
-            PropertyChanges { target: root; color: "blue"; }
+            PropertyChanges { target: root; color: "#ccd8ff"; }
         }
     ]
 }

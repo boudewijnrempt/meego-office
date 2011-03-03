@@ -65,6 +65,7 @@ set(calligramobile_ui_SRCS
     ui/main.qml
     ui/AboutDialog.qml
     ui/DocumentPicker.qml
+    ui/SearchBar.qml
     ui/ViewLoader.qml
 )
 

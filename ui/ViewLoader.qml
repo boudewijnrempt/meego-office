@@ -39,15 +39,31 @@ Item {
         loadingScreenProgressBar.progress = progress;
     }
 
+    SearchBar {
+        id: searchBar
+        width: root.width
+        y: -searchBar.height
+        Behavior on y { NumberAnimation { duration: 200 } }
+        onSearch: console.log('search and highlight ' + str)
+        onSearchNext: console.log('scroll to next result')
+        onFinished: y = -searchBar.height
+    }
+
     TitleBar {
         id: titleBar
         width: root.width
+        anchors.top: searchBar.bottom
 
         leftArea: ToolButton {
             id: backButton
             image: "image://icon/draw-arrow-back";
             borderPosition: "right"
             onClicked: root.viewingFinished();
+        }
+
+        MouseArea { 
+            anchors.fill: parent
+            onClicked: searchBar.y = 0
         }
     }
 

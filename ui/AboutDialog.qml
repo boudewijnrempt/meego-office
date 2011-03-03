@@ -1,4 +1,5 @@
 import QtQuick 1.0
+import org.calligra.mobile 1.0
 
 Item {
     id: base;

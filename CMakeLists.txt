@@ -47,7 +47,6 @@ set(calligramobile_SRCS
 
 set(calligramobile_ui_components_SRCS
     components/qmldir
-    components/AboutDialog.qml
     components/Action.qml
     components/ActionBar.qml
     components/Button.qml
@@ -62,6 +61,7 @@ set(calligramobile_ui_components_RES
 
 set(calligramobile_ui_SRCS
     ui/main.qml
+    ui/AboutDialog.qml
     ui/DocumentPicker.qml
     ui/ViewLoader.qml
 )

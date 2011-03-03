@@ -68,13 +68,8 @@ Item {
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter;
-                text: "OK";
-
-                onTriggered: base.opacity = 0;
-
-                image: "image://icon/dialog-ok";
-                imageWidth: 32;
-                imageHeight: 32;
+                text: qsTr("OK")
+                onClicked: base.opacity = 0;
             }
         }
     }

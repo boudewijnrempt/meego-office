@@ -75,7 +75,7 @@ Item {
         section.property: "sectionCategory"
         section.criteria: ViewSection.FullString
         section.delegate : Rectangle {
-            width: parent.width
+            width: documentListView.width
             height: text.height + 5
             color: "#dfbd9f"
 

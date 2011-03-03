@@ -26,7 +26,7 @@ Item {
         width: parent.width / 2;
         height: about_dialog_content.height + 100;
 
-        border.color: "#000000";
+        border.color: "#fefefe";
         border.width: 2;
 
         radius: 5;

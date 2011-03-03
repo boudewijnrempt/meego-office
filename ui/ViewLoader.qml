@@ -46,7 +46,10 @@ Item {
         Behavior on y { NumberAnimation { duration: 200 } }
         onSearch: console.log('search and highlight ' + str)
         onSearchNext: console.log('scroll to next result')
-        onFinished: y = -searchBar.height
+        onFinished: hide()
+
+        function show() { y = 0 }
+        function hide() { y = -searchBar.height }
     }
 
     TitleBar {
@@ -58,13 +61,10 @@ Item {
             id: backButton
             image: "image://icon/draw-arrow-back";
             borderPosition: "right"
-            onClicked: root.viewingFinished();
+            onClicked: { searchBar.hide(); root.viewingFinished(); }
         }
 
-        MouseArea { 
-            anchors.fill: parent
-            onClicked: searchBar.y = 0
-        }
+        onPullDownGesture: searchBar.show()
     }
 
     Loader {

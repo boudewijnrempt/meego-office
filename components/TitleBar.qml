@@ -5,6 +5,7 @@ Rectangle {
     property alias title: title.text
     property alias leftArea: leftRow.children
     property alias rightArea: rightRow.children
+    signal pullDownGesture()
 
     height: title.height + 20
     gradient: Gradient {
@@ -14,6 +15,11 @@ Rectangle {
     }
 
     Rectangle { id: topBorder; color: "#f9f9f9"; width: root.width; height: 1 }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: root.pullDownGesture()
+    }
 
     Text {
         id: title

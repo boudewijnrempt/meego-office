@@ -200,6 +200,7 @@ void CMDocumentListModel::relayout()
     }
     m_documentInfos = newList;
     emit layoutChanged();
+    reset(); // ## Required for <= Qt 4.7.2
 }
 
 void CMDocumentListModel::addRecent(int index)

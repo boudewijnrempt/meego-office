@@ -5,6 +5,7 @@ Rectangle {
     signal clicked()
     property alias image: icon.source
     property string borderPosition
+    property Item menu
 
     width: icon.width + 10
     height: icon.height 
@@ -13,7 +14,13 @@ Rectangle {
     MouseArea {
         id: mouseArea
         anchors.fill: parent
-        onClicked: root.clicked()
+        onClicked: {
+            root.clicked()
+            if (root.menu) {
+                var pos = root.mapToItem(screen, root.width/2, root.height)
+                root.menu.show(pos.x - root.menu.contentWidth/2, pos.y) // ## might fall off the screen
+            }
+        }
     }
 
     Rectangle { 

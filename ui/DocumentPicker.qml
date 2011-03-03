@@ -12,13 +12,12 @@ Item {
         title: qsTr("Calligra Mobile")
 
         rightArea: [
-            // ## The two buttons below should become a popup component
             ToolButton {
                 id: groupBy
                 image: "image://icon/bookmarks-organize";
                 borderPosition: "left"
 
-                Menu {
+                menu: Menu {
                     id: menu
                     parent: root
                     actions: [
@@ -26,10 +25,6 @@ Item {
                         Action { text: qsTr("Group By Type"); onTriggered: model.groupBy(DocumentListModel.GroupByDocType) }
                     ]
                 }
-                onClicked: {
-                    var pos = groupBy.mapToItem(root, groupBy.width/2, groupBy.height)
-                    menu.show(pos.x - menu.contentWidth/2, pos.y)
-                           }
             },
             ToolButton {
                 id: aboutButton
@@ -37,7 +32,7 @@ Item {
                 borderPosition: "left"
                 onClicked: aboutDialog.opacity = 1;
             }
-            ]
+        ]
     }
 
     ListView {

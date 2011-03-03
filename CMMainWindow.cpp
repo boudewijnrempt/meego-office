@@ -50,6 +50,7 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
     d->view->rootContext()->setContextProperty("window", this);
 
     d->view->setSource(QUrl(ui));
+    d->view->rootContext()->setContextProperty("screen", d->view->rootObject());
     d->view->setResizeMode(QDeclarativeView::SizeRootObjectToView);
     d->view->viewport()->grabGesture(Qt::PinchGesture);
 

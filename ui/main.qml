@@ -23,7 +23,8 @@ Rectangle {
 
         onSelected: {
             model.addRecent(index)
-            viewLoader.openFile(filePath) 
+            viewLoader.openFile(filePath)
+            viewLoader.state = "";
             root.state = "showingDocumentViewer"
         }
     }
@@ -62,8 +63,12 @@ Rectangle {
                 target: viewLoader
                 x: 0
             }
+            StateChangeScript {
+                name: "loadDocument";
+                script: viewLoader.loadDocument();
+            }
         }
-            ]
+    ]
 
     transitions: [
         Transition {
@@ -79,8 +84,10 @@ Rectangle {
             to: enabled ? "showingDocumentViewer" : ""
             SequentialAnimation {
                 NumberAnimation { property: "x"; duration: 400 }
+                PauseAnimation { duration: 100; }
+                ScriptAction { scriptName: "loadDocument"; }
             }
         }
-            ]
+    ]
 }
 

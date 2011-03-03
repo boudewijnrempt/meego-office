@@ -8,6 +8,9 @@
 #include <part/KWDocument.h>
 #include <part/KWCanvasItem.h>
 #include <part/KWViewModeNormal.h>
+#include <KoProgressUpdater.h>
+#include <CMProgressProxy.h>
+#include <QTimer>
 
 class CMWordsCanvas::Private
 {
@@ -50,18 +53,32 @@ QString CMWordsCanvas::file() const
 
 void CMWordsCanvas::setFile(const QString& file)
 {
-    KWDocument* doc = new KWDocument();
     d->file = file;
+}
+
+void CMWordsCanvas::loadDocument()
+{
+    emit progress(1);
+    
+    KWDocument* doc = new KWDocument();
     d->doc = doc;
+
+    CMProgressProxy *proxy = new CMProgressProxy(this);
+    doc->setProgressProxy(proxy);
+
+    connect(proxy, SIGNAL(valueChanged(int)), SIGNAL(progress(int)));
 
     setMargin(10);
 
-    if(!doc->openUrl(KUrl(file))) {
-        kWarning() << "Could not open file:" << file;
+    if(!doc->openUrl(KUrl(d->file))) {
+        kWarning() << "Could not open file:" << d->file;
         return;
     }
 
     d->updateCanvas();
+
+    emit progress(100);
+    emit completed();
 }
 
 void CMWordsCanvas::Private::updateCanvas()

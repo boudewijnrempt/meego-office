@@ -21,7 +21,22 @@ Item {
             return
         }
         loader.item.file = file
+        loadingScreenProgressBar.progress = -1;
+        loader.item.progress.connect(onProgress);
+        loader.item.completed.connect(onCompleted);
         titleBar.title = file
+    }
+
+    function loadDocument() {
+        loader.item.loadDocument();
+    }
+
+    function onCompleted() {
+        state = "loaded";
+    }
+
+    function onProgress(progress) {
+        loadingScreenProgressBar.progress = progress;
     }
 
     TitleBar {
@@ -32,7 +47,7 @@ Item {
             id: backButton
             image: "image://icon/draw-arrow-back";
             borderPosition: "right"
-            onClicked: root.viewingFinished()
+            onClicked: root.viewingFinished();
         }
     }
 
@@ -41,7 +56,29 @@ Item {
         anchors.top: titleBar.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.bottom: actionBar.bottom 
+        anchors.bottom: actionBar.bottom
+
+        opacity: 0;
+    }
+
+    Item {
+        id: loadingScreen;
+        anchors.top: titleBar.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: actionBar.bottom
+
+        Rectangle {
+            anchors.fill: parent;
+            color: "#000000";
+            opacity: 0.5;
+        }
+
+        ProgressBar {
+            id: loadingScreenProgressBar;
+            anchors.centerIn: parent;
+            width: 200;
+        }
     }
 
     ActionBar {
@@ -101,5 +138,20 @@ Item {
             anchors.fill: parent
         }
     }
+
+    states: [
+        State {
+            name: "loaded";
+            PropertyChanges { target: loader; opacity: 1; }
+            PropertyChanges { target: loadingScreen; opacity: 0; }
+        }
+    ]
+
+    transitions: [
+        Transition {
+            to: "loaded"
+            NumberAnimation { properties: "opacity"; duration: 500 }
+        }
+    ]
 }
 

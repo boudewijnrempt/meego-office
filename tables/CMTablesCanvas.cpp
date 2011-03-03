@@ -10,6 +10,8 @@
 #include <KoZoomController.h>
 #include <KoDocumentInfo.h>
 
+#include "CMProgressProxy.h"
+
 class CMTablesCanvas::Private
 {
 public:
@@ -67,12 +69,7 @@ QString CMTablesCanvas::file() const
 
 void CMTablesCanvas::setFile(const QString& file)
 {
-    Calligra::Tables::Doc* doc = new Calligra::Tables::Doc();
     d->file = file;
-    d->doc = doc;
-    d->updateCanvas();
-
-    QTimer::singleShot(10, this, SLOT(openFile()));
 }
 
 bool CMTablesCanvas::hasNextSheet() const
@@ -108,14 +105,28 @@ void CMTablesCanvas::updateDocumentSizePrivate(const QSize& size)
     zoomController()->setDocumentSize(size);
 }
 
-void CMTablesCanvas::openFile()
+void CMTablesCanvas::loadDocument()
 {
+    emit progress(1);
+    
+    Calligra::Tables::Doc* doc = new Calligra::Tables::Doc();
+    d->doc = doc;
+    d->updateCanvas();
+
+    CMProgressProxy *proxy = new CMProgressProxy(this);
+    doc->setProgressProxy(proxy);
+
+    connect(proxy, SIGNAL(valueChanged(int)), SIGNAL(progress(int)));
+    
     if(!d->doc->openUrl(KUrl(d->file))) {
         kWarning() << "Could not open file:" << d->file;
         return;
     }
 
     d->updateCanvas();
+
+    emit progress(100);
+    emit completed();
 }
 
 void CMTablesCanvas::Private::updateCanvas()

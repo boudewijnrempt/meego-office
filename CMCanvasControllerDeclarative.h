@@ -53,6 +53,10 @@ public Q_SLOTS:
     virtual void zoomIn(const QPoint& center = QPoint());
     virtual void zoomBy(const QPoint& center, qreal zoom);
     virtual void resetZoom();
+
+Q_SIGNALS:
+    void progress(int progress);
+    void completed();
     
 protected:
     virtual bool eventFilter(QObject* target, QEvent* event );

@@ -34,6 +34,7 @@ set(calligramobile_SRCS
     CMIconImageProvider.cpp
     CMMainWindow.cpp
     CMDocumentListModel.cpp
+    CMProgressProxy.cpp
 
     words/CMWordsCanvas.cpp
     
@@ -53,6 +54,7 @@ set(calligramobile_ui_components_SRCS
     components/Menu.qml
     components/TitleBar.qml
     components/ToolButton.qml
+    components/ProgressBar.qml
 )
 
 set(calligramobile_ui_components_RES

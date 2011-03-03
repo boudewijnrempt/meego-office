@@ -17,6 +17,9 @@ public:
     
     void setFile(const QString &file);
 
+public Q_SLOTS:
+    void loadDocument();
+
 private:
     class Private;
     Private * const d;

@@ -29,6 +29,7 @@ public:
 public Q_SLOTS:
     void nextSheet();
     void previousSheet();
+    void loadDocument();
 
 signals:
     void hasNextSheetChanged();
@@ -41,8 +42,6 @@ private:
     Private * const d;
 
 private Q_SLOTS:
-    void openFile();
-
     void updateDocumentSizePrivate(const QSize& size);
 };
 

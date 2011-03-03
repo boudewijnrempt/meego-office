@@ -14,16 +14,22 @@ Item {
         rightArea: [
             // ## The two buttons below should become a popup component
             ToolButton {
-                id: groupByName
+                id: groupBy
                 image: "image://icon/bookmarks-organize";
                 borderPosition: "left"
-                onClicked: model.groupBy(DocumentListModel.GroupByName)
-            },
-            ToolButton {
-                id: groupByDocType
-                image: "image://icon/view-list-details";
-                borderPosition: "left"
-                onClicked: model.groupBy(DocumentListModel.GroupByDocType)
+
+                Menu {
+                    id: menu
+                    parent: root
+                    actions: [
+                        Action { text: qsTr("Group By Name"); onTriggered: model.groupBy(DocumentListModel.GroupByName) },
+                        Action { text: qsTr("Group By Type"); onTriggered: model.groupBy(DocumentListModel.GroupByDocType) }
+                    ]
+                }
+                onClicked: {
+                    var pos = groupBy.mapToItem(root, groupBy.width/2, groupBy.height)
+                    menu.show(pos.x - menu.contentWidth/2, pos.y)
+                           }
             },
             ToolButton {
                 id: aboutButton

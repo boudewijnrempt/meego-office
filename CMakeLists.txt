@@ -48,11 +48,17 @@ set(calligramobile_SRCS
 set(calligramobile_ui_components_SRCS
     components/qmldir
     components/AboutDialog.qml
+    components/Action.qml
     components/ActionBar.qml
     components/Button.qml
+    components/Menu.qml
     components/TitleBar.qml
     components/ToolButton.qml
 )
+
+set(calligramobile_ui_components_RES
+    components/resources/arrowhead.png
+   )
 
 set(calligramobile_ui_SRCS
     ui/main.qml
@@ -112,5 +118,6 @@ set_target_properties(calligramobile PROPERTIES VERSION ${GENERIC_KOFFICE_LIB_VE
 install(TARGETS calligramobile ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${calligramobile_ui_SRCS} DESTINATION ${DATA_INSTALL_DIR}/calligramobile)
 install(FILES ${calligramobile_ui_components_SRCS} DESTINATION ${DATA_INSTALL_DIR}/calligramobile/org/calligra/mobile)
+install(FILES ${calligramobile_ui_components_RES} DESTINATION ${DATA_INSTALL_DIR}/calligramobile/org/calligra/mobile/resources)
 install(FILES ${calligramobile_headers} DESTINATION ${INCLUDE_INSTALL_DIR})
 

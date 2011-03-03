@@ -455,27 +455,34 @@ void CMCanvasControllerDeclarative::timerUpdate()
     QVector2D accel = totalForce / d->mass;
 
     position += d->velocity;
+
+    bool positionValid = true;
     if(position.x() < d->minX) {
         position.setX(position.x() * d->springCoeff);
+        positionValid = false;
     }
     if(position.y() < d->minY) {
         position.setY(position.y() * d->springCoeff);
+        positionValid = false;
     }
 
     if(position.x() > d->maxX) {
         float diff = position.x() - d->maxX;
         position.setX(d->maxX + diff * 0.9);
+        positionValid = false;
     }
     if(position.y() > d->maxY) {
         float diff = position.y() - d->maxY;
         position.setY(d->maxY + diff * 0.9);
+        positionValid = false;
     }
 
     d->velocity += accel * d->timeStep;
 
     resetDocumentOffset(QPoint(position.x(), position.y()));
 
-    if(d->velocity.x() > -0.1f && d->velocity.x() < 0.1f && d->velocity.y() > -0.1f && d->velocity.y() < 0.1f)
+
+    if(d->velocity.x() > -0.1f && d->velocity.x() < 0.1f && d->velocity.y() > -0.1f && d->velocity.y() < 0.1f && positionValid)
         d->timer->stop();
 }
 

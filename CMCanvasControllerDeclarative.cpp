@@ -474,5 +474,8 @@ void CMCanvasControllerDeclarative::timerUpdate()
     d->velocity += accel * d->timeStep;
 
     resetDocumentOffset(QPoint(position.x(), position.y()));
+
+    if(d->velocity.x() > -0.1f && d->velocity.x() < 0.1f && d->velocity.y() > -0.1f && d->velocity.y() < 0.1f)
+        d->timer->stop();
 }
 

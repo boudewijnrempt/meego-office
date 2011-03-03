@@ -203,27 +203,36 @@ void CMDocumentListModel::relayout()
     reset(); // ## Required for <= Qt 4.7.2
 }
 
+void CMDocumentListModel::addRecent(const QString &path)
+{
+    QFileInfo fi(path);
+    CMDocumentListModel::DocumentInfo info;
+    info.fileName = fi.fileName();
+    info.filePath = fi.absoluteFilePath();
+    info.docType = m_docTypes.value(info.fileName.right(3));
+    addRecent(info);
+}
+
 void CMDocumentListModel::addRecent(int index)
 {
     Q_ASSERT(index >= 0 && index < rowCount());
-    const int MAX_RECENT = 5;
-
     DocumentInfo info = (index >= m_recentDocuments.count()) ? m_documentInfos[index - m_recentDocuments.count()] : m_recentDocuments[index];
+    addRecent(info);
+}
 
+void CMDocumentListModel::addRecent(const DocumentInfo &info)
+{
+    const int MAX_RECENT = 5;
     int toRemove = -1;
-    if (index < m_recentDocuments.count()) {
-        toRemove = index;
-    } else {
-        int i;
-        for (i = 0; i < m_recentDocuments.count(); i++) {
-            if (info == m_recentDocuments[i]) {
-                toRemove = i;
-                break;
-            }
+    for (int i = 0; i < m_recentDocuments.count(); ++i) {
+        if (m_recentDocuments[i] == info) {
+            toRemove = i;
+            break;
         }
-        if (i == MAX_RECENT)
-            toRemove = MAX_RECENT-1;
     }
+
+    if (toRemove == -1 && m_recentDocuments.count() == MAX_RECENT)
+        toRemove = MAX_RECENT - 1;
 
     if (toRemove != -1) {
         beginRemoveRows(QModelIndex(), toRemove, toRemove);

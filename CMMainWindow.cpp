@@ -55,10 +55,10 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
 
     setCentralWidget(d->view);
 
-    if(!file.isEmpty()) {
+    if (!file.isEmpty()) {
         QString cleanFileName = QDir::cleanPath(QDir::current().absoluteFilePath(file));
         qDebug() << "Opening" << cleanFileName;
-        QDeclarativeExpression expr(d->view->rootContext(), d->view->rootObject(), QString("openFile('%1')").arg(cleanFileName));
+        QDeclarativeExpression expr(d->view->rootContext(), d->view->rootObject(), QString("open('%1')").arg(cleanFileName));
         expr.evaluate();
         if(expr.hasError())
             qDebug() << expr.error();

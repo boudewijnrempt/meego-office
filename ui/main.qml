@@ -8,6 +8,14 @@ Rectangle {
 
     state: "showingDocumentPicker"
 
+    function open(filePath) {
+        documentPicker.model.addRecent(filePath)
+        viewLoader.openFile(filePath)
+        showingDocumentViewerTransition.enabled = false
+        root.state = "showingDocumentViewer"
+        showingDocumentViewerTransition.enabled = true
+    }
+
     DocumentPicker {
         id: documentPicker
         width: root.width
@@ -66,7 +74,9 @@ Rectangle {
             }
         },
         Transition {
-            to: "showingDocumentViewer"
+            id: showingDocumentViewerTransition
+            property bool enabled: true // QTBUG-14488
+            to: enabled ? "showingDocumentViewer" : ""
             SequentialAnimation {
                 NumberAnimation { property: "x"; duration: 400 }
             }

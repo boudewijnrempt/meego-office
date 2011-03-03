@@ -48,6 +48,7 @@ public slots:
     void stopSearch();
     void addDocument(const CMDocumentListModel::DocumentInfo &info);
     void addRecent(int index);
+    void addRecent(const QString &path);
 
 public:
     Q_INVOKABLE void groupBy(GroupBy role);
@@ -57,6 +58,7 @@ private slots:
 
 private:
     void relayout();
+    void addRecent(const DocumentInfo &info);
 
     QHash<QString, QString> m_docTypes;
     QList<DocumentInfo> m_recentDocuments;

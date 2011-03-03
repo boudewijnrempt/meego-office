@@ -204,7 +204,7 @@ void CMDocumentListModel::relayout()
 
 void CMDocumentListModel::addRecent(int index)
 {
-    Q_ASSERT(index >= 0 && index < m_documentInfos.count());
+    Q_ASSERT(index >= 0 && index < rowCount());
     const int MAX_RECENT = 5;
 
     DocumentInfo info = (index >= m_recentDocuments.count()) ? m_documentInfos[index - m_recentDocuments.count()] : m_recentDocuments[index];

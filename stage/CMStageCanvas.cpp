@@ -6,6 +6,7 @@
 #include <part/KPrDocument.h>
 #include <part/KPrView.h>
 #include "CMStageDeclarativeView.h"
+#include "CMProgressProxy.h"
 
 class CMStageCanvas::Private
 {
@@ -49,20 +50,32 @@ QString CMStageCanvas::file() const
 
 void CMStageCanvas::setFile(const QString& file)
 {
-    KPrDocument* doc = new KPrDocument(0, 0);
-    
     d->file = file;
+}
+
+void CMStageCanvas::loadDocument()
+{
+    emit progress(1);
+    KPrDocument* doc = new KPrDocument(0, 0);
     d->doc = doc;
     d->updateCanvas();
 
-    if(!doc->openUrl(KUrl(file))) {
-        kWarning() << "Could not open file:" << file;
+    CMProgressProxy *proxy = new CMProgressProxy(this);
+    doc->setProgressProxy(proxy);
+
+    connect(proxy, SIGNAL(valueChanged(int)), SIGNAL(progress(int)));
+
+    if(!doc->openUrl(KUrl(d->file))) {
+        kWarning() << "Could not open file:" << d->file;
         return;
     }
 
     setMargin(10);
     d->view->setActivePage(d->doc->pageByIndex(0, false));
     d->updateCanvas();
+
+    emit progress(100);
+    emit completed();
 }
 
 void CMStageCanvas::Private::updateCanvas()

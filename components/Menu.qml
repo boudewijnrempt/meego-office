@@ -1,4 +1,4 @@
-import QtQuick 1.1
+import QtQuick 1.0
 
 Item {
     id: root
@@ -40,7 +40,7 @@ Item {
             delegate: Text {
                 width: ListView.view.width
                 text: "  " + model.modelData.text
-                height: implicitHeight + 15
+                height: 30 // ## implicitHeight + 15
                 verticalAlignment: Text.AlignVCenter
 
                 Rectangle {

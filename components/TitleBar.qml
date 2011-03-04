@@ -21,9 +21,11 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         drag.target: root.pullDownGestureTarget
-        drag.axis: Drag.YAxis
+        drag.axis: Drag.XAndYAxis
         drag.minimumY: root.pullDownGestureTarget ? -root.pullDownGestureTarget.height : 0
         drag.maximumY: 0
+        drag.minimumX: 0
+        drag.maximumX: 0
         onReleased: root.pullDownGestureFinished()
         z: 1
     }

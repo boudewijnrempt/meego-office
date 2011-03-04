@@ -24,7 +24,6 @@ Rectangle {
         onSelected: {
             model.addRecent(index)
             viewLoader.openFile(filePath)
-            viewLoader.state = "";
             root.state = "showingDocumentViewer"
         }
     }
@@ -34,7 +33,10 @@ Rectangle {
         width: root.width
         height: root.height
 
-        onViewingFinished: root.state = "showingDocumentPicker"
+        onViewingFinished: {
+            viewLoader.state = "";
+            root.state = "showingDocumentPicker"
+        }
     }
 
     states: [

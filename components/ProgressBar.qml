@@ -61,6 +61,7 @@ Rectangle {
             name: "undefined";
             when: progress == -1;
             PropertyChanges { target: undefinedAnimation; running: true; }
+            PropertyChanges { target: slider; width: base.width / 10; }
         }
     ]
 }

@@ -21,7 +21,6 @@ Item {
             return
         }
         loader.item.file = file
-        loadingScreenProgressBar.progress = -1;
         loader.item.progress.connect(onProgress);
         loader.item.completed.connect(onCompleted);
         titleBar.title = file
@@ -33,6 +32,7 @@ Item {
 
     function onCompleted() {
         state = "loaded";
+        loadingScreenProgressBar.progress = -1;
     }
 
     function onProgress(progress) {

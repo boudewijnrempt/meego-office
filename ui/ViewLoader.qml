@@ -64,7 +64,13 @@ Item {
             onClicked: { searchBar.hide(); root.viewingFinished(); }
         }
 
-        onPullDownGesture: searchBar.show()
+        pullDownGestureTarget: searchBar
+        onPullDownGestureFinished: {
+            if (searchBar.y+searchBar.height >= searchBar.height/2)
+                searchBar.show()
+            else
+                searchBar.hide()
+        }
     }
 
     Loader {

@@ -5,7 +5,9 @@ Rectangle {
     property alias title: title.text
     property alias leftArea: leftRow.children
     property alias rightArea: rightRow.children
-    signal pullDownGesture()
+
+    property Item pullDownGestureTarget
+    signal pullDownGestureFinished()
 
     height: title.height + 20
     gradient: Gradient {
@@ -18,7 +20,11 @@ Rectangle {
 
     MouseArea {
         anchors.fill: parent
-        onClicked: root.pullDownGesture()
+        drag.target: root.pullDownGestureTarget
+        drag.axis: Drag.YAxis
+        drag.minimumY: root.pullDownGestureTarget ? -root.pullDownGestureTarget.height : 0
+        drag.maximumY: 0
+        onReleased: root.pullDownGestureFinished()
     }
 
     Text {

@@ -25,12 +25,14 @@ Rectangle {
         drag.minimumY: root.pullDownGestureTarget ? -root.pullDownGestureTarget.height : 0
         drag.maximumY: 0
         onReleased: root.pullDownGestureFinished()
+        z: 1
     }
 
     Text {
         id: title
         anchors.centerIn: parent
         font.pixelSize: 14
+        z: 0
     }
 
     Row {
@@ -39,6 +41,7 @@ Rectangle {
         anchors.leftMargin: 10
         anchors.verticalCenter: parent.verticalCenter
         spacing: 5
+        z: 2
     }
 
     Row {
@@ -47,6 +50,7 @@ Rectangle {
         anchors.rightMargin: 10
         anchors.verticalCenter: parent.verticalCenter
         spacing: 5
+        z: 2
     }
 }
 

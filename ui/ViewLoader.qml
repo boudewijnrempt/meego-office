@@ -26,6 +26,23 @@ Item {
         titleBar.title = file
     }
 
+    state: "normal"
+
+    states: [
+        State {
+            name: "normal"
+            PropertyChanges { target: searchBar; y: -searchBar.height }
+            PropertyChanges { target: actionBar; y: root.height-actionBar.height }
+            StateChangeScript { script: window.fullScreen = false }
+        },
+        State {
+            name: "fullScreen"
+            PropertyChanges { target: searchBar; y: -(searchBar.height+titleBar.height) }
+            PropertyChanges { target: actionBar; y: root.height }
+            StateChangeScript { script: window.fullScreen = true }
+        }
+    ]
+
     function loadDocument() {
         loader.item.loadDocument();
     }
@@ -123,7 +140,7 @@ Item {
     ActionBar {
         id: actionBar
         width: parent.width
-        anchors.bottom: parent.bottom
+        y: parent.height - actionBar.height
 
         ToolButton {
             image: "image://icon/zoom-in"
@@ -150,7 +167,7 @@ Item {
         }
         ToolButton {
             image: window.fullScreen ? "image://icon/view-restore" : "image://icon/view-fullscreen"
-            onClicked: window.fullScreen = !window.fullScreen
+            onClicked: root.state = window.fullScreen ? "normal" : "fullScreen"
         }
     }
 
@@ -175,6 +192,35 @@ Item {
         StageCanvas {
             id: document
             anchors.fill: parent
+        }
+    }
+
+    MouseArea {
+        id: fullScreenClickTracker
+        enabled: root.state == "fullScreen"
+        anchors.fill: parent
+        onPressed: {
+            mouse.accepted = false
+            restoreButton.opacity = 1 
+            autoHideTimer.restart()
+        }
+
+        ToolButton {
+            id: restoreButton
+            opacity: 0
+            image: "image://icon/view-restore"
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            Behavior on opacity { NumberAnimation { duration: 200 } }
+            onClicked: { opacity = 0; autoHideTimer.stop(); root.state = "normal" }
+
+            Timer {
+                id: autoHideTimer
+                interval: 5000
+                repeat: false
+                running: false
+                onTriggered: restoreButton.opacity = 0
+            }
         }
     }
 }

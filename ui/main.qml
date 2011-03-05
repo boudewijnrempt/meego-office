@@ -34,7 +34,6 @@ Rectangle {
         height: root.height
 
         onViewingFinished: {
-            viewLoader.state = "";
             root.state = "showingDocumentPicker"
         }
     }

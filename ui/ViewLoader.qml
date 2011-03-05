@@ -21,22 +21,13 @@ Item {
             return
         }
         loader.item.file = file
-        loader.item.progress.connect(onProgress);
-        loader.item.completed.connect(onCompleted);
+        loader.item.progress.connect(centralView.onProgress);
+        loader.item.completed.connect(centralView.onCompleted);
         titleBar.title = file
     }
 
     function loadDocument() {
         loader.item.loadDocument();
-    }
-
-    function onCompleted() {
-        state = "loaded";
-        loadingScreenProgressBar.progress = -1;
-    }
-
-    function onProgress(progress) {
-        loadingScreenProgressBar.progress = progress;
     }
 
     SearchBar {
@@ -61,7 +52,7 @@ Item {
             id: backButton
             image: "image://icon/draw-arrow-back";
             borderPosition: "right"
-            onClicked: { searchBar.hide(); root.viewingFinished(); }
+            onClicked: { searchBar.hide(); root.viewingFinished(); centralView.state = "" }
         }
 
         pullDownGestureTarget: searchBar
@@ -73,33 +64,59 @@ Item {
         }
     }
 
-    Loader {
-        id: loader
-        anchors.top: titleBar.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: actionBar.bottom
-
-        opacity: 0;
-    }
-
     Item {
-        id: loadingScreen;
+        id: centralView
         anchors.top: titleBar.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: actionBar.bottom
 
-        Rectangle {
-            anchors.fill: parent;
-            color: "#000000";
-            opacity: 0.5;
+        function onCompleted() {
+            centralView.state = "loaded";
+            loadingScreenProgressBar.progress = -1;
         }
 
-        ProgressBar {
-            id: loadingScreenProgressBar;
-            anchors.centerIn: parent;
-            width: 200;
+        function onProgress(progress) {
+            loadingScreenProgressBar.progress = progress;
+        }
+
+        states: [
+            State {
+                name: "loaded";
+                PropertyChanges { target: loader; opacity: 1; }
+                PropertyChanges { target: loadingScreen; opacity: 0; }
+            }
+        ]
+
+        transitions: [
+            Transition {
+                to: "loaded"
+                NumberAnimation { properties: "opacity"; duration: 500 }
+            }
+        ]
+
+        Loader {
+            id: loader
+            anchors.fill: parent
+
+            opacity: 0;
+        }
+
+        Item {
+            id: loadingScreen;
+            anchors.fill: parent
+
+            Rectangle {
+                anchors.fill: parent;
+                color: "#000000";
+                opacity: 0.5;
+            }
+
+            ProgressBar {
+                id: loadingScreenProgressBar;
+                anchors.centerIn: parent;
+                width: 200;
+            }
         }
     }
 
@@ -160,20 +177,5 @@ Item {
             anchors.fill: parent
         }
     }
-
-    states: [
-        State {
-            name: "loaded";
-            PropertyChanges { target: loader; opacity: 1; }
-            PropertyChanges { target: loadingScreen; opacity: 0; }
-        }
-    ]
-
-    transitions: [
-        Transition {
-            to: "loaded"
-            NumberAnimation { properties: "opacity"; duration: 500 }
-        }
-    ]
 }
 

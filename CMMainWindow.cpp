@@ -71,11 +71,6 @@ CMMainWindow::~CMMainWindow()
     delete d;
 }
 
-void CMMainWindow::toggleFullScreen()
-{
-    setWindowState(windowState() ^ Qt::WindowFullScreen);
-}
-
 void CMMainWindow::checkMultiTouch()
 {
 #ifdef WITH_QT_SYSTEMINFO
@@ -88,3 +83,14 @@ void CMMainWindow::checkMultiTouch()
     }
 #endif
 }
+
+void CMMainWindow::changeEvent(QEvent *event)
+{
+    if (event->type() == QEvent::WindowStateChange) {
+        QWindowStateChangeEvent *ev = static_cast<QWindowStateChangeEvent *>(event);
+        if ((ev->oldState() & Qt::WindowFullScreen) != (windowState() & Qt::WindowFullScreen))
+            emit fullScreenChanged();
+    }
+    QMainWindow::changeEvent(event);
+}
+

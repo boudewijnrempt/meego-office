@@ -132,8 +132,8 @@ Item {
             onClicked: loader.item.nextSheet()
         }
         ToolButton {
-            image: "image://icon/view-fullscreen"
-            onClicked: window.toggleFullScreen()
+            image: window.fullScreen ? "image://icon/view-restore" : "image://icon/view-fullscreen"
+            onClicked: window.fullScreen = !window.fullScreen
         }
     }
 

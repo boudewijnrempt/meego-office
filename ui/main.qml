@@ -10,7 +10,7 @@ Rectangle {
 
     function open(filePath) {
         documentPicker.model.addRecent(filePath)
-        viewLoader.openFile(filePath)
+        viewLoader.setFile(filePath)
         showingDocumentViewerTransition.enabled = false
         root.state = "showingDocumentViewer"
         showingDocumentViewerTransition.enabled = true
@@ -23,7 +23,7 @@ Rectangle {
 
         onSelected: {
             model.addRecent(index)
-            viewLoader.openFile(filePath)
+            viewLoader.setFile(filePath)
             root.state = "showingDocumentViewer"
         }
     }

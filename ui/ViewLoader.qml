@@ -6,7 +6,7 @@ Item {
     signal viewingFinished()
     property alias sourceComponent: loader.sourceComponent
 
-    function openFile(file) {
+    function setFile(file) {
         var ext = file.substr(-3)
         console.log(file)
         console.log(ext)

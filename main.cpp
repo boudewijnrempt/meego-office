@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<CMStageCanvas>("org.calligra.mobile", 1, 0, "StageCanvas");
 
     CMMainWindow window(KStandardDirs::locate("appdata", "main.qml"), fileName);
+    window.resize(640, 480);
     window.show();
 
     return app.exec();

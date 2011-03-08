@@ -3,8 +3,6 @@ import org.calligra.mobile 1.0
 
 Rectangle {
     id: root
-    width: 1024
-    height: 800
 
     state: "showingDocumentPicker"
 

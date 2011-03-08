@@ -34,10 +34,12 @@ public:
 CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags), d(new Private)
 {
+    setWindowTitle(i18n("Calligra Mobile"));
+
 #ifdef WITH_QT_SYSTEMINFO
     QTimer::singleShot(0, this, SLOT(checkMultiTouch()));
 #endif //WITH_QT_SYSTEMINFO
-    
+
     d->view = new QDeclarativeView(this);
     d->engine = d->view->engine();
 

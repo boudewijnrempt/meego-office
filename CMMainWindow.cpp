@@ -96,3 +96,12 @@ void CMMainWindow::changeEvent(QEvent *event)
     QMainWindow::changeEvent(event);
 }
 
+void CMMainWindow::resizeEvent(QResizeEvent *event)
+{
+    if (event->oldSize().width() != width())
+        emit widthChanged();
+    if (event->oldSize().height() != height())
+        emit heightChanged();
+    QMainWindow::resizeEvent(event);
+}
+

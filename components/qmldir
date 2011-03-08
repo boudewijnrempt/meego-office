@@ -3,6 +3,7 @@ ActionBar 1.0 ActionBar.qml
 ActionBar 1.0 ActionBar.qml
 Button 1.0 Button.qml
 Menu 1.0 Menu.qml
+ScreenOrientation 1.0 ScreenOrientation.qml
 TitleBar 1.0 TitleBar.qml
 ToolButton 1.0 ToolButton.qml
 ProgressBar 1.0 ProgressBar.qml

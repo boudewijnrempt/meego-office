@@ -14,6 +14,10 @@ Rectangle {
         showingDocumentViewerTransition.enabled = true
     }
 
+    ScreenOrientation {
+        target: root
+    }
+
     DocumentPicker {
         id: documentPicker
         width: root.width

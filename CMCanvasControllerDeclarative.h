@@ -68,8 +68,9 @@ public Q_SLOTS:
 Q_SIGNALS:
     void progress(int progress);
     void completed();
-    
-    void setForce(const QVector2D& newForce);
+
+public:
+    Q_SLOT void setForce(const QVector2D& newForce);
     QVector2D force() const;
     
 protected:

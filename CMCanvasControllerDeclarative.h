@@ -15,12 +15,16 @@ class KoZoomController;
 class CALLIGRAMOBILE_EXPORT CMCanvasControllerDeclarative : public QDeclarativeItem, public KoCanvasController
 {
     Q_OBJECT
+    Q_PROPERTY(QString file READ file WRITE setFile)
     Q_PROPERTY(int visibleWidth READ visibleWidth)
     Q_PROPERTY(int visibleHeight READ visibleHeight)
 
 public:
     CMCanvasControllerDeclarative(QDeclarativeItem* parent = 0);
     virtual ~CMCanvasControllerDeclarative();
+
+    QString file() const;
+    void setFile(const QString &f);
 
     virtual void scrollContentsBy(int dx, int dy);
     virtual QSize viewportSize() const;

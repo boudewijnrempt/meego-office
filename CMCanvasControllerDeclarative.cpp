@@ -41,6 +41,8 @@ public:
     void checkBounce(const QPoint& offset);
     void frameChanged(int frame);
 
+    QString file;
+
     CMCanvasInputProxy* inputProxy;
 
     CMCanvasControllerDeclarative* q;
@@ -104,6 +106,16 @@ CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* p
 CMCanvasControllerDeclarative::~CMCanvasControllerDeclarative()
 {
     KoToolManager::instance()->removeCanvasController(this);
+}
+
+QString CMCanvasControllerDeclarative::file() const
+{
+    return d->file;
+}
+
+void CMCanvasControllerDeclarative::setFile(const QString &f)
+{
+    d->file = f;
 }
 
 void CMCanvasControllerDeclarative::setVastScrolling(qreal factor)

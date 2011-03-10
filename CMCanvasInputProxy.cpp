@@ -10,6 +10,7 @@
 #include <KoCanvasBase.h>
 #include <KoZoomHandler.h>
 #include <QtGui/QGraphicsWidget>
+#include <KDebug>
 
 class CMCanvasInputProxy::Private
 {
@@ -136,6 +137,7 @@ void CMCanvasInputProxy::Private::handleSwipeGesture(QSwipeGesture* swipe)
     if(!swipe)
         return;
 
+    qDebug() << "swipe-swipe";
     switch(swipe->state())
     {
         case Qt::GestureFinished:

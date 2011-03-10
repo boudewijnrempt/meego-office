@@ -82,7 +82,8 @@ CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* p
     setFiltersChildEvents(true);
     setAcceptTouchEvents(true);
     grabGesture(Qt::PinchGesture);
-
+    grabGesture(Qt::SwipeGesture);
+    
     d->timer = new QTimer(this);
     d->timer->setInterval(40);
     connect(d->timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));

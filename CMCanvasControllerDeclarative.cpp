@@ -351,7 +351,7 @@ void CMCanvasControllerDeclarative::Private::selectWordUnderMouse()
     KWViewMode *mode = kwcanvasitem ? kwcanvasitem->viewMode() : 0;
 
     QPointF mousePos = currentMousePos + q->documentOffset();
-    QPointF docMousePos = mode->viewToDocument(mousePos);
+    QPointF docMousePos = mode ? mode->viewToDocument(mousePos) : q->canvas()->viewConverter()->viewToDocument(mousePos);
     KoShape *shapeUnderCursor = q->canvas()->shapeManager()->shapeAt(docMousePos);
     if (!shapeUnderCursor) {
         qDebug() << "There is nothing here";

@@ -32,7 +32,7 @@ public:
         canvas(0), zoomHandler(0), zoomController(0),
         vastScrollingFactor(0.f),
         minX(0), minY(0), maxX(0), maxY(0),
-        dragging(false), zoom(1.0)
+        dragging(false), zoom(1.0), currentGesture(NoGesture)
     { }
     ~Private() { }
 
@@ -74,6 +74,8 @@ public:
     float dragCoeff;
     float timeStep;
     float springCoeff;
+
+    enum { NoGesture, PanGesture } currentGesture;
 };
 
 CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* parent)
@@ -329,10 +331,14 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
         if(event->type() == QEvent::GraphicsSceneMousePress) {
             d->velocity = QVector2D();
             d->timer->stop();
+            d->currentGesture = Private::NoGesture;
             return true;
         } else if(event->type() == QEvent::GraphicsSceneMouseMove) {
             QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(event);
-            if ((me->pos() - me->buttonDownPos(Qt::LeftButton)).manhattanLength() >= QApplication::startDragDistance()) {
+            if (d->currentGesture == Private::NoGesture && (me->pos() - me->buttonDownPos(Qt::LeftButton)).manhattanLength() >= QApplication::startDragDistance())
+                d->currentGesture = Private::PanGesture;
+
+            if (d->currentGesture == Private::PanGesture) {
                 if(d->inputProxy->updateCanvas())
                     d->inputProxy->handleMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
             }

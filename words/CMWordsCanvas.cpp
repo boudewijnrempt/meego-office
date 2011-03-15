@@ -11,6 +11,11 @@
 #include <KoProgressUpdater.h>
 #include <CMProgressProxy.h>
 #include <QTimer>
+#include <KoFindText.h>
+#include <QTextCursor>
+#include <KoShapeManager.h>
+#include <KoShape.h>
+#include <KoTextShapeData.h>
 
 class CMWordsCanvas::Private
 {
@@ -20,11 +25,15 @@ public:
     { }
     ~Private() { }
 
+    void matchFound(KoFindMatch match);
+
     CMWordsCanvas* q;
 
     KWDocument* doc;
     KWCanvasItem* canvas;
     int currentPage;
+
+    KoFindText* find;
 
     void updateCanvas();
 };
@@ -32,7 +41,6 @@ public:
 CMWordsCanvas::CMWordsCanvas(QDeclarativeItem* parent)
     : CMCanvasControllerDeclarative(parent), d(new Private(this))
 {
-
 }
 
 CMWordsCanvas::~CMWordsCanvas()
@@ -65,9 +73,11 @@ void CMWordsCanvas::loadDocument()
     KWDocument* doc = new KWDocument();
     d->doc = doc;
 
+    d->find = new KoFindText(doc->resourceManager(), this);
+    connect(d->find, SIGNAL(matchFound(KoFindMatch)), this, SLOT(matchFound(KoFindMatch)));
+
     CMProgressProxy *proxy = new CMProgressProxy(this);
     doc->setProgressProxy(proxy);
-
     connect(proxy, SIGNAL(valueChanged(int)), SIGNAL(progress(int)));
 
     setMargin(10);
@@ -79,8 +89,35 @@ void CMWordsCanvas::loadDocument()
 
     d->updateCanvas();
 
+    QList<KoShape*> shapes = canvas()->shapeManager()->shapes();
+    foreach(KoShape* shape, shapes) {
+        KoTextShapeData *shapeData = dynamic_cast<KoTextShapeData *>(shape->userData());
+        if (shapeData == 0)
+            continue;
+
+        if(shapeData->document()) {
+            QVariant var = QVariant::fromValue<void*>(shapeData->document());
+            doc->resourceManager()->setResource(KoText::CurrentTextDocument, var);
+        }
+    }
+
     emit progress(100);
     emit completed();
+}
+
+void CMWordsCanvas::find(const QString& pattern)
+{
+    d->find->find(pattern);
+}
+
+void CMWordsCanvas::findNext()
+{
+    d->find->findNext();
+}
+
+void CMWordsCanvas::findFinished()
+{
+    d->find->finished();
 }
 
 void CMWordsCanvas::Private::updateCanvas()
@@ -106,6 +143,18 @@ void CMWordsCanvas::Private::updateCanvas()
         currentPage = theCurrentPage;
         emit q->pageChanged(theCurrentPage);
     }
+}
+
+void CMWordsCanvas::Private::matchFound(KoFindMatch match)
+{
+    if(!match.isValid()) {
+        return;
+    }
+
+    QTextCursor cursor = match.location().value<QTextCursor>();
+    doc->resourceManager()->setResource(KoText::CurrentTextAnchor, cursor.anchor());
+    doc->resourceManager()->setResource(KoText::CurrentTextPosition, cursor.position());
+    find->highlightMatch(match);
 }
 
 #include "CMWordsCanvas.moc"

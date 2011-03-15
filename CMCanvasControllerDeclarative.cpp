@@ -9,6 +9,16 @@
 
 #include <KDE/KActionCollection>
 
+#include <words/part/KWCanvasBase.h>
+#include <words/part/KWViewMode.h>
+
+#include <KoShape.h>
+#include <KoSelection.h>
+#include <KoToolProxy.h>
+#include <KoTextDocumentLayout.h>
+#include <KoTextEditor.h>
+#include <KoTextShapeData.h>
+#include <KoToolSelection.h>
 #include <KoCanvasBase.h>
 #include <KoViewConverter.h>
 #include <KoToolManager.h>
@@ -79,6 +89,7 @@ public:
     float springCoeff;
 
     enum { NoGesture, PanGesture, TapAndHoldGesture } currentGesture;
+    QPointF currentMousePos;
 };
 
 CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* parent)
@@ -334,7 +345,35 @@ void CMCanvasControllerDeclarative::scrollContentsBy(int dx, int dy)
 
 void CMCanvasControllerDeclarative::Private::selectWordUnderMouse()
 {
-    qDebug() << "Select word under mouse";
+    KWCanvasBase *kwcanvasitem = dynamic_cast<KWCanvasBase *>(q->canvas()->canvasItem());
+    KWViewMode *mode = kwcanvasitem ? kwcanvasitem->viewMode() : 0;
+
+    QPointF mousePos = currentMousePos + q->documentOffset();
+    QPointF docMousePos = mode->viewToDocument(mousePos);
+    KoShape *shapeUnderCursor = q->canvas()->shapeManager()->shapeAt(docMousePos);
+    if (!shapeUnderCursor) {
+        qDebug() << "There is nothing here";
+        return;
+    }
+    KoTextShapeData *shapeData = qobject_cast<KoTextShapeData *>(shapeUnderCursor->userData());
+    if (!shapeData)
+        return;
+
+    q->canvas()->shapeManager()->selection()->select(shapeUnderCursor);
+    KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
+
+    QTextDocument *doc = shapeData->document();
+    KoTextDocumentLayout *lay = qobject_cast<KoTextDocumentLayout *>(doc->documentLayout());
+    KoTextEditor *editor = KoTextDocument(doc).textEditor();
+    QPointF shapePos = shapeUnderCursor->position();
+    QPointF p = shapeUnderCursor->absoluteTransformation(0).inverted().map(docMousePos);
+    QPointF pointInDoc = p + QPointF(0.0, shapeData->documentOffset());
+
+    int cursorPos = lay->hitTest(pointInDoc, Qt::FuzzyHit);
+    editor->setPosition(cursorPos);
+    editor->select(QTextCursor::WordUnderCursor);
+
+    q->canvas()->updateCanvas(shapeUnderCursor->boundingRect());
 }
 
 void CMCanvasControllerDeclarative::onTapAndHoldGesture()
@@ -347,13 +386,16 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
 {
     if(target == this || target == d->canvas->canvasItem()) {
         if(event->type() == QEvent::GraphicsSceneMousePress) {
+            QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(event);
             d->velocity = QVector2D();
             d->timer->stop();
             d->currentGesture = Private::NoGesture;
             d->tapAndHoldTimer.start();
+            d->currentMousePos = me->pos();
             return true;
         } else if(event->type() == QEvent::GraphicsSceneMouseMove) {
             QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(event);
+            d->currentMousePos = me->pos();
             if (d->currentGesture == Private::NoGesture 
                 && (me->pos() - me->buttonDownPos(Qt::LeftButton)).manhattanLength() >= QApplication::startDragDistance()) {
                 d->currentGesture = Private::PanGesture;
@@ -364,6 +406,7 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
                 if(d->inputProxy->updateCanvas())
                     d->inputProxy->handleMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
             }
+
             return true;
         } else if(event->type() == QEvent::GraphicsSceneMouseRelease) {
             d->timer->start();

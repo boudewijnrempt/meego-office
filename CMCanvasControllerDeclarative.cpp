@@ -91,7 +91,10 @@ public:
 
     enum { NoGesture, PanGesture, TapAndHoldGesture } currentGesture;
     QPointF currentMousePos;
-    QTextCursor selection;
+    struct {
+        QTextCursor textCursor;
+        QPointF cursorPos, anchorPos;
+    } selection;
 };
 
 CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* parent)
@@ -345,6 +348,38 @@ void CMCanvasControllerDeclarative::scrollContentsBy(int dx, int dy)
     resetDocumentOffset(offset);
 }
 
+static QRectF selectionBoundingBox(QTextCursor &cursor)
+{
+    QTextFrame *frame = cursor.document()->rootFrame();
+
+    QRectF retval(-5E6,0,105E6,1);
+    if (cursor.position() == -1)
+        return retval;
+
+    QTextFrame::iterator it;
+    for (it = frame->begin(); !(it.atEnd()); ++it) {
+        QTextBlock block = it.currentBlock();
+
+        if (cursor.selectionStart() >= block.position()
+            && cursor.selectionStart() < block.position() + block.length()) {
+            QTextLine line = block.layout()->lineForTextPosition(cursor.selectionStart() - block.position());
+            if (line.isValid()) {
+                retval.setTop(line.y());
+                retval.setLeft(line.cursorToX(cursor.selectionStart() - block.position()));
+            }
+        }
+        if (cursor.selectionEnd() >= block.position()
+            && cursor.selectionEnd() < block.position() + block.length()) {
+            QTextLine line = block.layout()->lineForTextPosition(cursor.selectionEnd() - block.position());
+            if (line.isValid()) {
+                retval.setBottom(line.y() + line.height());
+                retval.setRight(line.cursorToX(cursor.selectionEnd() - block.position()));
+            }
+        }
+    }
+    return retval;
+}
+
 void CMCanvasControllerDeclarative::Private::selectWordUnderMouse()
 {
     KWCanvasBase *kwcanvasitem = dynamic_cast<KWCanvasBase *>(q->canvas()->canvasItem());
@@ -374,19 +409,48 @@ void CMCanvasControllerDeclarative::Private::selectWordUnderMouse()
     int cursorPos = lay->hitTest(pointInDoc, Qt::FuzzyHit);
     editor->setPosition(cursorPos);
     editor->select(QTextCursor::WordUnderCursor);
-    selection = *editor->cursor();
     q->canvas()->updateCanvas(shapeUnderCursor->boundingRect());
+
+    // update the selection object
+    QTextCursor cursor(*editor->cursor());
+    QTextCursor c1(cursor);
+    c1.clearSelection();
+    QTextCursor c2(cursor);
+    c2.setPosition(cursor.anchor());
+
+    QPointF positionTopLeft = shapePos + selectionBoundingBox(c2).topLeft();
+    QPointF anchorTopLeft = shapePos + selectionBoundingBox(c1).topLeft();
+
+    selection.cursorPos = (mode ? mode->documentToView(positionTopLeft) : q->canvas()->viewConverter()->documentToView(positionTopLeft)) - q->documentOffset();
+    selection.anchorPos = (mode ? mode->documentToView(anchorTopLeft) : q->canvas()->viewConverter()->documentToView(anchorTopLeft)) - q->documentOffset();
+    selection.textCursor = cursor;
+
+    emit q->cursorPosChanged();
+    emit q->anchorPosChanged();
 }
 
 void CMCanvasControllerDeclarative::Private::clearSelection()
 {
-    QTextDocument *doc = selection.document();
+    QTextDocument *doc = selection.textCursor.document();
     if (!doc)
         return;
     KoTextEditor *editor = KoTextDocument(doc).textEditor();
     editor->clearSelection();
 
-    selection = QTextCursor();
+    selection.textCursor = *editor->cursor();
+    selection.cursorPos = selection.anchorPos = QPointF(-1000, -1000);
+    emit q->cursorPosChanged();
+    emit q->anchorPosChanged();
+}
+
+QPointF CMCanvasControllerDeclarative::cursorPos() const
+{
+    return d->selection.cursorPos;
+}
+
+QPointF CMCanvasControllerDeclarative::anchorPos() const
+{
+    return d->selection.anchorPos;
 }
 
 void CMCanvasControllerDeclarative::onTapAndHoldGesture()
@@ -571,3 +635,4 @@ KoZoomHandler* CMCanvasControllerDeclarative::zoomHandler() const
 {
     return d->zoomHandler;
 }
+

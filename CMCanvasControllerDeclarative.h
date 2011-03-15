@@ -18,6 +18,8 @@ class CALLIGRAMOBILE_EXPORT CMCanvasControllerDeclarative : public QDeclarativeI
     Q_PROPERTY(QString file READ file WRITE setFile)
     Q_PROPERTY(int visibleWidth READ visibleWidth)
     Q_PROPERTY(int visibleHeight READ visibleHeight)
+    Q_PROPERTY(QPointF cursorPos READ cursorPos NOTIFY cursorPosChanged)
+    Q_PROPERTY(QPointF anchorPos READ anchorPos NOTIFY anchorPosChanged)
 
 public:
     CMCanvasControllerDeclarative(QDeclarativeItem* parent = 0);
@@ -61,7 +63,10 @@ public:
 
     Q_SLOT void setForce(const QVector2D& newForce);
     QVector2D force() const;
- 
+
+    QPointF cursorPos() const;
+    QPointF anchorPos() const;
+
 public Q_SLOTS:
     virtual void zoomOut(const QPoint& center = QPoint());
     virtual void zoomIn(const QPoint& center = QPoint());
@@ -74,6 +79,9 @@ Q_SIGNALS:
 
     void progress(int progress);
     void completed();
+
+    void cursorPosChanged();
+    void anchorPosChanged();
 
 protected:
     virtual bool eventFilter(QObject* target, QEvent* event );

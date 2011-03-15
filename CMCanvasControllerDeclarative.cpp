@@ -52,6 +52,7 @@ public:
     void frameChanged(int frame);
 
     void selectWordUnderMouse();
+    void clearSelection();
 
     QString file;
 
@@ -90,6 +91,7 @@ public:
 
     enum { NoGesture, PanGesture, TapAndHoldGesture } currentGesture;
     QPointF currentMousePos;
+    QTextCursor selection;
 };
 
 CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* parent)
@@ -372,8 +374,19 @@ void CMCanvasControllerDeclarative::Private::selectWordUnderMouse()
     int cursorPos = lay->hitTest(pointInDoc, Qt::FuzzyHit);
     editor->setPosition(cursorPos);
     editor->select(QTextCursor::WordUnderCursor);
-
+    selection = *editor->cursor();
     q->canvas()->updateCanvas(shapeUnderCursor->boundingRect());
+}
+
+void CMCanvasControllerDeclarative::Private::clearSelection()
+{
+    QTextDocument *doc = selection.document();
+    if (!doc)
+        return;
+    KoTextEditor *editor = KoTextDocument(doc).textEditor();
+    editor->clearSelection();
+
+    selection = QTextCursor();
 }
 
 void CMCanvasControllerDeclarative::onTapAndHoldGesture()
@@ -411,6 +424,8 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
         } else if(event->type() == QEvent::GraphicsSceneMouseRelease) {
             d->timer->start();
             d->tapAndHoldTimer.stop();
+            if (d->currentGesture == Private::NoGesture)
+                d->clearSelection();
             return true;
         } else if(event->type() == QEvent::TouchBegin) {
             event->accept();

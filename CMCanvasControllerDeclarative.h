@@ -59,10 +59,9 @@ public:
     void setZoomMin(qreal newZoomMin);
     qreal zoomMin() const;
 
-Q_SIGNALS:
-    void nextPage();
-    void previousPage();
-
+    Q_SLOT void setForce(const QVector2D& newForce);
+    QVector2D force() const;
+ 
 public Q_SLOTS:
     virtual void zoomOut(const QPoint& center = QPoint());
     virtual void zoomIn(const QPoint& center = QPoint());
@@ -70,26 +69,25 @@ public Q_SLOTS:
     virtual void resetZoom();
 
 Q_SIGNALS:
+    void nextPage();
+    void previousPage();
+
     void progress(int progress);
     void completed();
 
-public:
-    Q_SLOT void setForce(const QVector2D& newForce);
-    QVector2D force() const;
-    
 protected:
     virtual bool eventFilter(QObject* target, QEvent* event );
     KoZoomController* zoomController(KoViewConverter* viewConverter = 0, bool recreate = false);
-
-private:
-    class Private;
-    Private * const d;
 
 private Q_SLOTS:
     void onHeightChanged();
     void onWidthChanged();
     void documentOffsetMoved(const QPoint& point);
     void timerUpdate();
+
+private:
+    class Private;
+    Private * const d;
 };
 
 #endif // CALLIGRAMOBILE_CANVASCONTROLLERDECLARATIVE_H

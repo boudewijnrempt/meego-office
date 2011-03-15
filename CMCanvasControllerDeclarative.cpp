@@ -41,6 +41,8 @@ public:
     void checkBounce(const QPoint& offset);
     void frameChanged(int frame);
 
+    void selectWordUnderMouse();
+
     QString file;
 
     CMCanvasInputProxy* inputProxy;
@@ -51,6 +53,7 @@ public:
     KoZoomController* zoomController;
 
     QTimer* timer;
+    QTimer tapAndHoldTimer;
 
     qreal vastScrollingFactor;
 
@@ -75,7 +78,7 @@ public:
     float timeStep;
     float springCoeff;
 
-    enum { NoGesture, PanGesture } currentGesture;
+    enum { NoGesture, PanGesture, TapAndHoldGesture } currentGesture;
 };
 
 CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* parent)
@@ -90,6 +93,10 @@ CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* p
     d->timer = new QTimer(this);
     d->timer->setInterval(40);
     connect(d->timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
+
+    d->tapAndHoldTimer.setInterval(QApplication::startDragTime());
+    d->tapAndHoldTimer.setSingleShot(true);
+    connect(&d->tapAndHoldTimer, SIGNAL(timeout()), this, SLOT(onTapAndHoldGesture()));
 
     d->mass = 10.f;
     d->dragCoeff = 0.05f;
@@ -325,6 +332,17 @@ void CMCanvasControllerDeclarative::scrollContentsBy(int dx, int dy)
     resetDocumentOffset(offset);
 }
 
+void CMCanvasControllerDeclarative::Private::selectWordUnderMouse()
+{
+    qDebug() << "Select word under mouse";
+}
+
+void CMCanvasControllerDeclarative::onTapAndHoldGesture()
+{
+    d->currentGesture = Private::TapAndHoldGesture;
+    d->selectWordUnderMouse();
+}
+
 bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event )
 {
     if(target == this || target == d->canvas->canvasItem()) {
@@ -332,11 +350,15 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
             d->velocity = QVector2D();
             d->timer->stop();
             d->currentGesture = Private::NoGesture;
+            d->tapAndHoldTimer.start();
             return true;
         } else if(event->type() == QEvent::GraphicsSceneMouseMove) {
             QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(event);
-            if (d->currentGesture == Private::NoGesture && (me->pos() - me->buttonDownPos(Qt::LeftButton)).manhattanLength() >= QApplication::startDragDistance())
+            if (d->currentGesture == Private::NoGesture 
+                && (me->pos() - me->buttonDownPos(Qt::LeftButton)).manhattanLength() >= QApplication::startDragDistance()) {
                 d->currentGesture = Private::PanGesture;
+                d->tapAndHoldTimer.stop();
+            }
 
             if (d->currentGesture == Private::PanGesture) {
                 if(d->inputProxy->updateCanvas())
@@ -345,6 +367,7 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
             return true;
         } else if(event->type() == QEvent::GraphicsSceneMouseRelease) {
             d->timer->start();
+            d->tapAndHoldTimer.stop();
             return true;
         } else if(event->type() == QEvent::TouchBegin) {
             event->accept();

@@ -84,6 +84,7 @@ private Q_SLOTS:
     void onWidthChanged();
     void documentOffsetMoved(const QPoint& point);
     void timerUpdate();
+    void onTapAndHoldGesture();
 
 private:
     class Private;

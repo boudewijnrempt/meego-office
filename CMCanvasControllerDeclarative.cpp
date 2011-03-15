@@ -331,8 +331,11 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
             d->timer->stop();
             return true;
         } else if(event->type() == QEvent::GraphicsSceneMouseMove) {
-            if(d->inputProxy->updateCanvas())
-                d->inputProxy->handleMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
+            QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(event);
+            if ((me->pos() - me->buttonDownPos(Qt::LeftButton)).manhattanLength() >= QApplication::startDragDistance()) {
+                if(d->inputProxy->updateCanvas())
+                    d->inputProxy->handleMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
+            }
             return true;
         } else if(event->type() == QEvent::GraphicsSceneMouseRelease) {
             d->timer->start();

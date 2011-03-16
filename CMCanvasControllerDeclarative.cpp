@@ -53,7 +53,8 @@ public:
     void checkBounce(const QPoint& offset);
     void frameChanged(int frame);
 
-    void selectWordUnderMouse();
+    enum { SelectWordUnderMouse };
+    void updateSelection(int option);
     void clearSelection();
 
     QString file;
@@ -382,7 +383,7 @@ static QRectF selectionBoundingBox(QTextCursor &cursor)
     return retval;
 }
 
-void CMCanvasControllerDeclarative::Private::selectWordUnderMouse()
+void CMCanvasControllerDeclarative::Private::updateSelection(int option)
 {
     KWCanvasBase *kwcanvasitem = dynamic_cast<KWCanvasBase *>(q->canvas()->canvasItem());
     KWViewMode *mode = kwcanvasitem ? kwcanvasitem->viewMode() : 0;
@@ -408,9 +409,11 @@ void CMCanvasControllerDeclarative::Private::selectWordUnderMouse()
     QPointF textDocMousePos = shapeMousePos + QPointF(0.0, shapeData->documentOffset());
 
     int cursorPos = lay->hitTest(textDocMousePos, Qt::FuzzyHit);
-    editor->setPosition(cursorPos);
-    editor->select(QTextCursor::WordUnderCursor);
-    q->canvas()->updateCanvas(shapeUnderCursor->boundingRect());
+    if (option == SelectWordUnderMouse) {
+        editor->setPosition(cursorPos);
+        editor->select(QTextCursor::WordUnderCursor);
+        q->canvas()->updateCanvas(shapeUnderCursor->boundingRect());
+    }
 
     // update the selection object
     QTextCursor cursor(*editor->cursor());
@@ -457,7 +460,7 @@ QPointF CMCanvasControllerDeclarative::anchorPos() const
 void CMCanvasControllerDeclarative::onTapAndHoldGesture()
 {
     d->currentGesture = Private::TapAndHoldGesture;
-    d->selectWordUnderMouse();
+    d->updateSelection(Private::SelectWordUnderMouse);
 }
 
 bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event )

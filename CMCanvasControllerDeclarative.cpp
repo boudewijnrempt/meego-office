@@ -6,6 +6,9 @@
 #include <QtGui/QGraphicsWidget>
 #include <QtGui/QGraphicsSceneMouseEvent>
 #include <QtGui/QApplication>
+#include <QtCore/QBuffer>
+#include <QtGui/QTextDocumentWriter>
+#include <QtGui/QTextDocumentFragment>
 
 #include <KDE/KActionCollection>
 
@@ -92,7 +95,7 @@ public:
     float timeStep;
     float springCoeff;
 
-    enum { NoGesture, PanGesture, TapAndHoldGesture } currentGesture;
+    enum { NoGesture, PanGesture, TapAndHoldGesture, UpdateClipboardAndClearSelection } currentGesture;
     QPointF currentMousePos;
     struct {
         QTextCursor textCursor;
@@ -411,7 +414,7 @@ void CMCanvasControllerDeclarative::Private::updateSelection(int option)
     int cursorPos = lay->hitTest(textDocMousePos, Qt::FuzzyHit);
     if (option == ProcessTextUnderMouse) {
         editor->setPosition(cursorPos);
-        if (!editor->charFormat().anchorHref().isEmpty()) {
+        if (!editor->charFormat().anchorHref().isEmpty()) { // user clicked on link
             emit q->linkActivated(editor->charFormat().anchorHref());
             return;
         }
@@ -422,6 +425,24 @@ void CMCanvasControllerDeclarative::Private::updateSelection(int option)
         int oldPosition = editor->position();
         editor->setPosition(cursorPos);
         editor->setPosition(oldPosition, QTextCursor::KeepAnchor);
+    } else if (option == UpdateClipboardAndClearSelection) {
+        QTextCursor cursor(*editor->cursor());
+        if ((cursor.position() <= cursorPos && cursor.anchor() >= cursorPos)
+            || (cursor.anchor() <= cursorPos && cursor.position() >= cursorPos)) { // user clicked on selection
+            QMimeData *mimeData = new QMimeData;
+            QTextDocumentFragment fragment(cursor);
+            mimeData->setText(fragment.toPlainText());
+            mimeData->setHtml(fragment.toHtml("utf-8"));
+            QBuffer buffer;
+            QTextDocumentWriter writer(&buffer, "ODF");
+            writer.write(fragment);
+            buffer.close();
+            mimeData->setData("application/vnd.oasis.opendocument.text", buffer.data());
+            QApplication::clipboard()->setMimeData(mimeData);
+            emit q->textCopiedToClipboard();
+        }
+        clearSelection();
+        return;
     }
 
     q->canvas()->updateCanvas(shapeUnderCursor->boundingRect());
@@ -512,7 +533,7 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
             d->timer->start();
             d->tapAndHoldTimer.stop();
             if (d->currentGesture == Private::NoGesture)
-                d->clearSelection();
+                d->updateSelection(Private::UpdateClipboardAndClearSelection);
             return true;
         } else if(event->type() == QEvent::TouchBegin) {
             event->accept();

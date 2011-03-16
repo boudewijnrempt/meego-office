@@ -121,6 +121,14 @@ Item {
             Connections {
                 target: loader.item
                 onLinkActivated: window.openUrl(url)
+                onTextCopiedToClipboard: textCopiedMessage.show()
+            }
+
+            TextCopiedToClipboardMessage {
+                id: textCopiedMessage
+                anchors.centerIn: parent
+                opacity: 0
+                z: 10
             }
 
             Marker {

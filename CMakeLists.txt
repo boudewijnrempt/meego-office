@@ -69,6 +69,7 @@ set(calligramobile_ui_SRCS
     ui/DocumentPicker.qml
     ui/Marker.qml
     ui/SearchBar.qml
+    ui/TextCopiedToClipboardMessage.qml
     ui/ViewLoader.qml
 )
 

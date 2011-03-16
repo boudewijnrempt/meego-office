@@ -85,6 +85,7 @@ Q_SIGNALS:
     void cursorPosChanged();
     void anchorPosChanged();
 
+    void linkActivated(const QString &url);
 protected:
     virtual bool eventFilter(QObject* target, QEvent* event );
     KoZoomController* zoomController(KoViewConverter* viewConverter = 0, bool recreate = false);

@@ -118,6 +118,11 @@ Item {
             clip: true
             opacity: 0;
 
+            Connections {
+                target: loader.item
+                onLinkActivated: window.openUrl(url)
+            }
+
             Marker {
                 id: cursorMarker
                 opacity: 0.5

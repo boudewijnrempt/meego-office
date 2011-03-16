@@ -53,7 +53,7 @@ public:
     void checkBounce(const QPoint& offset);
     void frameChanged(int frame);
 
-    enum { SelectWordUnderMouse, MovePosition, MoveAnchor };
+    enum { ProcessTextUnderMouse, MovePosition, MoveAnchor };
     void updateSelection(int option);
     void clearSelection();
 
@@ -409,8 +409,12 @@ void CMCanvasControllerDeclarative::Private::updateSelection(int option)
     QPointF textDocMousePos = shapeMousePos + QPointF(0.0, shapeData->documentOffset());
 
     int cursorPos = lay->hitTest(textDocMousePos, Qt::FuzzyHit);
-    if (option == SelectWordUnderMouse) {
+    if (option == ProcessTextUnderMouse) {
         editor->setPosition(cursorPos);
+        if (!editor->charFormat().anchorHref().isEmpty()) {
+            emit q->linkActivated(editor->charFormat().anchorHref());
+            return;
+        }
         editor->select(QTextCursor::WordUnderCursor);
     } else if (option == MovePosition) {
         editor->setPosition(cursorPos, QTextCursor::KeepAnchor);
@@ -473,7 +477,7 @@ QPointF CMCanvasControllerDeclarative::anchorPos() const
 void CMCanvasControllerDeclarative::onTapAndHoldGesture()
 {
     d->currentGesture = Private::TapAndHoldGesture;
-    d->updateSelection(Private::SelectWordUnderMouse);
+    d->updateSelection(Private::ProcessTextUnderMouse);
 }
 
 bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event )

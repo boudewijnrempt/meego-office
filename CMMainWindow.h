@@ -22,6 +22,8 @@ public:
 
     int height() const { return QMainWindow::height(); }
 
+    Q_INVOKABLE void openUrl(const QString &url);
+
 protected:
     void changeEvent(QEvent *event);
     void resizeEvent(QResizeEvent *event);

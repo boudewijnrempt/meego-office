@@ -118,23 +118,15 @@ Item {
 
             opacity: 0;
 
-            Image {
+            Marker {
                 id: selectionMarker1
-                width: 16
-                height: 16
-                opacity: 0.5
-                source: "resources/marker.png"
                 z: 10
                 x: loader.item ? loader.item.cursorPos.x - width/2 : -100
                 y: loader.item ? loader.item.cursorPos.y - height : -100
             }
 
-            Image {
+            Marker {
                 id: selectionMarker2
-                width: 16
-                height: 16
-                opacity: 0.5
-                source: "resources/marker.png"
                 z: 10
                 x: loader.item ? loader.item.anchorPos.x - width/2 : -100
                 y: loader.item ? loader.item.anchorPos.y - height : -100

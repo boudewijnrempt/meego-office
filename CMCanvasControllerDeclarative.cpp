@@ -494,6 +494,8 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
                 && (me->pos() - me->buttonDownPos(Qt::LeftButton)).manhattanLength() >= QApplication::startDragDistance()) {
                 d->currentGesture = Private::PanGesture;
                 d->tapAndHoldTimer.stop();
+            } else if (d->currentGesture == Private::TapAndHoldGesture) {
+                d->updateSelection(Private::MovePosition);
             }
 
             if (d->currentGesture == Private::PanGesture) {

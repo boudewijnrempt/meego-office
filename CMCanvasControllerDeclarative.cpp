@@ -48,6 +48,7 @@ public:
         dragging(false), zoom(1.0), currentGesture(NoGesture)
     { 
         selection.cursorPos = selection.anchorPos = QPointF(-1000, -1000);
+        selection.shape = 0;
     }
     ~Private() { }
 
@@ -59,6 +60,7 @@ public:
     enum { ProcessTextUnderMouse, MovePosition, MoveAnchor };
     void updateSelection(int option);
     void clearSelection();
+    void updateSelectionMarkerPositions();
 
     QString file;
 
@@ -100,6 +102,7 @@ public:
     struct {
         QTextCursor textCursor;
         QPointF cursorPos, anchorPos;
+        KoShape *shape;
     } selection;
 };
 
@@ -176,6 +179,7 @@ void CMCanvasControllerDeclarative::resetDocumentOffset(const QPoint& offset)
     if(d->inputProxy->updateCanvas()) {
         d->updateCanvasSize();
     }
+    d->updateSelectionMarkerPositions();
 }
 
 void CMCanvasControllerDeclarative::setScrollBarValue(const QPoint& value)
@@ -257,6 +261,7 @@ void CMCanvasControllerDeclarative::resetZoom()
     d->zoomController->setZoom(KoZoomMode::ZOOM_CONSTANT, 1.0);
     d->updateMinMax();
     d->updateCanvasSize();
+    d->updateSelectionMarkerPositions();
 }
 
 void CMCanvasControllerDeclarative::ensureVisible(KoShape* shape)
@@ -446,16 +451,29 @@ void CMCanvasControllerDeclarative::Private::updateSelection(int option)
     }
 
     q->canvas()->updateCanvas(shapeUnderCursor->boundingRect());
+    selection.shape = shapeUnderCursor;
+    updateSelectionMarkerPositions();
+}
 
-    // update the selection object
+void CMCanvasControllerDeclarative::Private::updateSelectionMarkerPositions()
+{
+    if (!selection.shape)
+        return;
+    KWCanvasBase *kwcanvasitem = dynamic_cast<KWCanvasBase *>(q->canvas()->canvasItem());
+    KWViewMode *mode = kwcanvasitem ? kwcanvasitem->viewMode() : 0;
+    KoShape *shape = selection.shape;
+    KoTextShapeData *shapeData = qobject_cast<KoTextShapeData *>(shape->userData());
+    QTextDocument *doc = shapeData->document();
+    KoTextEditor *editor = KoTextDocument(doc).textEditor();
+
     QTextCursor cursor(*editor->cursor());
     QTextCursor c1(cursor);
     c1.clearSelection();
     QTextCursor c2(cursor);
     c2.setPosition(cursor.anchor());
 
-    QPointF positionTopLeft = shapeUnderCursor->absoluteTransformation(0).map(selectionBoundingBox(c1).topLeft() - QPointF(0, shapeData->documentOffset()));
-    QPointF anchorTopLeft = shapeUnderCursor->absoluteTransformation(0).map(selectionBoundingBox(c2).topLeft() - QPointF(0, shapeData->documentOffset()));
+    QPointF positionTopLeft = shape->absoluteTransformation(0).map(selectionBoundingBox(c1).topLeft() - QPointF(0, shapeData->documentOffset()));
+    QPointF anchorTopLeft = shape->absoluteTransformation(0).map(selectionBoundingBox(c2).topLeft() - QPointF(0, shapeData->documentOffset()));
 
     selection.cursorPos = (mode ? mode->documentToView(positionTopLeft) : q->canvas()->viewConverter()->documentToView(positionTopLeft)) - q->documentOffset();
     selection.anchorPos = (mode ? mode->documentToView(anchorTopLeft) : q->canvas()->viewConverter()->documentToView(anchorTopLeft)) - q->documentOffset();
@@ -479,6 +497,7 @@ void CMCanvasControllerDeclarative::Private::clearSelection()
     KoTextEditor *editor = KoTextDocument(doc).textEditor();
     editor->clearSelection();
 
+    selection.shape = 0;
     selection.textCursor = *editor->cursor();
     selection.cursorPos = selection.anchorPos = QPointF(-1000, -1000);
     emit q->cursorPosChanged();
@@ -603,6 +622,7 @@ void CMCanvasControllerDeclarative::documentOffsetMoved(const QPoint& point)
 {
     Q_UNUSED(point);
     d->updateMinMax();
+    d->updateSelectionMarkerPositions();
 }
 
 void CMCanvasControllerDeclarative::timerUpdate()

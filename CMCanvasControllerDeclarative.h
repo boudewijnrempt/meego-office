@@ -67,7 +67,7 @@ public:
     QPointF cursorPos() const;
     QPointF anchorPos() const;
 
-    Q_INVOKABLE void moveMarker(qreal x, qreal y);
+    Q_INVOKABLE void moveMarker(int which, qreal x, qreal y);
 
 public Q_SLOTS:
     virtual void zoomOut(const QPoint& center = QPoint());

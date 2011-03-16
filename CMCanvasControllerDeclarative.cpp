@@ -53,7 +53,7 @@ public:
     void checkBounce(const QPoint& offset);
     void frameChanged(int frame);
 
-    enum { SelectWordUnderMouse, MovePosition };
+    enum { SelectWordUnderMouse, MovePosition, MoveAnchor };
     void updateSelection(int option);
     void clearSelection();
 
@@ -414,6 +414,10 @@ void CMCanvasControllerDeclarative::Private::updateSelection(int option)
         editor->select(QTextCursor::WordUnderCursor);
     } else if (option == MovePosition) {
         editor->setPosition(cursorPos, QTextCursor::KeepAnchor);
+    } else if (option == MoveAnchor) {
+        int oldPosition = editor->position();
+        editor->setPosition(cursorPos);
+        editor->setPosition(oldPosition, QTextCursor::KeepAnchor);
     }
 
     q->canvas()->updateCanvas(shapeUnderCursor->boundingRect());
@@ -436,10 +440,10 @@ void CMCanvasControllerDeclarative::Private::updateSelection(int option)
     emit q->anchorPosChanged();
 }
 
-void CMCanvasControllerDeclarative::moveMarker(qreal x, qreal y)
+void CMCanvasControllerDeclarative::moveMarker(int which, qreal x, qreal y)
 {
     d->currentMousePos = QPointF(x, y);
-    d->updateSelection(Private::MovePosition);
+    d->updateSelection(which == 1 ? Private::MovePosition : Private::MoveAnchor);
 }
 
 void CMCanvasControllerDeclarative::Private::clearSelection()

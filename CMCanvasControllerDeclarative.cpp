@@ -43,7 +43,9 @@ public:
         vastScrollingFactor(0.f),
         minX(0), minY(0), maxX(0), maxY(0),
         dragging(false), zoom(1.0), currentGesture(NoGesture)
-    { }
+    { 
+        selection.cursorPos = selection.anchorPos = QPointF(-1000, -1000);
+    }
     ~Private() { }
 
     void updateMinMax();

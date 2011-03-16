@@ -124,6 +124,7 @@ Item {
                 z: 10
                 x: loader.item ? loader.item.cursorPos.x - width/2 : -100
                 y: loader.item ? loader.item.cursorPos.y - height : -100
+                onMoved: loader.item.moveMarker(newX, newY)
             }
 
             Marker {

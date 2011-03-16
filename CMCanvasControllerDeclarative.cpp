@@ -53,7 +53,7 @@ public:
     void checkBounce(const QPoint& offset);
     void frameChanged(int frame);
 
-    enum { SelectWordUnderMouse };
+    enum { SelectWordUnderMouse, MovePosition };
     void updateSelection(int option);
     void clearSelection();
 
@@ -412,8 +412,11 @@ void CMCanvasControllerDeclarative::Private::updateSelection(int option)
     if (option == SelectWordUnderMouse) {
         editor->setPosition(cursorPos);
         editor->select(QTextCursor::WordUnderCursor);
-        q->canvas()->updateCanvas(shapeUnderCursor->boundingRect());
+    } else if (option == MovePosition) {
+        editor->setPosition(cursorPos, QTextCursor::KeepAnchor);
     }
+
+    q->canvas()->updateCanvas(shapeUnderCursor->boundingRect());
 
     // update the selection object
     QTextCursor cursor(*editor->cursor());
@@ -422,8 +425,8 @@ void CMCanvasControllerDeclarative::Private::updateSelection(int option)
     QTextCursor c2(cursor);
     c2.setPosition(cursor.anchor());
 
-    QPointF positionTopLeft = shapeUnderCursor->absoluteTransformation(0).map(selectionBoundingBox(c2).topLeft() - QPointF(0, shapeData->documentOffset()));
-    QPointF anchorTopLeft = shapeUnderCursor->absoluteTransformation(0).map(selectionBoundingBox(c1).topLeft() - QPointF(0, shapeData->documentOffset()));
+    QPointF positionTopLeft = shapeUnderCursor->absoluteTransformation(0).map(selectionBoundingBox(c1).topLeft() - QPointF(0, shapeData->documentOffset()));
+    QPointF anchorTopLeft = shapeUnderCursor->absoluteTransformation(0).map(selectionBoundingBox(c2).topLeft() - QPointF(0, shapeData->documentOffset()));
 
     selection.cursorPos = (mode ? mode->documentToView(positionTopLeft) : q->canvas()->viewConverter()->documentToView(positionTopLeft)) - q->documentOffset();
     selection.anchorPos = (mode ? mode->documentToView(anchorTopLeft) : q->canvas()->viewConverter()->documentToView(anchorTopLeft)) - q->documentOffset();
@@ -431,6 +434,12 @@ void CMCanvasControllerDeclarative::Private::updateSelection(int option)
 
     emit q->cursorPosChanged();
     emit q->anchorPosChanged();
+}
+
+void CMCanvasControllerDeclarative::moveMarker(qreal x, qreal y)
+{
+    d->currentMousePos = QPointF(x, y);
+    d->updateSelection(Private::MovePosition);
 }
 
 void CMCanvasControllerDeclarative::Private::clearSelection()

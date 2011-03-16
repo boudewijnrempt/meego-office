@@ -115,11 +115,12 @@ Item {
         Loader {
             id: loader
             anchors.fill: parent
-
+            clip: true
             opacity: 0;
 
             Marker {
                 id: cursorMarker
+                opacity: 0.5
                 z: 10
                 x: loader.item ? loader.item.cursorPos.x - width/2 : -100
                 y: loader.item ? loader.item.cursorPos.y - height : -100
@@ -127,6 +128,7 @@ Item {
 
             Marker {
                 id: anchorMarker
+                opacity: 0.5
                 z: 10
                 x: loader.item ? loader.item.anchorPos.x - width/2 : -100
                 y: loader.item ? loader.item.anchorPos.y - height : -100

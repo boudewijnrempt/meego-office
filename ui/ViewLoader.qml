@@ -119,14 +119,14 @@ Item {
             opacity: 0;
 
             Marker {
-                id: selectionMarker1
+                id: cursorMarker
                 z: 10
                 x: loader.item ? loader.item.cursorPos.x - width/2 : -100
                 y: loader.item ? loader.item.cursorPos.y - height : -100
             }
 
             Marker {
-                id: selectionMarker2
+                id: anchorMarker
                 z: 10
                 x: loader.item ? loader.item.anchorPos.x - width/2 : -100
                 y: loader.item ? loader.item.anchorPos.y - height : -100

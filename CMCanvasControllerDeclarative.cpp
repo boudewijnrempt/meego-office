@@ -452,9 +452,9 @@ void CMCanvasControllerDeclarative::moveMarker(int which, qreal x, qreal y)
 
 void CMCanvasControllerDeclarative::Private::clearSelection()
 {
-    QTextDocument *doc = selection.textCursor.document();
-    if (!doc)
+    if (selection.textCursor.isNull())
         return;
+    QTextDocument *doc = selection.textCursor.document();
     KoTextEditor *editor = KoTextDocument(doc).textEditor();
     editor->clearSelection();
 

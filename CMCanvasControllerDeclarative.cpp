@@ -387,8 +387,8 @@ void CMCanvasControllerDeclarative::Private::selectWordUnderMouse()
     KWCanvasBase *kwcanvasitem = dynamic_cast<KWCanvasBase *>(q->canvas()->canvasItem());
     KWViewMode *mode = kwcanvasitem ? kwcanvasitem->viewMode() : 0;
 
-    QPointF mousePos = currentMousePos + q->documentOffset();
-    QPointF docMousePos = mode ? mode->viewToDocument(mousePos) : q->canvas()->viewConverter()->viewToDocument(mousePos);
+    QPointF canvasMousePos = currentMousePos + q->documentOffset();
+    QPointF docMousePos = mode ? mode->viewToDocument(canvasMousePos) : q->canvas()->viewConverter()->viewToDocument(canvasMousePos);
     KoShape *shapeUnderCursor = q->canvas()->shapeManager()->shapeAt(docMousePos);
     if (!shapeUnderCursor) {
         qDebug() << "There is nothing here";
@@ -404,11 +404,10 @@ void CMCanvasControllerDeclarative::Private::selectWordUnderMouse()
     QTextDocument *doc = shapeData->document();
     KoTextDocumentLayout *lay = qobject_cast<KoTextDocumentLayout *>(doc->documentLayout());
     KoTextEditor *editor = KoTextDocument(doc).textEditor();
-    QPointF shapePos = shapeUnderCursor->position();
-    QPointF p = shapeUnderCursor->absoluteTransformation(0).inverted().map(docMousePos);
-    QPointF pointInDoc = p + QPointF(0.0, shapeData->documentOffset());
+    QPointF shapeMousePos = shapeUnderCursor->absoluteTransformation(0).inverted().map(docMousePos);
+    QPointF textDocMousePos = shapeMousePos + QPointF(0.0, shapeData->documentOffset());
 
-    int cursorPos = lay->hitTest(pointInDoc, Qt::FuzzyHit);
+    int cursorPos = lay->hitTest(textDocMousePos, Qt::FuzzyHit);
     editor->setPosition(cursorPos);
     editor->select(QTextCursor::WordUnderCursor);
     q->canvas()->updateCanvas(shapeUnderCursor->boundingRect());
@@ -420,8 +419,8 @@ void CMCanvasControllerDeclarative::Private::selectWordUnderMouse()
     QTextCursor c2(cursor);
     c2.setPosition(cursor.anchor());
 
-    QPointF positionTopLeft = shapePos + selectionBoundingBox(c2).topLeft();
-    QPointF anchorTopLeft = shapePos + selectionBoundingBox(c1).topLeft();
+    QPointF positionTopLeft = shapeUnderCursor->absoluteTransformation(0).map(selectionBoundingBox(c2).topLeft() - QPointF(0, shapeData->documentOffset()));
+    QPointF anchorTopLeft = shapeUnderCursor->absoluteTransformation(0).map(selectionBoundingBox(c1).topLeft() - QPointF(0, shapeData->documentOffset()));
 
     selection.cursorPos = (mode ? mode->documentToView(positionTopLeft) : q->canvas()->viewConverter()->documentToView(positionTopLeft)) - q->documentOffset();
     selection.anchorPos = (mode ? mode->documentToView(anchorTopLeft) : q->canvas()->viewConverter()->documentToView(anchorTopLeft)) - q->documentOffset();

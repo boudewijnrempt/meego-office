@@ -462,22 +462,21 @@ void CMCanvasControllerDeclarative::Private::updateSelectionMarkerPositions()
     KWViewMode *mode = kwcanvasitem ? kwcanvasitem->viewMode() : 0;
     QTextDocument *doc = selection.textCursor.document();
     KoTextDocumentLayout *lay = qobject_cast<KoTextDocumentLayout *>(doc->documentLayout());
-    KoShape *shape = lay->shapeForPosition(selection.textCursor.position());
-    KoTextShapeData *shapeData = qobject_cast<KoTextShapeData *>(shape->userData());
-    KoTextEditor *editor = KoTextDocument(doc).textEditor();
 
-    QTextCursor cursor(*editor->cursor());
-    QTextCursor c1(cursor);
+    KoShape *shape1 = lay->shapeForPosition(selection.textCursor.position());
+    KoTextShapeData *shapeData1 = qobject_cast<KoTextShapeData *>(shape1->userData());
+    QTextCursor c1(selection.textCursor);
     c1.clearSelection();
-    QTextCursor c2(cursor);
-    c2.setPosition(cursor.anchor());
-
-    QPointF positionBottomRight = shape->absoluteTransformation(0).map(selectionBoundingBox(c1).bottomRight() - QPointF(0, shapeData->documentOffset()));
-    QPointF anchorBottomRight = shape->absoluteTransformation(0).map(selectionBoundingBox(c2).bottomRight() - QPointF(0, shapeData->documentOffset()));
-
+    QPointF positionBottomRight = shape1->absoluteTransformation(0).map(selectionBoundingBox(c1).bottomRight() - QPointF(0, shapeData1->documentOffset()));
     selection.cursorPos = (mode ? mode->documentToView(positionBottomRight) : q->canvas()->viewConverter()->documentToView(positionBottomRight)) - q->documentOffset();
+
+    KoShape *shape2 = lay->shapeForPosition(selection.textCursor.anchor());
+    KoTextShapeData *shapeData2 = qobject_cast<KoTextShapeData *>(shape2->userData());
+    QTextCursor c2(selection.textCursor);
+    c2.setPosition(selection.textCursor.anchor());
+    QPointF anchorBottomRight = shape2->absoluteTransformation(0).map(selectionBoundingBox(c2).bottomRight() - QPointF(0, shapeData2->documentOffset()));
+
     selection.anchorPos = (mode ? mode->documentToView(anchorBottomRight) : q->canvas()->viewConverter()->documentToView(anchorBottomRight)) - q->documentOffset();
-    selection.textCursor = cursor;
 
     emit q->cursorPosChanged();
     emit q->anchorPosChanged();

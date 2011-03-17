@@ -4,7 +4,6 @@ import org.calligra.mobile 1.0
 Item {
     id: root
     signal viewingFinished()
-    property alias sourceComponent: loader.sourceComponent
 
     function setFile(file) {
         var ext = file.substr(-3)
@@ -45,6 +44,11 @@ Item {
 
     function loadDocument() {
         loader.item.loadDocument();
+    }
+
+    function unloadDocument() {
+        if (loader.sourceComponent) 
+            loader.sourceComponent = undefined
     }
 
     SearchBar {

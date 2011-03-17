@@ -140,7 +140,7 @@ Item {
                 opacity: 0.5
                 z: 10
                 x: loader.item ? loader.item.cursorPos.x - width/2 : -100
-                y: loader.item ? loader.item.cursorPos.y - height : -100
+                y: loader.item ? loader.item.cursorPos.y : -100
                 onMoved: loader.item.moveMarker(1, newX, newY)
             }
 
@@ -149,7 +149,7 @@ Item {
                 opacity: 0.5
                 z: 10
                 x: loader.item ? loader.item.anchorPos.x - width/2 : -100
-                y: loader.item ? loader.item.anchorPos.y - height : -100
+                y: loader.item ? loader.item.anchorPos.y : -100
                 onMoved: loader.item.moveMarker(2, newX, newY)
             }
         }

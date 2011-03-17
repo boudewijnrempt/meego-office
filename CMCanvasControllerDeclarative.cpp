@@ -472,11 +472,11 @@ void CMCanvasControllerDeclarative::Private::updateSelectionMarkerPositions()
     QTextCursor c2(cursor);
     c2.setPosition(cursor.anchor());
 
-    QPointF positionTopLeft = shape->absoluteTransformation(0).map(selectionBoundingBox(c1).topLeft() - QPointF(0, shapeData->documentOffset()));
-    QPointF anchorTopLeft = shape->absoluteTransformation(0).map(selectionBoundingBox(c2).topLeft() - QPointF(0, shapeData->documentOffset()));
+    QPointF positionBottomRight = shape->absoluteTransformation(0).map(selectionBoundingBox(c1).bottomRight() - QPointF(0, shapeData->documentOffset()));
+    QPointF anchorBottomRight = shape->absoluteTransformation(0).map(selectionBoundingBox(c2).bottomRight() - QPointF(0, shapeData->documentOffset()));
 
-    selection.cursorPos = (mode ? mode->documentToView(positionTopLeft) : q->canvas()->viewConverter()->documentToView(positionTopLeft)) - q->documentOffset();
-    selection.anchorPos = (mode ? mode->documentToView(anchorTopLeft) : q->canvas()->viewConverter()->documentToView(anchorTopLeft)) - q->documentOffset();
+    selection.cursorPos = (mode ? mode->documentToView(positionBottomRight) : q->canvas()->viewConverter()->documentToView(positionBottomRight)) - q->documentOffset();
+    selection.anchorPos = (mode ? mode->documentToView(anchorBottomRight) : q->canvas()->viewConverter()->documentToView(anchorBottomRight)) - q->documentOffset();
     selection.textCursor = cursor;
 
     emit q->cursorPosChanged();

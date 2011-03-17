@@ -13,7 +13,7 @@ Image {
         id: mouseArea
         anchors.fill: parent
         onPositionChanged: {
-            root.moved(root.x + mouse.x, root.y + mouse.y)
+            root.moved(root.x + mouse.x, root.y + mouse.y - root.height)
         }
     }
 }

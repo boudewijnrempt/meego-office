@@ -28,7 +28,6 @@ public:
     Calligra::Tables::Doc* doc;
     Calligra::Tables::CanvasItem* canvas;
 
-    QString file;
     bool hasNextSheet;
     bool hasPreviousSheet;
 
@@ -61,16 +60,6 @@ void CMTablesCanvas::setActiveSheetIndex(int index)
 {
     d->activeSheetIndex = index;
     d->updateCanvas();
-}
-
-QString CMTablesCanvas::file() const
-{
-    return d->file;
-}
-
-void CMTablesCanvas::setFile(const QString& file)
-{
-    d->file = file;
 }
 
 bool CMTablesCanvas::hasNextSheet() const
@@ -119,8 +108,8 @@ void CMTablesCanvas::loadDocument()
 
     connect(proxy, SIGNAL(valueChanged(int)), SIGNAL(progress(int)));
     
-    if(!d->doc->openUrl(KUrl(d->file))) {
-        kWarning() << "Could not open file:" << d->file;
+    if(!d->doc->openUrl(KUrl(file()))) {
+        kWarning() << "Could not open file:" << file();
         return;
     }
 

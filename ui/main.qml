@@ -53,7 +53,7 @@ Rectangle {
             }
             StateChangeScript {
                 name: "unloadViewer"
-                script: if (viewLoader.sourceComponent) viewLoader.sourceComponent = undefined
+                script: viewLoader.unloadDocument()
             }
         },
         State {

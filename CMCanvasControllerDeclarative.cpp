@@ -6,9 +6,22 @@
 #include <QtGui/QGraphicsWidget>
 #include <QtGui/QGraphicsSceneMouseEvent>
 #include <QtGui/QApplication>
+#include <QtCore/QBuffer>
+#include <QtGui/QTextDocumentWriter>
+#include <QtGui/QTextDocumentFragment>
 
 #include <KDE/KActionCollection>
 
+#include <words/part/KWCanvasBase.h>
+#include <words/part/KWViewMode.h>
+
+#include <KoShape.h>
+#include <KoSelection.h>
+#include <KoToolProxy.h>
+#include <KoTextDocumentLayout.h>
+#include <KoTextEditor.h>
+#include <KoTextShapeData.h>
+#include <KoToolSelection.h>
 #include <KoCanvasBase.h>
 #include <KoViewConverter.h>
 #include <KoToolManager.h>
@@ -32,14 +45,24 @@ public:
         canvas(0), zoomHandler(0), zoomController(0),
         vastScrollingFactor(0.f),
         minX(0), minY(0), maxX(0), maxY(0),
-        dragging(false), zoom(1.0)
-    { }
+        dragging(false), zoom(1.0), currentGesture(NoGesture)
+    { 
+        selection.cursorPos = selection.anchorPos = QPointF(-1000, -1000);
+        selection.shape = 0;
+    }
     ~Private() { }
 
     void updateMinMax();
     void updateCanvasSize();
     void checkBounce(const QPoint& offset);
     void frameChanged(int frame);
+
+    enum { ProcessTextUnderMouse, MovePosition, MoveAnchor };
+    void updateSelection(int option);
+    void clearSelection();
+    void updateSelectionMarkerPositions();
+
+    QString file;
 
     CMCanvasInputProxy* inputProxy;
 
@@ -49,6 +72,7 @@ public:
     KoZoomController* zoomController;
 
     QTimer* timer;
+    QTimer tapAndHoldTimer;
 
     qreal vastScrollingFactor;
 
@@ -72,6 +96,14 @@ public:
     float dragCoeff;
     float timeStep;
     float springCoeff;
+
+    enum { NoGesture, PanGesture, TapAndHoldGesture, UpdateClipboardAndClearSelection } currentGesture;
+    QPointF currentMousePos;
+    struct {
+        QTextCursor textCursor;
+        QPointF cursorPos, anchorPos;
+        KoShape *shape;
+    } selection;
 };
 
 CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* parent)
@@ -87,6 +119,10 @@ CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* p
     d->timer = new QTimer(this);
     d->timer->setInterval(40);
     connect(d->timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
+
+    d->tapAndHoldTimer.setInterval(QApplication::startDragTime());
+    d->tapAndHoldTimer.setSingleShot(true);
+    connect(&d->tapAndHoldTimer, SIGNAL(timeout()), this, SLOT(onTapAndHoldGesture()));
 
     d->mass = 10.f;
     d->dragCoeff = 0.05f;
@@ -105,6 +141,16 @@ CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* p
 CMCanvasControllerDeclarative::~CMCanvasControllerDeclarative()
 {
     KoToolManager::instance()->removeCanvasController(this);
+}
+
+QString CMCanvasControllerDeclarative::file() const
+{
+    return d->file;
+}
+
+void CMCanvasControllerDeclarative::setFile(const QString &f)
+{
+    d->file = f;
 }
 
 void CMCanvasControllerDeclarative::setVastScrolling(qreal factor)
@@ -134,6 +180,7 @@ void CMCanvasControllerDeclarative::resetDocumentOffset(const QPoint& offset)
     if(d->inputProxy->updateCanvas()) {
         d->updateCanvasSize();
     }
+    d->updateSelectionMarkerPositions();
 }
 
 void CMCanvasControllerDeclarative::setScrollBarValue(const QPoint& value)
@@ -215,6 +262,7 @@ void CMCanvasControllerDeclarative::resetZoom()
     d->zoomController->setZoom(KoZoomMode::ZOOM_CONSTANT, 1.0);
     d->updateMinMax();
     d->updateCanvasSize();
+    d->updateSelectionMarkerPositions();
 }
 
 void CMCanvasControllerDeclarative::ensureVisible(KoShape* shape)
@@ -312,19 +360,200 @@ void CMCanvasControllerDeclarative::scrollContentsBy(int dx, int dy)
     resetDocumentOffset(offset);
 }
 
+static QRectF selectionBoundingBox(QTextCursor &cursor)
+{
+    QTextFrame *frame = cursor.document()->rootFrame();
+
+    QRectF retval(-5E6,0,105E6,1);
+    if (cursor.position() == -1)
+        return retval;
+
+    QTextFrame::iterator it;
+    for (it = frame->begin(); !(it.atEnd()); ++it) {
+        QTextBlock block = it.currentBlock();
+
+        if (cursor.selectionStart() >= block.position()
+            && cursor.selectionStart() < block.position() + block.length()) {
+            QTextLine line = block.layout()->lineForTextPosition(cursor.selectionStart() - block.position());
+            if (line.isValid()) {
+                retval.setTop(line.y());
+                retval.setLeft(line.cursorToX(cursor.selectionStart() - block.position()));
+            }
+        }
+        if (cursor.selectionEnd() >= block.position()
+            && cursor.selectionEnd() < block.position() + block.length()) {
+            QTextLine line = block.layout()->lineForTextPosition(cursor.selectionEnd() - block.position());
+            if (line.isValid()) {
+                retval.setBottom(line.y() + line.height());
+                retval.setRight(line.cursorToX(cursor.selectionEnd() - block.position()));
+            }
+        }
+    }
+    return retval;
+}
+
+void CMCanvasControllerDeclarative::Private::updateSelection(int option)
+{
+    KWCanvasBase *kwcanvasitem = dynamic_cast<KWCanvasBase *>(q->canvas()->canvasItem());
+    KWViewMode *mode = kwcanvasitem ? kwcanvasitem->viewMode() : 0;
+
+    QPointF canvasMousePos = currentMousePos + q->documentOffset();
+    QPointF docMousePos = mode ? mode->viewToDocument(canvasMousePos) : q->canvas()->viewConverter()->viewToDocument(canvasMousePos);
+    KoShape *shapeUnderCursor = q->canvas()->shapeManager()->shapeAt(docMousePos);
+    if (!shapeUnderCursor) {
+        qDebug() << "There is nothing here";
+        return;
+    }
+    KoTextShapeData *shapeData = qobject_cast<KoTextShapeData *>(shapeUnderCursor->userData());
+    if (!shapeData)
+        return;
+
+    q->canvas()->shapeManager()->selection()->select(shapeUnderCursor);
+    KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
+
+    QTextDocument *doc = shapeData->document();
+    KoTextDocumentLayout *lay = qobject_cast<KoTextDocumentLayout *>(doc->documentLayout());
+    KoTextEditor *editor = KoTextDocument(doc).textEditor();
+    QPointF shapeMousePos = shapeUnderCursor->absoluteTransformation(0).inverted().map(docMousePos);
+    QPointF textDocMousePos = shapeMousePos + QPointF(0.0, shapeData->documentOffset());
+
+    int cursorPos = lay->hitTest(textDocMousePos, Qt::FuzzyHit);
+    if (option == ProcessTextUnderMouse) {
+        editor->setPosition(cursorPos);
+        if (!editor->charFormat().anchorHref().isEmpty()) { // user clicked on link
+            emit q->linkActivated(editor->charFormat().anchorHref());
+            return;
+        }
+        editor->select(QTextCursor::WordUnderCursor);
+    } else if (option == MovePosition) {
+        editor->setPosition(cursorPos, QTextCursor::KeepAnchor);
+    } else if (option == MoveAnchor) {
+        int oldPosition = editor->position();
+        editor->setPosition(cursorPos);
+        editor->setPosition(oldPosition, QTextCursor::KeepAnchor);
+    } else if (option == UpdateClipboardAndClearSelection) {
+        QTextCursor cursor(*editor->cursor());
+        if ((cursor.position() <= cursorPos && cursor.anchor() >= cursorPos)
+            || (cursor.anchor() <= cursorPos && cursor.position() >= cursorPos)) { // user clicked on selection
+            QMimeData *mimeData = new QMimeData;
+            QTextDocumentFragment fragment(cursor);
+            mimeData->setText(fragment.toPlainText());
+            mimeData->setHtml(fragment.toHtml("utf-8"));
+            QBuffer buffer;
+            QTextDocumentWriter writer(&buffer, "ODF");
+            writer.write(fragment);
+            buffer.close();
+            mimeData->setData("application/vnd.oasis.opendocument.text", buffer.data());
+            QApplication::clipboard()->setMimeData(mimeData);
+            emit q->textCopiedToClipboard();
+        }
+        clearSelection();
+        return;
+    }
+
+    q->canvas()->updateCanvas(shapeUnderCursor->boundingRect());
+    selection.shape = shapeUnderCursor;
+    updateSelectionMarkerPositions();
+}
+
+void CMCanvasControllerDeclarative::Private::updateSelectionMarkerPositions()
+{
+    if (!selection.shape)
+        return;
+    KWCanvasBase *kwcanvasitem = dynamic_cast<KWCanvasBase *>(q->canvas()->canvasItem());
+    KWViewMode *mode = kwcanvasitem ? kwcanvasitem->viewMode() : 0;
+    KoShape *shape = selection.shape;
+    KoTextShapeData *shapeData = qobject_cast<KoTextShapeData *>(shape->userData());
+    QTextDocument *doc = shapeData->document();
+    KoTextEditor *editor = KoTextDocument(doc).textEditor();
+
+    QTextCursor cursor(*editor->cursor());
+    QTextCursor c1(cursor);
+    c1.clearSelection();
+    QTextCursor c2(cursor);
+    c2.setPosition(cursor.anchor());
+
+    QPointF positionTopLeft = shape->absoluteTransformation(0).map(selectionBoundingBox(c1).topLeft() - QPointF(0, shapeData->documentOffset()));
+    QPointF anchorTopLeft = shape->absoluteTransformation(0).map(selectionBoundingBox(c2).topLeft() - QPointF(0, shapeData->documentOffset()));
+
+    selection.cursorPos = (mode ? mode->documentToView(positionTopLeft) : q->canvas()->viewConverter()->documentToView(positionTopLeft)) - q->documentOffset();
+    selection.anchorPos = (mode ? mode->documentToView(anchorTopLeft) : q->canvas()->viewConverter()->documentToView(anchorTopLeft)) - q->documentOffset();
+    selection.textCursor = cursor;
+
+    emit q->cursorPosChanged();
+    emit q->anchorPosChanged();
+}
+
+void CMCanvasControllerDeclarative::moveMarker(int which, qreal x, qreal y)
+{
+    d->currentMousePos = QPointF(x, y);
+    d->updateSelection(which == 1 ? Private::MovePosition : Private::MoveAnchor);
+}
+
+void CMCanvasControllerDeclarative::Private::clearSelection()
+{
+    if (selection.textCursor.isNull())
+        return;
+    QTextDocument *doc = selection.textCursor.document();
+    KoTextEditor *editor = KoTextDocument(doc).textEditor();
+    editor->clearSelection();
+
+    selection.shape = 0;
+    selection.textCursor = *editor->cursor();
+    selection.cursorPos = selection.anchorPos = QPointF(-1000, -1000);
+    emit q->cursorPosChanged();
+    emit q->anchorPosChanged();
+}
+
+QPointF CMCanvasControllerDeclarative::cursorPos() const
+{
+    return d->selection.cursorPos;
+}
+
+QPointF CMCanvasControllerDeclarative::anchorPos() const
+{
+    return d->selection.anchorPos;
+}
+
+void CMCanvasControllerDeclarative::onTapAndHoldGesture()
+{
+    d->currentGesture = Private::TapAndHoldGesture;
+    d->updateSelection(Private::ProcessTextUnderMouse);
+}
+
 bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event )
 {
     if(target == this || target == d->canvas->canvasItem()) {
         if(event->type() == QEvent::GraphicsSceneMousePress) {
+            QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(event);
             d->velocity = QVector2D();
             d->timer->stop();
+            d->currentGesture = Private::NoGesture;
+            d->tapAndHoldTimer.start();
+            d->currentMousePos = me->pos();
             return true;
         } else if(event->type() == QEvent::GraphicsSceneMouseMove) {
-            if(d->inputProxy->updateCanvas())
-                d->inputProxy->handleMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
+            QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(event);
+            d->currentMousePos = me->pos();
+            if (d->currentGesture == Private::NoGesture 
+                && (me->pos() - me->buttonDownPos(Qt::LeftButton)).manhattanLength() >= QApplication::startDragDistance()) {
+                d->currentGesture = Private::PanGesture;
+                d->tapAndHoldTimer.stop();
+            } else if (d->currentGesture == Private::TapAndHoldGesture) {
+                d->updateSelection(Private::MovePosition);
+            }
+
+            if (d->currentGesture == Private::PanGesture) {
+                if(d->inputProxy->updateCanvas())
+                    d->inputProxy->handleMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
+            }
+
             return true;
         } else if(event->type() == QEvent::GraphicsSceneMouseRelease) {
             d->timer->start();
+            d->tapAndHoldTimer.stop();
+            if (d->currentGesture == Private::NoGesture)
+                d->updateSelection(Private::UpdateClipboardAndClearSelection);
             return true;
         } else if(event->type() == QEvent::TouchBegin) {
             event->accept();
@@ -394,6 +623,7 @@ void CMCanvasControllerDeclarative::documentOffsetMoved(const QPoint& point)
 {
     Q_UNUSED(point);
     d->updateMinMax();
+    d->updateSelectionMarkerPositions();
 }
 
 void CMCanvasControllerDeclarative::timerUpdate()
@@ -470,3 +700,4 @@ KoZoomHandler* CMCanvasControllerDeclarative::zoomHandler() const
 {
     return d->zoomHandler;
 }
+

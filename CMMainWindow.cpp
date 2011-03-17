@@ -105,3 +105,8 @@ void CMMainWindow::resizeEvent(QResizeEvent *event)
     QMainWindow::resizeEvent(event);
 }
 
+void CMMainWindow::openUrl(const QString &url)
+{
+    QDesktopServices::openUrl(url);
+}
+

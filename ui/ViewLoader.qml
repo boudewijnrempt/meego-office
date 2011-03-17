@@ -4,7 +4,6 @@ import org.calligra.mobile 1.0
 Item {
     id: root
     signal viewingFinished()
-    property alias sourceComponent: loader.sourceComponent
 
     function setFile(file) {
         var ext = file.substr(-3)
@@ -45,6 +44,11 @@ Item {
 
     function loadDocument() {
         loader.item.loadDocument();
+    }
+
+    function unloadDocument() {
+        if (loader.sourceComponent) 
+            loader.sourceComponent = undefined
     }
 
     SearchBar {
@@ -115,8 +119,39 @@ Item {
         Loader {
             id: loader
             anchors.fill: parent
-
+            clip: true
             opacity: 0;
+
+            Connections {
+                target: loader.item
+                onLinkActivated: window.openUrl(url)
+                onTextCopiedToClipboard: textCopiedMessage.show()
+            }
+
+            TextCopiedToClipboardMessage {
+                id: textCopiedMessage
+                anchors.centerIn: parent
+                opacity: 0
+                z: 10
+            }
+
+            Marker {
+                id: cursorMarker
+                opacity: 0.5
+                z: 10
+                x: loader.item ? loader.item.cursorPos.x - width/2 : -100
+                y: loader.item ? loader.item.cursorPos.y - height : -100
+                onMoved: loader.item.moveMarker(1, newX, newY)
+            }
+
+            Marker {
+                id: anchorMarker
+                opacity: 0.5
+                z: 10
+                x: loader.item ? loader.item.anchorPos.x - width/2 : -100
+                y: loader.item ? loader.item.anchorPos.y - height : -100
+                onMoved: loader.item.moveMarker(2, newX, newY)
+            }
         }
 
         Item {

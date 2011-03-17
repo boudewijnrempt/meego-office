@@ -22,8 +22,6 @@ public:
     KoPACanvasItem* canvas;
     CMStageDeclarativeView* view;
 
-    QString file;
-
     void updateCanvas();
 };
 
@@ -43,16 +41,6 @@ QObject* CMStageCanvas::doc() const
     return d->doc;
 }
 
-QString CMStageCanvas::file() const
-{
-    return d->file;
-}
-
-void CMStageCanvas::setFile(const QString& file)
-{
-    d->file = file;
-}
-
 void CMStageCanvas::loadDocument()
 {
     emit progress(1);
@@ -65,8 +53,8 @@ void CMStageCanvas::loadDocument()
 
     connect(proxy, SIGNAL(valueChanged(int)), SIGNAL(progress(int)));
 
-    if(!doc->openUrl(KUrl(d->file))) {
-        kWarning() << "Could not open file:" << d->file;
+    if(!doc->openUrl(KUrl(file()))) {
+        kWarning() << "Could not open file:" << file();
         return;
     }
 

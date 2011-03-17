@@ -25,8 +25,6 @@ public:
     KWDocument* doc;
     KWCanvasItem* canvas;
 
-    QString file;
-
     void updateCanvas();
 };
 
@@ -46,16 +44,6 @@ QObject* CMWordsCanvas::doc() const
     return d->doc;
 }
 
-QString CMWordsCanvas::file() const
-{
-    return d->file;
-}
-
-void CMWordsCanvas::setFile(const QString& file)
-{
-    d->file = file;
-}
-
 void CMWordsCanvas::loadDocument()
 {
     emit progress(1);
@@ -70,8 +58,8 @@ void CMWordsCanvas::loadDocument()
 
     setMargin(10);
 
-    if(!doc->openUrl(KUrl(d->file))) {
-        kWarning() << "Could not open file:" << d->file;
+    if(!doc->openUrl(KUrl(file()))) {
+        kWarning() << "Could not open file:" << file();
         return;
     }
 

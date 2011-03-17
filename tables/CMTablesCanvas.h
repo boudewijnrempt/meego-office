@@ -8,7 +8,6 @@ class CMTablesCanvas : public CMCanvasControllerDeclarative
     Q_OBJECT
     Q_PROPERTY(int activeSheetIndex READ activeSheetIndex WRITE setActiveSheetIndex)
     Q_PROPERTY(QObject* document READ doc)
-    Q_PROPERTY(QString file READ file WRITE setFile)
     Q_PROPERTY(bool hasNextSheet READ hasNextSheet NOTIFY hasNextSheetChanged)
     Q_PROPERTY(bool hasPreviousSheet READ hasNextSheet NOTIFY hasPreviousSheetChanged)
 
@@ -23,8 +22,6 @@ public:
     bool hasPreviousSheet() const;
 
     QObject* doc() const;
-    QString file() const;
-    void setFile(const QString &file);
 
 public Q_SLOTS:
     void nextSheet();

@@ -15,12 +15,18 @@ class KoZoomController;
 class CALLIGRAMOBILE_EXPORT CMCanvasControllerDeclarative : public QDeclarativeItem, public KoCanvasController
 {
     Q_OBJECT
+    Q_PROPERTY(QString file READ file WRITE setFile)
     Q_PROPERTY(int visibleWidth READ visibleWidth)
     Q_PROPERTY(int visibleHeight READ visibleHeight)
+    Q_PROPERTY(QPointF cursorPos READ cursorPos NOTIFY cursorPosChanged)
+    Q_PROPERTY(QPointF anchorPos READ anchorPos NOTIFY anchorPosChanged)
 
 public:
     CMCanvasControllerDeclarative(QDeclarativeItem* parent = 0);
     virtual ~CMCanvasControllerDeclarative();
+
+    QString file() const;
+    void setFile(const QString &f);
 
     virtual void scrollContentsBy(int dx, int dy);
     virtual QSize viewportSize() const;
@@ -55,9 +61,13 @@ public:
     void setZoomMin(qreal newZoomMin);
     qreal zoomMin() const;
 
-Q_SIGNALS:
-    void nextPage();
-    void previousPage();
+    Q_SLOT void setForce(const QVector2D& newForce);
+    QVector2D force() const;
+
+    QPointF cursorPos() const;
+    QPointF anchorPos() const;
+
+    Q_INVOKABLE void moveMarker(int which, qreal x, qreal y);
 
 public Q_SLOTS:
     virtual void zoomOut(const QPoint& center = QPoint());
@@ -66,26 +76,31 @@ public Q_SLOTS:
     virtual void resetZoom();
 
 Q_SIGNALS:
+    void nextPage();
+    void previousPage();
+
     void progress(int progress);
     void completed();
 
-public:
-    Q_SLOT void setForce(const QVector2D& newForce);
-    QVector2D force() const;
-    
+    void cursorPosChanged();
+    void anchorPosChanged();
+
+    void linkActivated(const QString &url);
+    void textCopiedToClipboard();
 protected:
     virtual bool eventFilter(QObject* target, QEvent* event );
     KoZoomController* zoomController(KoViewConverter* viewConverter = 0, bool recreate = false);
-
-private:
-    class Private;
-    Private * const d;
 
 private Q_SLOTS:
     void onHeightChanged();
     void onWidthChanged();
     void documentOffsetMoved(const QPoint& point);
     void timerUpdate();
+    void onTapAndHoldGesture();
+
+private:
+    class Private;
+    Private * const d;
 };
 
 #endif // CALLIGRAMOBILE_CANVASCONTROLLERDECLARATIVE_H

@@ -552,6 +552,9 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
             if (d->currentGesture == Private::NoGesture)
                 d->updateSelection(Private::UpdateClipboardAndClearSelection);
             return true;
+        } else if(event->type() == QEvent::GraphicsSceneMouseDoubleClick) {
+            event->accept();
+            return true;
         } else if(event->type() == QEvent::TouchBegin) {
             event->accept();
             return true;

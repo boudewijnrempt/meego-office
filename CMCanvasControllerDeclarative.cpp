@@ -399,7 +399,8 @@ void CMCanvasControllerDeclarative::Private::updateSelection(int option)
     QPointF docMousePos = mode ? mode->viewToDocument(canvasMousePos) : q->canvas()->viewConverter()->viewToDocument(canvasMousePos);
     KoShape *shapeUnderCursor = q->canvas()->shapeManager()->shapeAt(docMousePos);
     if (!shapeUnderCursor) {
-        qDebug() << "There is nothing here";
+        if (option == UpdateClipboardAndClearSelection)
+            clearSelection();
         return;
     }
     KoTextShapeData *shapeData = qobject_cast<KoTextShapeData *>(shapeUnderCursor->userData());

@@ -41,12 +41,20 @@ class CMCanvasControllerDeclarative::Private
 {
 public:
     Private(CMCanvasControllerDeclarative* qq)
-        : inputProxy( new CMCanvasInputProxy(qq)), q(qq),
-        canvas(0), zoomHandler(0), zoomController(0),
-        vastScrollingFactor(0.f),
-        minX(0), minY(0), maxX(0), maxY(0),
-        dragging(false), zoom(1.0), currentGesture(NoGesture)
-    { 
+        : inputProxy( new CMCanvasInputProxy(qq))
+        , q(qq)
+        , canvas(0)
+        , zoomHandler(0)
+        , zoomController(0)
+        , vastScrollingFactor(0.f)
+        , minX(0)
+        , minY(0)
+        , maxX(0)
+        , maxY(0)
+        ,dragging(false)
+        , zoom(1.0)
+        , currentGesture(NoGesture)
+    {
         selection.cursorPos = selection.anchorPos = QPointF(-1000, -1000);
     }
     ~Private() { }
@@ -87,10 +95,10 @@ public:
     qreal zoom;
     qreal zoomMax;
     qreal zoomMin;
-    
+
     QVector2D force;
     QVector2D velocity;
-    
+
     float mass;
     float dragCoeff;
     float timeStep;
@@ -131,7 +139,7 @@ CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* p
     connect(this, SIGNAL(widthChanged()), this, SLOT(onWidthChanged()));
 
     connect(proxyObject, SIGNAL(moveDocumentOffset(QPoint)), this, SLOT(documentOffsetMoved(QPoint)));
-    
+
     connect(d->inputProxy, SIGNAL(nextPage()), SIGNAL(nextPage()));
     connect(d->inputProxy, SIGNAL(previousPage()), SIGNAL(previousPage()));
 }
@@ -222,7 +230,7 @@ void CMCanvasControllerDeclarative::zoomBy(const QPoint& center, qreal zoom)
     if(tempZoom > KoZoomMode::minimumZoom() && tempZoom < KoZoomMode::maximumZoom()) {
         proxyObject->emitZoomBy(zoom);
         d->zoom = tempZoom;
-        
+
         QPointF offset = documentOffset();
         QPointF position;
         position.rx() = (zoom * -offset.x()) + (1 - zoom) * center.x();
@@ -371,7 +379,7 @@ static QRectF selectionBoundingBox(QTextCursor &cursor)
         QTextBlock block = it.currentBlock();
 
         if (cursor.selectionStart() >= block.position()
-            && cursor.selectionStart() < block.position() + block.length()) {
+                && cursor.selectionStart() < block.position() + block.length()) {
             QTextLine line = block.layout()->lineForTextPosition(cursor.selectionStart() - block.position());
             if (line.isValid()) {
                 retval.setTop(line.y());
@@ -379,7 +387,7 @@ static QRectF selectionBoundingBox(QTextCursor &cursor)
             }
         }
         if (cursor.selectionEnd() >= block.position()
-            && cursor.selectionEnd() < block.position() + block.length()) {
+                && cursor.selectionEnd() < block.position() + block.length()) {
             QTextLine line = block.layout()->lineForTextPosition(cursor.selectionEnd() - block.position());
             if (line.isValid()) {
                 retval.setBottom(line.y() + line.height());
@@ -433,7 +441,7 @@ void CMCanvasControllerDeclarative::Private::updateSelection(int option)
     } else if (option == UpdateClipboardAndClearSelection) {
         QTextCursor cursor(*editor->cursor());
         if ((cursor.position() <= cursorPos && cursor.anchor() >= cursorPos)
-            || (cursor.anchor() <= cursorPos && cursor.position() >= cursorPos)) { // user clicked on selection
+                || (cursor.anchor() <= cursorPos && cursor.position() >= cursorPos)) { // user clicked on selection
             QMimeData *mimeData = new QMimeData;
             QTextDocumentFragment fragment(cursor);
             mimeData->setText(fragment.toPlainText());
@@ -533,8 +541,8 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
         } else if(event->type() == QEvent::GraphicsSceneMouseMove) {
             QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(event);
             d->currentMousePos = me->pos();
-            if (d->currentGesture == Private::NoGesture 
-                && (me->pos() - me->buttonDownPos(Qt::LeftButton)).manhattanLength() >= QApplication::startDragDistance()) {
+            if (d->currentGesture == Private::NoGesture
+                    && (me->pos() - me->buttonDownPos(Qt::LeftButton)).manhattanLength() >= QApplication::startDragDistance()) {
                 d->currentGesture = Private::PanGesture;
                 d->tapAndHoldTimer.stop();
             } else if (d->currentGesture == Private::TapAndHoldGesture) {

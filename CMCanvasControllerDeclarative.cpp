@@ -282,9 +282,11 @@ void CMCanvasControllerDeclarative::ensureVisible(KoShape* shape)
 void CMCanvasControllerDeclarative::ensureVisible(const QRectF& rect, bool smooth)
 {
     if(!smooth) {
-        resetDocumentOffset(QPoint(documentOffset().x(), rect.y()));
+        resetDocumentOffset(QPoint(rect.x(), rect.y()));
     } else {
-
+        QVector2D diff = QVector2D(rect.topLeft()) - QVector2D(documentOffset());
+        d->force += diff / 10;
+        d->timer->start();
     }
 }
 

@@ -159,9 +159,8 @@ void CMWordsCanvas::Private::matchFound(KoFindMatch match)
     find->highlightMatch(match);
 
     QTextLine line = cursor.block().layout()->lineForTextPosition(cursor.position() - cursor.block().position());
-    qreal startX = line.cursorToX(cursor.position() - cursor.block().position());
-    QRectF textRect(startX, line.y(), 1, line.height());
-    q->ensureVisible(textRect, false);
+    QRectF textRect(q->documentOffset().x(), line.y(), 1, line.height());
+    q->ensureVisible(textRect, true);
 
     canvas->updateCanvas(QRectF(QPointF(0.f, 0.f), canvas->canvasItem()->size()));
 }

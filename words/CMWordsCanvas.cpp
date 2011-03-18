@@ -155,6 +155,8 @@ void CMWordsCanvas::Private::matchFound(KoFindMatch match)
     doc->resourceManager()->setResource(KoText::CurrentTextAnchor, cursor.anchor());
     doc->resourceManager()->setResource(KoText::CurrentTextPosition, cursor.position());
     find->highlightMatch(match);
+
+    canvas->updateCanvas(QRectF(QPointF(0.f, 0.f), canvas->canvasItem()->size()));
 }
 
 #include "CMWordsCanvas.moc"

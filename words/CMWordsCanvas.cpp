@@ -81,6 +81,7 @@ void CMWordsCanvas::Private::updateCanvas()
         q->setCanvas(canvas);
         connect(q->proxyObject, SIGNAL(moveDocumentOffset(const QPoint&)), canvas, SLOT(setDocumentOffset(QPoint)));
         connect(canvas, SIGNAL(documentSize(QSizeF)), q->zoomController(), SLOT(setDocumentSize(QSizeF)));
+        canvas->updateSize();
     }
 
     canvas->updateCanvas(QRectF(0, 0, q->width(), q->height()));

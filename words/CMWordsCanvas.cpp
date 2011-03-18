@@ -16,6 +16,8 @@
 #include <KoShapeManager.h>
 #include <KoShape.h>
 #include <KoTextShapeData.h>
+#include <QTextLine>
+#include <QTextBlock>
 
 class CMWordsCanvas::Private
 {
@@ -155,6 +157,11 @@ void CMWordsCanvas::Private::matchFound(KoFindMatch match)
     doc->resourceManager()->setResource(KoText::CurrentTextAnchor, cursor.anchor());
     doc->resourceManager()->setResource(KoText::CurrentTextPosition, cursor.position());
     find->highlightMatch(match);
+
+    QTextLine line = cursor.block().layout()->lineForTextPosition(cursor.position() - cursor.block().position());
+    qreal startX = line.cursorToX(cursor.position() - cursor.block().position());
+    QRectF textRect(startX, line.y(), 1, line.height());
+    q->ensureVisible(textRect, false);
 
     canvas->updateCanvas(QRectF(QPointF(0.f, 0.f), canvas->canvasItem()->size()));
 }

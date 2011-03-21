@@ -132,4 +132,5 @@ install(FILES ${calligramobile_ui_RES} DESTINATION ${DATA_INSTALL_DIR}/calligram
 install(FILES ${calligramobile_ui_components_SRCS} DESTINATION ${DATA_INSTALL_DIR}/calligramobile/org/calligra/mobile)
 install(FILES ${calligramobile_ui_components_RES} DESTINATION ${DATA_INSTALL_DIR}/calligramobile/org/calligra/mobile/resources)
 install(FILES ${calligramobile_headers} DESTINATION ${INCLUDE_INSTALL_DIR})
+install(PROGRAMS intel-documents.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
 

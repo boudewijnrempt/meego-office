@@ -86,3 +86,23 @@ void CMWordsCanvas::Private::updateCanvas()
 
     canvas->updateCanvas(QRectF(0, 0, q->width(), q->height()));
 }
+
+void CMWordsCanvas::Private::matchFound(KoFindMatch match)
+{
+    if(!match.isValid()) {
+        return;
+    }
+
+    QTextCursor cursor = match.location().value<QTextCursor>();
+    doc->resourceManager()->setResource(KoText::CurrentTextAnchor, cursor.anchor());
+    doc->resourceManager()->setResource(KoText::CurrentTextPosition, cursor.position());
+    find->highlightMatch(match);
+
+    QTextLine line = cursor.block().layout()->lineForTextPosition(cursor.position() - cursor.block().position());
+    QRectF textRect(line.x(), line.y(), 1, line.height());
+    q->ensureVisible(textRect, false);
+
+    canvas->updateCanvas(QRectF(QPointF(0.f, 0.f), canvas->canvasItem()->size()));
+}
+
+#include "CMWordsCanvas.moc"

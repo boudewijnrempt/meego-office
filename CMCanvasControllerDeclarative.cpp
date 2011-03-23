@@ -37,6 +37,8 @@
 #include <QVector2D>
 #include "CMCanvasInputProxy.h"
 
+#define TextShape_SHAPEID "TextShapeID"
+
 class CMCanvasControllerDeclarative::Private
 {
 public:
@@ -474,6 +476,10 @@ void CMCanvasControllerDeclarative::Private::updateSelectionMarkerPositions()
     KoTextDocumentLayout *lay = qobject_cast<KoTextDocumentLayout *>(doc->documentLayout());
 
     KoShape *shape1 = lay->shapeForPosition(selection.textCursor.position());
+    if(!shape1 || shape1->shapeId() != TextShape_SHAPEID) {
+        return;
+    }
+    
     KoTextShapeData *shapeData1 = qobject_cast<KoTextShapeData *>(shape1->userData());
     QTextCursor c1(selection.textCursor);
     c1.clearSelection();

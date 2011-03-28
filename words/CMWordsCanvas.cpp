@@ -91,6 +91,8 @@ void CMWordsCanvas::loadDocument()
 
     d->updateCanvas();
 
+    connect(d->find, SIGNAL(updateCanvas()), this, SLOT(update()));
+
     QList<KoShape*> shapes = canvas()->shapeManager()->shapes();
     foreach(KoShape* shape, shapes) {
         KoTextShapeData *shapeData = dynamic_cast<KoTextShapeData *>(shape->userData());
@@ -156,7 +158,6 @@ void CMWordsCanvas::Private::matchFound(KoFindMatch match)
     QTextCursor cursor = match.location().value<QTextCursor>();
     doc->resourceManager()->setResource(KoText::CurrentTextAnchor, cursor.anchor());
     doc->resourceManager()->setResource(KoText::CurrentTextPosition, cursor.position());
-    find->highlightMatch(match);
 
     QTextLine line = cursor.block().layout()->lineForTextPosition(cursor.position() - cursor.block().position());
     QRectF textRect(q->documentOffset().x(), line.y(), 1, line.height());

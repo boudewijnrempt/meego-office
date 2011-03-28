@@ -62,6 +62,10 @@ CMStageDeclarativeView::CMStageDeclarativeView(KoZoomController* zoomController,
 
     d->viewMode = new KoPAViewModeNormal(this, d->canvas);
     setViewMode(d->viewMode);
+
+    if(doc->pageCount() > 0) {
+        doUpdateActivePage(doc->pageByIndex(0, false));
+    }
 }
 
 CMStageDeclarativeView::~CMStageDeclarativeView()
@@ -104,6 +108,7 @@ void CMStageDeclarativeView::doUpdateActivePage(KoPAPageBase* page)
         proxyObject->emitActivePageChanged();
     }
     d->canvas->updateSize();
+    emit updateSize(pageSize.toSize());
 }
 
 

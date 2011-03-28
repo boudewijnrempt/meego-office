@@ -19,6 +19,8 @@ public Q_SLOTS:
 private:
     class Private;
     Private * const d;
+
+    Q_PRIVATE_SLOT(d, void setDocumentSize(const QSize& size));
 };
 
 #endif // CALLIGRAMOBILE_STAGECANVAS_H

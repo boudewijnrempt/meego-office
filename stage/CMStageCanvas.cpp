@@ -7,6 +7,8 @@
 #include <part/KPrView.h>
 #include "CMStageDeclarativeView.h"
 #include "CMProgressProxy.h"
+#include <KoPAPageBase.h>
+#include <KoZoomController.h>
 
 class CMStageCanvas::Private
 {
@@ -23,6 +25,7 @@ public:
     CMStageDeclarativeView* view;
 
     void updateCanvas();
+    void setDocumentSize(const QSize &size);
 };
 
 CMStageCanvas::CMStageCanvas(QDeclarativeItem* parent)
@@ -46,7 +49,6 @@ void CMStageCanvas::loadDocument()
     emit progress(1);
     KPrDocument* doc = new KPrDocument(0, 0);
     d->doc = doc;
-    d->updateCanvas();
 
     CMProgressProxy *proxy = new CMProgressProxy(this);
     doc->setProgressProxy(proxy);
@@ -59,8 +61,8 @@ void CMStageCanvas::loadDocument()
     }
 
     setMargin(10);
-    d->view->setActivePage(d->doc->pageByIndex(0, false));
     d->updateCanvas();
+    d->view->setActivePage(d->doc->pageByIndex(0, false));
 
     emit progress(100);
     emit completed();
@@ -79,9 +81,16 @@ void CMStageCanvas::Private::updateCanvas()
         view = new CMStageDeclarativeView( q->zoomController(new KoZoomHandler()), doc, canvas);
         q->setCanvas(canvas);
         connect(q->proxyObject, SIGNAL(moveDocumentOffset(const QPoint&)), canvas, SLOT(slotSetDocumentOffset(QPoint)));
-        connect(canvas, SIGNAL(documentSize(const QSize&)), q->proxyObject, SLOT(sizeChanged(const QSize&)));
+        connect(canvas, SIGNAL(documentSize(const QSize&)), q, SLOT(setDocumentSize(const QSize&)));
+        canvas->updateSize();
     }
 
     canvas->updateCanvas(QRectF(0, 0, q->width(), q->height()));
 }
 
+void CMStageCanvas::Private::setDocumentSize(const QSize& size)
+{
+    q->zoomController()->setDocumentSize(size);
+}
+
+#include "CMStageCanvas.moc"

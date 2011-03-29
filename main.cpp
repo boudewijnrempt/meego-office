@@ -13,6 +13,7 @@
 #include "words/CMWordsCanvas.h"
 #include "tables/CMTablesCanvas.h"
 #include "stage/CMStageCanvas.h"
+#include "CMDocumentThumbnailListModel.h"
 
 int main(int argc, char *argv[])
 {
@@ -43,6 +44,7 @@ int main(int argc, char *argv[])
     KApplication app;
  
     qmlRegisterType<CMDocumentListModel>("org.calligra.mobile", 1, 0, "DocumentListModel");
+    qmlRegisterType<CMDocumentThumbnailListModel>("org.calligra.mobile", 1, 0, "DocumentThumbnailListModel");
     qmlRegisterType<CMWordsCanvas>("org.calligra.mobile", 1, 0, "WordsCanvas");
     qmlRegisterType<CMTablesCanvas>("org.calligra.mobile", 1, 0, "TablesCanvas");
     qmlRegisterType<CMStageCanvas>("org.calligra.mobile", 1, 0, "StageCanvas");

@@ -332,6 +332,7 @@ void CMCanvasControllerDeclarative::setCanvas(KoCanvasBase* canvas)
     canvas->canvasItem()->installEventFilter(this);
     canvas->canvasItem()->setAcceptTouchEvents(true);
     canvas->canvasItem()->grabGesture(Qt::PinchGesture);
+    canvas->canvasItem()->grabGesture(Qt::SwipeGesture);
     canvas->canvasItem()->show();
 
     d->updateCanvasSize();

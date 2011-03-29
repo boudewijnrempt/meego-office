@@ -4,7 +4,8 @@ import org.calligra.mobile 1.0
 Item {
     id: root
     signal viewingFinished()
-
+    property alias thumbnailListModel: thumbnailList.model
+    
     function setFile(file) {
         var ext = file.substr(-3)
         console.log(file)
@@ -95,6 +96,8 @@ Item {
         function onCompleted() {
             centralView.state = "loaded";
             loadingScreenProgressBar.progress = -1;
+            thumbnailList.model.setDocument(loader.item.document)
+            thumbnailList.currentIndex = 0
         }
 
         function onProgress(progress) {
@@ -178,6 +181,10 @@ Item {
         y: parent.height - actionBar.height
 
         ToolButton {
+            image: "image://icon/pages-list"
+            onClicked: thumbnailList.state = (thumbnailList.state == "hidden") ? "normal" : "hidden"
+        }
+        ToolButton {
             image: "image://icon/zoom-in"
             onClicked: loader.item.zoomIn()
         }
@@ -204,6 +211,36 @@ Item {
             image: window.fullScreen ? "image://icon/view-restore" : "image://icon/view-fullscreen"
             onClicked: root.state = window.fullScreen ? "normal" : "fullScreen"
         }
+    }
+    
+    DocumentThumbnailList {
+        id: thumbnailList
+        state: "hidden"
+        y: parent.height - (actionBar.height + thumbnailList.height)
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: 140
+        onSelected: { /*print("New page is " + (index + 1)); */ thumbnailList.state = "hidden" }
+        states: [
+            State {
+                name: "hidden"
+                PropertyChanges { target: thumbnailList; opacity: 0; }
+            },
+            State {
+                name: "shown"
+                PropertyChanges { target: thumbnailList; opacity: 1; }
+            }
+        ]
+        transitions: [
+            Transition {
+                to: "hidden"
+                PropertyAnimation { properties: "opacity"; duration: 150 }
+            },
+            Transition {
+                to: "shown"
+                PropertyAnimation { properties: "opacity"; duration: 150 }
+            }
+        ]
     }
 
     Component {

@@ -35,6 +35,7 @@ set(calligramobile_SRCS
     CMIconImageProvider.cpp
     CMMainWindow.cpp
     CMDocumentListModel.cpp
+    CMDocumentThumbnailListModel.cpp
     CMProgressProxy.cpp
 
     words/CMWordsCanvas.cpp
@@ -51,6 +52,7 @@ set(calligramobile_ui_components_SRCS
     components/qmldir
     components/Action.qml
     components/ActionBar.qml
+    components/DocumentThumbnailList.qml
     components/Button.qml
     components/Menu.qml
     components/ScreenOrientation.qml

@@ -1,6 +1,7 @@
 Action 1.0 Action.qml
 ActionBar 1.0 ActionBar.qml
 ActionBar 1.0 ActionBar.qml
+DocumentThumbnailList 1.0 DocumentThumbnailList.qml
 Button 1.0 Button.qml
 Menu 1.0 Menu.qml
 ScreenOrientation 1.0 ScreenOrientation.qml

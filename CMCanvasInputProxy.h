@@ -3,6 +3,7 @@
 
 #include <QtCore/QObject>
 
+class QTouchEvent;
 class QGestureEvent;
 class QGraphicsSceneMouseEvent;
 class CMCanvasControllerDeclarative;
@@ -15,6 +16,9 @@ public:
 
     void handleMouseMoveEvent(QGraphicsSceneMouseEvent* event);
     void handleGesture(QGestureEvent* event);
+    void handleTouchBegin(QTouchEvent *event);
+    void handleTouchUpdate(QTouchEvent *event);
+    void handleTouchEnd(QTouchEvent *event);
 
     CMCanvasControllerDeclarative* canvasController() const;
     void setCanvasController(CMCanvasControllerDeclarative* newController);

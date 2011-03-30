@@ -538,7 +538,8 @@ void CMCanvasControllerDeclarative::onTapAndHoldGesture()
 bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event )
 {
     if(target == this || target == d->canvas->canvasItem()) {
-        if(event->type() == QEvent::GraphicsSceneMousePress) {
+        switch(event->type()) {
+        case QEvent::GraphicsSceneMousePress: {
             QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(event);
             d->velocity = QVector2D();
             d->timer->stop();
@@ -546,7 +547,8 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
             d->tapAndHoldTimer.start();
             d->currentMousePos = me->pos();
             return true;
-        } else if(event->type() == QEvent::GraphicsSceneMouseMove) {
+        }
+        case QEvent::GraphicsSceneMouseMove: {
             QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(event);
             d->currentMousePos = me->pos();
             if (d->currentGesture == Private::NoGesture
@@ -563,21 +565,36 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
             }
 
             return true;
-        } else if(event->type() == QEvent::GraphicsSceneMouseRelease) {
+        }
+        case QEvent::GraphicsSceneMouseRelease: {
             d->timer->start();
             d->tapAndHoldTimer.stop();
             if (d->currentGesture == Private::NoGesture)
                 d->updateSelection(Private::UpdateClipboardAndClearSelection);
             return true;
-        } else if(event->type() == QEvent::GraphicsSceneMouseDoubleClick) {
+        }
+        case QEvent::GraphicsSceneMouseDoubleClick: {
             event->accept();
             return true;
-        } else if(event->type() == QEvent::TouchBegin) {
-            event->accept();
+        }
+        case QEvent::TouchBegin: {
+            d->inputProxy->handleTouchBegin(static_cast<QTouchEvent*>(event));
             return true;
-        } else if(event->type() == QEvent::Gesture) {
+        }
+        case QEvent::TouchUpdate: {
+            d->inputProxy->handleTouchUpdate(static_cast<QTouchEvent*>(event));
+            return true;
+        }
+        case QEvent::TouchEnd: {
+            d->inputProxy->handleTouchEnd(static_cast<QTouchEvent*>(event));
+            return true;
+        }
+        case QEvent::Gesture: {
             d->inputProxy->handleGesture(static_cast<QGestureEvent*>(event));
             return true;
+        }
+        default:
+            break;
         }
     }
     return QDeclarativeItem::eventFilter(target, event);

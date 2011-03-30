@@ -251,7 +251,7 @@ Item {
         WordsCanvas {
             id: document
             anchors.fill: parent
-            function setPage(newPage) { console.log("Changing pages is not yet implemented for Words") }
+            function setPage(newPage) { changePage(newPage) }
         }
     }
 

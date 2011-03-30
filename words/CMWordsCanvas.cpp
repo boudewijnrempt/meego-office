@@ -44,6 +44,12 @@ QObject* CMWordsCanvas::doc() const
     return d->doc;
 }
 
+void CMWordsCanvas::changePage(int newPage)
+{
+    KWPage thePage = d->doc->pageManager()->page(newPage + 1);
+    scrollContentsBy( 0, thePage.offsetInDocument() - documentOffset().y());
+}
+
 void CMWordsCanvas::loadDocument()
 {
     emit progress(1);

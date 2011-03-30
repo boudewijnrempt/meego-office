@@ -12,6 +12,7 @@ public:
     virtual ~CMWordsCanvas();
 
     QObject* doc() const;
+    Q_SLOT void changePage(int newPage);
 
 public Q_SLOTS:
     void loadDocument();

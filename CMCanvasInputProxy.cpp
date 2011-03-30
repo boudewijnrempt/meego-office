@@ -196,8 +196,9 @@ void CMCanvasInputProxy::Private::beginPinch()
     canvasController->setZoomMax(1.0 + (KoZoomMode::maximumZoom() - zoomX));
     canvasController->setZoomMin(KoZoomMode::minimumZoom() / zoomX);
 
+    QPointF origin = canvasController->mapToScene(canvasController->x(), canvasController->y());
     scaleProxy->setPixmap(QPixmap::grabWindow(QApplication::activeWindow()->winId(),
-                                              canvasController->x(), canvasController->y(),
+                                              origin.x(), origin.y(),
                                               canvasController->width(), canvasController->height()));
     scaleProxy->setScale(1.0);
     scaleProxy->setVisible(true);

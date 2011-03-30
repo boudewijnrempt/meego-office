@@ -93,7 +93,7 @@ Item {
         anchors.right: parent.right
         //anchors.bottom: actionBar.bottom
 
-        y: titleBar.y + titleBar.height;
+        y: titleBar.y + titleBar.height - 1;
         height: parent.height - titleBar.y - titleBar.height;
 
         function onCompleted() {

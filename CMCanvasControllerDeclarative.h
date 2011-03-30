@@ -77,6 +77,8 @@ public Q_SLOTS:
     virtual void resetZoom();
 
 Q_SIGNALS:
+    void docMoved();
+
     void nextPage();
     void previousPage();
 

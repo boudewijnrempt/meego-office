@@ -708,6 +708,7 @@ QVector2D CMCanvasControllerDeclarative::force() const
 void CMCanvasControllerDeclarative::setForce(const QVector2D& newForce)
 {
     d->force = newForce;
+    emit docMoved();
 }
 
 void CMCanvasControllerDeclarative::setZoomMax(qreal newZoomMax)

@@ -74,7 +74,7 @@ Item {
             id: backButton
             image: "image://icon/draw-arrow-back";
             borderPosition: "right"
-            onClicked: { searchBar.hide(); root.viewingFinished(); centralView.state = "" }
+            onClicked: { thumbnailList.state = "hidden"; searchBar.hide(); root.viewingFinished(); centralView.state = "" }
         }
 
         pullDownGestureTarget: searchBar
@@ -253,6 +253,7 @@ Item {
             anchors.fill: parent
             function setPage(newPage) { page = newPage }
             onPageChanged: thumbnailList.currentIndex = newPage
+            onDocMoved: thumbnailList.state = "hidden"
         }
     }
 
@@ -263,6 +264,7 @@ Item {
             anchors.fill: parent
             function setPage(newPage) { sheet = newPage }
             onSheetChanged: thumbnailList.currentIndex = newIndex
+            onDocMoved: thumbnailList.state = "hidden"
         }
     }
 
@@ -273,6 +275,7 @@ Item {
             anchors.fill: parent
             function setPage(newPage) { slide = newPage }
             onSlideChanged: thumbnailList.currentIndex = newSlide
+            onDocMoved: thumbnailList.state = "hidden"
         }
     }
 

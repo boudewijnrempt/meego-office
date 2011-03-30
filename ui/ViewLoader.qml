@@ -88,10 +88,13 @@ Item {
 
     Item {
         id: centralView
-        anchors.top: titleBar.bottom
+        
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.bottom: actionBar.bottom
+        //anchors.bottom: actionBar.bottom
+
+        y: titleBar.y + titleBar.height;
+        height: parent.height - titleBar.y - titleBar.height;
 
         function onCompleted() {
             centralView.state = "loaded";

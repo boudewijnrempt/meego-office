@@ -8,15 +8,22 @@ class CMStageCanvas : public CMCanvasControllerDeclarative
     Q_OBJECT
     Q_PROPERTY(QObject* document READ doc)
     Q_PROPERTY(QObject* view READ view)
+    Q_PROPERTY(int slide READ slide WRITE changeSlide NOTIFY slideChanged)
 public:
     CMStageCanvas(QDeclarativeItem* parent = 0);
     virtual ~CMStageCanvas();
 
     QObject* doc() const;
     QObject* view() const;
+    
+    int slide() const;
 
 public Q_SLOTS:
     void loadDocument();
+    void changeSlide(int newSlide);
+
+Q_SIGNALS:
+    void slideChanged(int newSlide);
 
 private:
     class Private;

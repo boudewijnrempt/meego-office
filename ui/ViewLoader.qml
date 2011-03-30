@@ -223,7 +223,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 140
-        onSelected: {  loader.item.setPage(index); thumbnailList.state = "hidden" }
+        onSelected: loader.item.setPage(index);
         states: [
             State {
                 name: "hidden"
@@ -251,7 +251,8 @@ Item {
         WordsCanvas {
             id: document
             anchors.fill: parent
-            function setPage(newPage) { changePage(newPage) }
+            function setPage(newPage) { page = newPage }
+            onPageChanged: thumbnailList.currentIndex = newPage
         }
     }
 
@@ -260,7 +261,8 @@ Item {
         TablesCanvas {
             id: document
             anchors.fill: parent
-            function setPage(newPage) { changeSheet(newPage) }
+            function setPage(newPage) { sheet = newPage }
+            onSheetChanged: thumbnailList.currentIndex = newIndex
         }
     }
 
@@ -269,7 +271,8 @@ Item {
         StageCanvas {
             id: document
             anchors.fill: parent
-            function setPage(newPage) { view.setPage(newPage) }
+            function setPage(newPage) { slide = newPage }
+            onSlideChanged: thumbnailList.currentIndex = newSlide
         }
     }
 

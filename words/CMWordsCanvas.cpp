@@ -16,7 +16,7 @@ class CMWordsCanvas::Private
 {
 public:
     Private(CMWordsCanvas* qq)
-        : q(qq), doc(0), canvas(0)
+        : q(qq), doc(0), canvas(0), currentPage(0)
     { }
     ~Private() { }
 
@@ -24,6 +24,7 @@ public:
 
     KWDocument* doc;
     KWCanvasItem* canvas;
+    int currentPage;
 
     void updateCanvas();
 };
@@ -48,6 +49,13 @@ void CMWordsCanvas::changePage(int newPage)
 {
     KWPage thePage = d->doc->pageManager()->page(newPage + 1);
     scrollContentsBy( 0, thePage.offsetInDocument() - documentOffset().y());
+    d->currentPage = newPage;
+    emit pageChanged(newPage);
+}
+
+int CMWordsCanvas::page() const
+{
+    return d->doc->pageManager()->page(documentOffset()).pageNumber();
 }
 
 void CMWordsCanvas::loadDocument()
@@ -91,6 +99,13 @@ void CMWordsCanvas::Private::updateCanvas()
     }
 
     canvas->updateCanvas(QRectF(0, 0, q->width(), q->height()));
+    
+    // This is horrendously expensive - please let there be a better way...
+    int theCurrentPage = q->page();
+    if(theCurrentPage != currentPage) {
+        currentPage = theCurrentPage;
+        emit q->pageChanged(theCurrentPage);
+    }
 }
 
 #include "CMWordsCanvas.moc"

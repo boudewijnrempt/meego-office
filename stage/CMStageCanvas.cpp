@@ -49,6 +49,17 @@ QObject* CMStageCanvas::view() const
     return d->view;
 }
 
+int CMStageCanvas::slide() const
+{
+    return d->view->page();
+}
+
+void CMStageCanvas::changeSlide(int newSlide)
+{
+    d->view->setPage(newSlide);
+    emit slideChanged(newSlide);
+}
+
 void CMStageCanvas::loadDocument()
 {
     emit progress(1);

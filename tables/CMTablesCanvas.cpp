@@ -59,6 +59,7 @@ QObject* CMTablesCanvas::doc() const
 void CMTablesCanvas::setActiveSheetIndex(int index)
 {
     d->activeSheetIndex = index;
+    emit sheetChanged(d->activeSheetIndex);
     d->updateCanvas();
 }
 
@@ -73,6 +74,7 @@ void CMTablesCanvas::nextSheet()
     if(d->activeSheetIndex >= d->doc->map()->count()) {
         d->activeSheetIndex = 0;
     }
+    emit sheetChanged(d->activeSheetIndex);
     d->updateCanvas();
 }
 
@@ -87,12 +89,14 @@ void CMTablesCanvas::previousSheet()
     if(d->activeSheetIndex < 0) {
         d->activeSheetIndex = d->doc->map()->count() - 1;
     }
+    emit sheetChanged(d->activeSheetIndex);
     d->updateCanvas();
 }
 
 void CMTablesCanvas::changeSheet(int newIndex)
 {
     d->canvas->setActiveSheet( d->doc->map()->sheet(newIndex) );
+    emit sheetChanged(newIndex);
 }
 
 void CMTablesCanvas::updateDocumentSizePrivate(const QSize& size)

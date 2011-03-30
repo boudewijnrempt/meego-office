@@ -30,6 +30,7 @@ public:
     virtual void setShowRulers(bool show);
 
     Q_SLOT void setPage(int newPage);
+    int page() const;
 
 Q_SIGNALS:
     void updateSize(const QSize&);

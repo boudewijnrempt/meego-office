@@ -7,6 +7,7 @@ Rectangle {
     property alias currentIndex: documentListView.currentIndex
     signal selected(int index)
     color: "white"
+    function pageChanged(newPage) { documentListView.currentIndex = newPage }
 
     
     ListView {
@@ -63,7 +64,7 @@ Rectangle {
                 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: { documentListView.currentIndex = index; root.selected(index) }
+                    onClicked: root.selected(index)
                 }
             }
         }

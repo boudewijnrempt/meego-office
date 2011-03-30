@@ -7,15 +7,20 @@ class CMWordsCanvas : public CMCanvasControllerDeclarative
 {
     Q_OBJECT
     Q_PROPERTY(QObject* document READ doc)
+    Q_PROPERTY(int page READ page WRITE changePage NOTIFY pageChanged)
 public:
     CMWordsCanvas(QDeclarativeItem* parent = 0);
     virtual ~CMWordsCanvas();
 
     QObject* doc() const;
-    Q_SLOT void changePage(int newPage);
+    int page() const;
 
 public Q_SLOTS:
     void loadDocument();
+    void changePage(int newPage);
+
+Q_SIGNALS:
+    void pageChanged(int newPage);
 
 private:
     class Private;

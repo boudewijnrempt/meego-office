@@ -250,3 +250,9 @@ void CMStageDeclarativeView::setPage(int newPage)
         proxyObject->updateActivePage(theNewPage);
     }
 }
+
+int CMStageDeclarativeView::page() const
+{
+    KoPADocument *doc = qobject_cast<KoPADocument*>(d->doc);
+    return doc->pageIndex(activePage());
+}

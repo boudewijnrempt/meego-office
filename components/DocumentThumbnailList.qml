@@ -47,7 +47,7 @@ Rectangle {
                 
                 Text {
                     id: txtOwnPageNumber
-                    text: model.hasOwnPageNumbering ? model.pagename : ""
+                    text: root.model.hasOwnPageNumbering() ? model.pagename : ""
                     height: 15
                     anchors.top: imageFrame.bottom
                     anchors.horizontalCenter: parent.horizontalCenter

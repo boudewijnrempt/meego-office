@@ -23,6 +23,8 @@ class CMDocumentThumbnailListModel : public QAbstractListModel
         virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
         
         QObject* document() const;
+        
+        Q_INVOKABLE bool hasOwnPageNumbering() const;
     public Q_SLOTS:
         void setDocument(QObject* doc);
         

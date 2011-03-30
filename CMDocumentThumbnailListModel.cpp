@@ -3,6 +3,9 @@
 #include <KoDocument.h>
 #include <KoDocumentInfo.h>
 #include <QImage>
+#include <tables/DocBase.h>
+#include <tables/Map.h>
+#include <tables/Sheet.h>
 
 class CMDocumentThumbnailListModel::Private
 {
@@ -42,7 +45,12 @@ QVariant CMDocumentThumbnailListModel::data(const QModelIndex& index, int role) 
         case PageNameRole:
             // This is the page name, in case we've got custom page numbering
             // If we do not have custom page numbering in the document, just return an empty string
-            var = QVariant::fromValue<QString>( QString() );
+            if(qobject_cast<Calligra::Tables::DocBase*>(d->document)) {
+                var = QVariant::fromValue<QString>( qobject_cast<Calligra::Tables::DocBase*>(d->document)->map()->sheet(index.row())->sheetName() );
+            }
+            else {
+                var = QVariant::fromValue<QString>( QString() );
+            }
             break;
         case PageNumberRole:
             // This is the page number
@@ -66,7 +74,12 @@ int CMDocumentThumbnailListModel::rowCount(const QModelIndex& parent) const
         return 0;
 
     if(d->document)
+    {
+        if(qobject_cast<Calligra::Tables::DocBase*>(d->document)) {
+            return qobject_cast<Calligra::Tables::DocBase*>(d->document)->map()->count();
+        }
         return d->document->pageCount();
+    }
 
     // If we don't have a valid document, we'll also not have any pages
     return 0;
@@ -87,6 +100,21 @@ void CMDocumentThumbnailListModel::setDocument(QObject* doc)
 QObject* CMDocumentThumbnailListModel::document() const
 {
     return d->document;
+}
+
+bool CMDocumentThumbnailListModel::hasOwnPageNumbering() const
+{
+    bool result = false;
+    if(d->document)
+    {
+        if(qobject_cast<Calligra::Tables::DocBase*>(d->document)) {
+            result = true;
+        }
+        else {
+            result = false;
+        }
+    }
+    return result;
 }
 
 

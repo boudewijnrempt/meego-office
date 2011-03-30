@@ -29,6 +29,8 @@ public:
     virtual void editPaste();
     virtual void setShowRulers(bool show);
 
+    Q_SLOT void setPage(int newPage);
+
 Q_SIGNALS:
     void updateSize(const QSize&);
 

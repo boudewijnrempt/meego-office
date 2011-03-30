@@ -7,11 +7,13 @@ class CMStageCanvas : public CMCanvasControllerDeclarative
 {
     Q_OBJECT
     Q_PROPERTY(QObject* document READ doc)
+    Q_PROPERTY(QObject* view READ view)
 public:
     CMStageCanvas(QDeclarativeItem* parent = 0);
     virtual ~CMStageCanvas();
 
     QObject* doc() const;
+    QObject* view() const;
 
 public Q_SLOTS:
     void loadDocument();

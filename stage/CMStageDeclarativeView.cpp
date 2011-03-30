@@ -240,3 +240,13 @@ void CMStageDeclarativeView::lastPage()
 {
     navigatePage(KoPageApp::PageLast);
 }
+
+void CMStageDeclarativeView::setPage(int newPage)
+{
+    KoPADocument *doc = qobject_cast<KoPADocument*>(d->doc);
+    KoPAPageBase *theNewPage = doc->pageByIndex(newPage, false);// pageByNavigation(d->page, pageNavigation);
+    
+    if (theNewPage != d->page) {
+        proxyObject->updateActivePage(theNewPage);
+    }
+}

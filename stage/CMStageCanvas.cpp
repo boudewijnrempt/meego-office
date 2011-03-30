@@ -44,6 +44,11 @@ QObject* CMStageCanvas::doc() const
     return d->doc;
 }
 
+QObject* CMStageCanvas::view() const
+{
+    return d->view;
+}
+
 void CMStageCanvas::loadDocument()
 {
     emit progress(1);

@@ -90,6 +90,11 @@ void CMTablesCanvas::previousSheet()
     d->updateCanvas();
 }
 
+void CMTablesCanvas::changeSheet(int newIndex)
+{
+    d->canvas->setActiveSheet( d->doc->map()->sheet(newIndex) );
+}
+
 void CMTablesCanvas::updateDocumentSizePrivate(const QSize& size)
 {
     zoomController()->setDocumentSize(size);

@@ -26,6 +26,7 @@ public:
 public Q_SLOTS:
     void nextSheet();
     void previousSheet();
+    void changeSheet(int newIndex);
     void loadDocument();
 
 signals:

@@ -90,15 +90,19 @@ void CMCanvasInputProxy::handleGesture(QGestureEvent* event)
 
 void CMCanvasInputProxy::handleTouchBegin(QTouchEvent* event)
 {
-    event->accept();
-    d->touchPinchScale = 1.0;
-    d->beginPinch();
+    if(event->touchPoints().count() > 1) {
+        event->accept();
+        d->touchPinchScale = 1.0;
+        d->beginPinch();
+    }
 }
 
 void CMCanvasInputProxy::handleTouchEnd(QTouchEvent* event)
 {
-    event->accept();
-    d->endPinch();
+    if(event->touchPoints().count() > 1) {
+        event->accept();
+        d->endPinch();
+    }
 }
 
 void CMCanvasInputProxy::handleTouchUpdate(QTouchEvent* event)

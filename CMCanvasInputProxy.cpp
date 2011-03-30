@@ -90,15 +90,19 @@ void CMCanvasInputProxy::handleGesture(QGestureEvent* event)
 
 void CMCanvasInputProxy::handleTouchBegin(QTouchEvent* event)
 {
-    event->accept();
-    d->touchPinchScale = 1.0;
-    d->beginPinch();
+    if(event->touchPoints().count() > 1) {
+        event->accept();
+        d->touchPinchScale = 1.0;
+        d->beginPinch();
+    }
 }
 
 void CMCanvasInputProxy::handleTouchEnd(QTouchEvent* event)
 {
-    event->accept();
-    d->endPinch();
+    if(event->touchPoints().count() > 1) {
+        event->accept();
+        d->endPinch();
+    }
 }
 
 void CMCanvasInputProxy::handleTouchUpdate(QTouchEvent* event)
@@ -192,8 +196,9 @@ void CMCanvasInputProxy::Private::beginPinch()
     canvasController->setZoomMax(1.0 + (KoZoomMode::maximumZoom() - zoomX));
     canvasController->setZoomMin(KoZoomMode::minimumZoom() / zoomX);
 
+    QPointF origin = canvasController->mapToScene(canvasController->x(), canvasController->y());
     scaleProxy->setPixmap(QPixmap::grabWindow(QApplication::activeWindow()->winId(),
-                                              canvasController->x(), canvasController->y(),
+                                              origin.x(), origin.y(),
                                               canvasController->width(), canvasController->height()));
     scaleProxy->setScale(1.0);
     scaleProxy->setVisible(true);

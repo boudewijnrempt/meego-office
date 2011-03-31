@@ -8,10 +8,10 @@
 class CMPageThumbnailProvider::Private
 {
 public:
-    Private() : controller(0) { }
+    Private() { }
     ~Private() { }
     
-    CMCanvasControllerDeclarative* controller;
+    QWeakPointer<CMCanvasControllerDeclarative> controller;
 };
 
 CMPageThumbnailProvider::CMPageThumbnailProvider()
@@ -28,9 +28,12 @@ CMPageThumbnailProvider::~CMPageThumbnailProvider()
 
 QImage CMPageThumbnailProvider::requestImage(const QString& id, QSize* size, const QSize& requestedSize)
 {
-    CMStageCanvas* stageCanvas = qobject_cast<CMStageCanvas*>(d->controller);
-    CMTablesCanvas* tablesCanvas = qobject_cast<CMTablesCanvas*>(d->controller);
-    CMWordsCanvas* wordsCanvas = qobject_cast<CMWordsCanvas*>(d->controller);
+    if(d->controller.isNull())
+        return QImage();
+    
+    CMStageCanvas* stageCanvas = qobject_cast<CMStageCanvas*>(d->controller.data());
+    CMTablesCanvas* tablesCanvas = qobject_cast<CMTablesCanvas*>(d->controller.data());
+    CMWordsCanvas* wordsCanvas = qobject_cast<CMWordsCanvas*>(d->controller.data());
     
     QString pageNumber = id.section('/', 1);
     if(stageCanvas) {
@@ -79,7 +82,7 @@ void CMPageThumbnailProvider::documentChanged(QVariant newCanvasController)
     CMCanvasControllerDeclarative* newController = qobject_cast<CMCanvasControllerDeclarative*>(newCanvasController.value<QObject*>());
     if(newController)
     {
-        d->controller = newController;
+        d->controller = QWeakPointer<CMCanvasControllerDeclarative>(newController);
     }
 }
 

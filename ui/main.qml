@@ -3,6 +3,7 @@ import org.calligra.mobile 1.0
 
 Rectangle {
     id: root
+    signal documentOpened(filePath)
 
     state: "showingDocumentPicker"
 
@@ -12,6 +13,7 @@ Rectangle {
         showingDocumentViewerTransition.enabled = false
         root.state = "showingDocumentViewer"
         showingDocumentViewerTransition.enabled = true
+        root.documentOpened(filePath)
     }
 
     ScreenOrientation {

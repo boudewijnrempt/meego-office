@@ -58,7 +58,10 @@ QVariant CMDocumentThumbnailListModel::data(const QModelIndex& index, int role) 
             break;
         case PageThumbnailRole:
             // This is the thumbnail
-            var = QVariant::fromValue<QString>( QString("image://pagethumbnails/someIDWhichDefinesTheDocument/%1").arg(index.row() + 1) );
+            // THIS IS HACKERY FOR NOW! Just doing this to have a nice unique one for the time being
+            // THIS WILL NOT BE STAYING IN!
+            QString someIDWhichDefinesTheDocumentUniquely = QString::number(reinterpret_cast<int64_t>(d->document));
+            var = QVariant::fromValue<QString>( QString("image://pagethumbnails/%1/%2").arg(someIDWhichDefinesTheDocumentUniquely).arg(index.row() + 1) );
             break;
     }
     return var;

@@ -89,13 +89,11 @@ Item {
 
     Item {
         id: centralView
-        
+
+        anchors.top: titleBar.bottom;
         anchors.left: parent.left
         anchors.right: parent.right
-        //anchors.bottom: actionBar.bottom
-
-        y: titleBar.y + titleBar.height - 1;
-        height: parent.height - titleBar.y - titleBar.height;
+        anchors.bottom: actionBar.top;
 
         function onCompleted() {
             centralView.state = "loaded";
@@ -186,7 +184,7 @@ Item {
 
         ToolButton {
             image: "image://icon/pages-list"
-            onClicked: thumbnailList.state = (thumbnailList.state == "hidden") ? "normal" : "hidden"
+            onClicked: thumbnailList.state = (thumbnailList.state == "") ? "visible" : ""
         }
         ToolButton {
             image: "image://icon/zoom-in"
@@ -219,29 +217,21 @@ Item {
     
     DocumentThumbnailList {
         id: thumbnailList
-        state: "hidden"
         y: parent.height - (actionBar.height + thumbnailList.height)
         anchors.left: parent.left
         anchors.right: parent.right
         height: 140
+        opacity: 0;
+        
         onSelected: loader.item.setPage(index);
         states: [
             State {
-                name: "hidden"
-                PropertyChanges { target: thumbnailList; opacity: 0; }
-            },
-            State {
-                name: "shown"
+                name: "visible"
                 PropertyChanges { target: thumbnailList; opacity: 1; }
             }
         ]
         transitions: [
             Transition {
-                to: "hidden"
-                PropertyAnimation { properties: "opacity"; duration: 150 }
-            },
-            Transition {
-                to: "shown"
                 PropertyAnimation { properties: "opacity"; duration: 150 }
             }
         ]
@@ -254,7 +244,7 @@ Item {
             anchors.fill: parent
             function setPage(newPage) { page = newPage }
             onPageChanged: thumbnailList.currentIndex = newPage
-            onDocMoved: thumbnailList.state = "hidden"
+            onDocMoved: thumbnailList.state = ""
         }
     }
 
@@ -265,7 +255,7 @@ Item {
             anchors.fill: parent
             function setPage(newPage) { sheet = newPage }
             onSheetChanged: thumbnailList.currentIndex = newIndex
-            onDocMoved: thumbnailList.state = "hidden"
+            onDocMoved: thumbnailList.state = ""
         }
     }
 
@@ -276,7 +266,7 @@ Item {
             anchors.fill: parent
             function setPage(newPage) { slide = newPage }
             onSlideChanged: thumbnailList.currentIndex = newSlide
-            onDocMoved: thumbnailList.state = "hidden"
+            onDocMoved: thumbnailList.state = ""
         }
     }
 

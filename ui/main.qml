@@ -3,7 +3,7 @@ import org.calligra.mobile 1.0
 
 Rectangle {
     id: root
-    signal documentOpened(filePath)
+    signal documentOpened(string filePath)
 
     state: "showingDocumentPicker"
 

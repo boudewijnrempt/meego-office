@@ -62,8 +62,8 @@ Item {
         onSearchNext: console.log('scroll to next result')
         onFinished: hide()
 
-        function show() { y = 0 }
-        function hide() { y = -searchBar.height }
+        function show() { y = 0; input.focus = true; }
+        function hide() { y = -searchBar.height; input.focus = false; }
     }
 
     TitleBar {

@@ -7,6 +7,8 @@ Rectangle {
     signal searchNext()
     signal finished()
 
+    property alias input: textInput;
+
     height: textInputBorder.height + 20
     color: "#E8EEEE"
     border.color: "#869A99"
@@ -26,7 +28,6 @@ Rectangle {
 
         TextInput {
             id: textInput
-            focus: true
             width: parent.width - 5
             anchors.centerIn: parent
             onTextChanged: root.search(text)

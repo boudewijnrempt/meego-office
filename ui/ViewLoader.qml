@@ -5,6 +5,7 @@ Item {
     id: root
     signal viewingFinished()
     property alias thumbnailListModel: thumbnailList.model
+    property alias controller: loader.item
     
     function setFile(file) {
         var ext = file.substr(-3)

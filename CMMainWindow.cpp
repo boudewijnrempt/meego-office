@@ -49,7 +49,6 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
         d->engine->addImportPath(path);
     }
     d->engine->addImageProvider("icon", new CMIconImageProvider);
-    d->engine->addImageProvider("pagethumbnails", new CMPageThumbnailProvider);
     d->view->rootContext()->setContextProperty("KOFFICE_VERSION_STRING", KOFFICE_VERSION_STRING);
     d->view->rootContext()->setContextProperty("window", this);
 
@@ -58,6 +57,10 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
     d->view->setResizeMode(QDeclarativeView::SizeRootObjectToView);
     d->view->viewport()->grabGesture(Qt::PinchGesture);
     d->view->viewport()->grabGesture(Qt::SwipeGesture);
+
+    CMPageThumbnailProvider* thumbProvider = new CMPageThumbnailProvider();
+    connect(d->view->rootObject(), SIGNAL(documentOpened(QVariant)), thumbProvider, SLOT(documentChanged(QVariant)));
+    d->engine->addImageProvider("pagethumbnails", thumbProvider);
 
     setCentralWidget(d->view);
 

@@ -18,6 +18,7 @@
 #include "CMIconImageProvider.h"
 #include "CMCanvasControllerDeclarative.h"
 #include <KMessageBox>
+#include "CMPageThumbnailProvider.h"
 
 class CMMainWindow::Private
 {
@@ -48,6 +49,7 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
         d->engine->addImportPath(path);
     }
     d->engine->addImageProvider("icon", new CMIconImageProvider);
+    d->engine->addImageProvider("pagethumbnails", new CMPageThumbnailProvider);
     d->view->rootContext()->setContextProperty("KOFFICE_VERSION_STRING", KOFFICE_VERSION_STRING);
     d->view->rootContext()->setContextProperty("window", this);
 

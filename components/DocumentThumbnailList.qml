@@ -31,18 +31,22 @@ Rectangle {
                 Rectangle {
                     id: imageFrame
                     
-                    anchors.top: parent.top
+                    y: parent.y + 3
                     anchors.horizontalCenter: parent.horizontalCenter
-                    width: parent.width
-                    height: parent.height - 30
+                    width: parent.width - 6
+                    height: parent.height - 36
                     
                     border.color: thumbTile.ListView.isCurrentItem ? "green" : "black"
                     border.width: 2
+                    radius: 2
                     
                     Image {
                         id: imageField
+                        anchors.centerIn: parent
+                        width: parent.width - 6
+                        height: parent.height - 6
                         fillMode: Image.PreserveAspectFit
-                        anchors.fill: parent
+                        source: model.thumbnail
                     }
                 }
                 
@@ -50,6 +54,8 @@ Rectangle {
                     id: txtOwnPageNumber
                     text: root.model.hasOwnPageNumbering() ? model.pagename : ""
                     height: 15
+                    font.pointSize: 10
+                    font.weight: Font.Light
                     anchors.top: imageFrame.bottom
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
@@ -57,6 +63,8 @@ Rectangle {
                     id: txtPageNumber
                     text: model.pagenumber
                     height: 15
+                    font.pointSize: 12
+                    font.weight: Font.Bold
                     anchors.top: txtOwnPageNumber.bottom
                     anchors.horizontalCenter: parent.horizontalCenter
                     color: thumbTile.ListView.isCurrentItem ? "green" : "black"

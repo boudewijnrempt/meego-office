@@ -58,10 +58,7 @@ QVariant CMDocumentThumbnailListModel::data(const QModelIndex& index, int role) 
             break;
         case PageThumbnailRole:
             // This is the thumbnail
-            var = QVariant::fromValue<QImage>( QImage( QSize(64,64), QImage::Format_ARGB32 ) );
-            break;
-        default:
-            // Nothing - just return an invalid variant
+            var = QVariant::fromValue<QString>( "image://pagethumbnails/someIDWhichDefinesTheDocument/pagenumber" );
             break;
     }
     return var;

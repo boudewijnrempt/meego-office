@@ -36,6 +36,7 @@ set(calligramobile_SRCS
     CMMainWindow.cpp
     CMDocumentListModel.cpp
     CMDocumentThumbnailListModel.cpp
+    CMPageThumbnailProvider.cpp
     CMProgressProxy.cpp
 
     words/CMWordsCanvas.cpp

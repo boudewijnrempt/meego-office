@@ -26,6 +26,8 @@ public:
     Private() { }
     ~Private() { }
 
+    void checkMultiTouch();
+
     QDeclarativeView* view;
     QDeclarativeEngine* engine;
 
@@ -79,17 +81,13 @@ CMMainWindow::~CMMainWindow()
     delete d;
 }
 
-void CMMainWindow::checkMultiTouch()
+void CMMainWindow::resizeEvent(QResizeEvent *event)
 {
-#ifdef WITH_QT_SYSTEMINFO
-    QtMobility::QSystemDeviceInfo info;
-    if(!(info.inputMethodType() & QtMobility::QSystemDeviceInfo::MultiTouch)) {
-        qWarning() << "No multi touch available!";
-        //if(KMessageBox::warningContinueCancel(this, "No multi-touch available. User experience will be suboptimal.", "No Multi-Touch") != KMessageBox::Continue) {
-        //    QApplication::quit();
-        //}
-    }
-#endif
+    if (event->oldSize().width() != width())
+        emit widthChanged();
+    if (event->oldSize().height() != height())
+        emit heightChanged();
+    QMainWindow::resizeEvent(event);
 }
 
 void CMMainWindow::changeEvent(QEvent *event)
@@ -102,17 +100,36 @@ void CMMainWindow::changeEvent(QEvent *event)
     QMainWindow::changeEvent(event);
 }
 
-void CMMainWindow::resizeEvent(QResizeEvent *event)
-{
-    if (event->oldSize().width() != width())
-        emit widthChanged();
-    if (event->oldSize().height() != height())
-        emit heightChanged();
-    QMainWindow::resizeEvent(event);
-}
-
 void CMMainWindow::openUrl(const QString &url)
 {
     QDesktopServices::openUrl(url);
 }
 
+bool CMMainWindow::isFullScreen() const
+{
+    return windowState() & Qt::WindowFullScreen;
+}
+
+void CMMainWindow::setFullScreen(bool fullScreen)
+{
+    if(fullScreen) {
+        setWindowState(windowState() | Qt::WindowFullScreen);
+    } else {
+        setWindowState(windowState() & ~Qt::WindowFullScreen);
+    }
+}
+
+void CMMainWindow::Private::checkMultiTouch()
+{
+#ifdef WITH_QT_SYSTEMINFO
+    QtMobility::QSystemDeviceInfo info;
+    if(!(info.inputMethodType() & QtMobility::QSystemDeviceInfo::MultiTouch)) {
+        qWarning() << "No multi touch available!";
+        //if(KMessageBox::warningContinueCancel(this, "No multi-touch available. User experience will be suboptimal.", "No Multi-Touch") != KMessageBox::Continue) {
+        //    QApplication::quit();
+        //}
+    }
+#endif
+}
+
+#include "CMMainWindow.moc"

@@ -26,21 +26,19 @@ Item {
         loader.item.completed.connect(centralView.onCompleted);
         titleBar.title = file
     }
-
-    state: "normal"
-
+    
     states: [
         State {
-            name: "normal"
-            PropertyChanges { target: searchBar; y: -searchBar.height }
-            PropertyChanges { target: actionBar; y: root.height-actionBar.height }
-            StateChangeScript { script: window.fullScreen = false }
-        },
-        State {
             name: "fullScreen"
+            when: window.fullScreen;
             PropertyChanges { target: searchBar; y: -(searchBar.height+titleBar.height) }
             PropertyChanges { target: actionBar; y: root.height }
-            StateChangeScript { script: window.fullScreen = true }
+        }
+    ]
+
+    transitions: [
+        Transition {
+            NumberAnimation { property: "y"; duration: 250; }
         }
     ]
 
@@ -210,8 +208,8 @@ Item {
             onClicked: loader.item.nextSheet()
         }
         ToolButton {
-            image: window.fullScreen ? "image://icon/view-restore" : "image://icon/view-fullscreen"
-            onClicked: root.state = window.fullScreen ? "normal" : "fullScreen"
+            image: "image://icon/view-fullscreen"
+            onClicked: window.fullScreen = true;
         }
     }
     
@@ -272,7 +270,7 @@ Item {
 
     MouseArea {
         id: fullScreenClickTracker
-        enabled: root.state == "fullScreen"
+        enabled: window.fullScreen;
         anchors.fill: parent
         onPressed: {
             mouse.accepted = false
@@ -287,7 +285,7 @@ Item {
             anchors.bottom: parent.bottom
             anchors.right: parent.right
             Behavior on opacity { NumberAnimation { duration: 200 } }
-            onClicked: { opacity = 0; autoHideTimer.stop(); root.state = "normal" }
+            onClicked: { opacity = 0; autoHideTimer.stop(); window.fullScreen = false; }
 
             Timer {
                 id: autoHideTimer

@@ -15,20 +15,17 @@ public:
     explicit CMMainWindow( const QString &ui, const QString &file = QString(), QWidget *parent = 0, Qt::WindowFlags flags = 0);
     virtual ~CMMainWindow();
 
-    bool isFullScreen() const { return QMainWindow::isFullScreen(); }
-    void setFullScreen(bool f) { setWindowState(f ? windowState() | Qt::WindowFullScreen : windowState() & ~Qt::WindowFullScreen); }
+    Q_INVOKABLE bool isFullScreen() const;
 
-    int width() const { return QMainWindow::width(); }
-
-    int height() const { return QMainWindow::height(); }
-
-    Q_INVOKABLE void openUrl(const QString &url);
+public Q_SLOTS:
+    void setFullScreen(bool fullScreen);
+    void openUrl(const QString &url);
 
 protected:
-    void changeEvent(QEvent *event);
     void resizeEvent(QResizeEvent *event);
+    void changeEvent(QEvent *event);
 
-signals:
+Q_SIGNALS:
     void fullScreenChanged();
     void widthChanged();
     void heightChanged();
@@ -37,8 +34,7 @@ private:
     class Private;
     Private * const d;
 
-private slots:
-    void checkMultiTouch();
+    Q_PRIVATE_SLOT(d, void checkMultiTouch());
 };
 
 #endif // CALLIGRAMOBILE_MAINWINDOW_H

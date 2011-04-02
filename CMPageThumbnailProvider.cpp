@@ -4,6 +4,8 @@
 #include "tables/CMTablesCanvas.h"
 #include "words/CMWordsCanvas.h"
 #include <QPainter>
+#include <part/KWPage.h>
+#include <part/KWCanvas.h>
 
 class CMPageThumbnailProvider::Private
 {
@@ -57,6 +59,7 @@ QImage CMPageThumbnailProvider::requestImage(const QString& id, QSize* size, con
         return tmp;
     }
     else if(wordsCanvas) {
+        return qobject_cast<KWDocument*>(wordsCanvas->doc())->pageManager()->page(pageNumber.toInt()).thumbnail(requestedSize, wordsCanvas->canvas()->shapeManager());
         QImage tmp = QImage( QSize(48,64), QImage::Format_ARGB32 );
         tmp.fill( QColor("silver").rgb() );
         QPainter painter(&tmp);

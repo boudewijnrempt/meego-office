@@ -19,12 +19,13 @@ Item {
             loader.sourceComponent = tablesComponent
         } else {
             console.log('Unsupported extension ' + ext)
-            return
+            return false
         }
         loader.item.file = file
         loader.item.progress.connect(centralView.onProgress);
         loader.item.completed.connect(centralView.onCompleted);
         titleBar.title = file
+        return true
     }
     
     states: [
@@ -43,7 +44,9 @@ Item {
     ]
 
     function loadDocument() {
-        loader.item.loadDocument();
+        if(loader.item) {
+            loader.item.loadDocument();
+        }
     }
 
     function unloadDocument() {

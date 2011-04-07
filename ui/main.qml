@@ -9,7 +9,13 @@ Rectangle {
 
     function open(filePath) {
         documentPicker.model.addRecent(filePath)
-        viewLoader.setFile(filePath)
+        var returned = viewLoader.setFile(filePath)
+        if(returned === false) {
+            root.state = "showingDocumentPicker"
+            // We should probably have another state here, showing some kind of error message
+            // about the file attempted opened not being an accepted format or something...
+            return
+        }
         showingDocumentViewerTransition.enabled = false
         root.state = "showingDocumentViewer"
         showingDocumentViewerTransition.enabled = true

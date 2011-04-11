@@ -6,43 +6,44 @@ Item {
     property alias model : documentListView.model
     signal selected(int index, string filePath)
 
-    TitleBar {
-        id: titleBar
-        width: root.width
-        title: qsTr("Calligra Mobile")
-
-        rightArea: [
-            ToolButton {
-                id: groupBy
-                image: "image://icon/bookmarks-organize";
-                borderPosition: "left"
-
-                menu: Menu {
-                    id: menu
-                    parent: root
-                    actions: [
-                        Action { text: qsTr("Group By Name"); onTriggered: model.groupBy(DocumentListModel.GroupByName) },
-                        Action { text: qsTr("Group By Type"); onTriggered: model.groupBy(DocumentListModel.GroupByDocType) }
-                    ]
-                }
-            },
-            ToolButton {
-                id: aboutButton
-                image: "image://icon/help-about";
-                borderPosition: "left"
-                onClicked: aboutDialog.opacity = 1;
-            }
-        ]
-    }
+//     TitleBar {
+//         id: titleBar
+//         width: root.width
+//         title: qsTr("Calligra Mobile")
+// 
+//         rightArea: [
+//             ToolButton {
+//                 id: groupBy
+//                 image: "image://icon/bookmarks-organize";
+//                 borderPosition: "left"
+// 
+//                 menu: Menu {
+//                     id: menu
+//                     parent: root
+//                     actions: [
+//                         Action { text: qsTr("Group By Name"); onTriggered: model.groupBy(DocumentListModel.GroupByName) },
+//                         Action { text: qsTr("Group By Type"); onTriggered: model.groupBy(DocumentListModel.GroupByDocType) }
+//                     ]
+//                 }
+//             },
+//             ToolButton {
+//                 id: aboutButton
+//                 image: "image://icon/help-about";
+//                 borderPosition: "left"
+//                 onClicked: aboutDialog.opacity = 1;
+//             }
+//         ]
+//     }
 
     ListView {
         id: documentListView
         clip: true
 
-        anchors.top: titleBar.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom 
+        anchors.fill: parent;
+        
+//         anchors.left: parent.left
+//         anchors.right: parent.right
+//         anchors.bottom: parent.bottom 
 
         model: DocumentListModel { }
         delegate: Rectangle {
@@ -83,11 +84,11 @@ Item {
             }
         }
     }
-
+/*
     AboutDialog {
         id: aboutDialog
         icon: "image://icon/kspread" // ##: Show Calligra icon here
         title: "Calligra Mobile"
         opacity: 0
-    }
+    }*/
 }

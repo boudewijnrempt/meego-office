@@ -52,7 +52,7 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
     }
     d->engine->addImageProvider("icon", new CMIconImageProvider);
     d->view->rootContext()->setContextProperty("KOFFICE_VERSION_STRING", KOFFICE_VERSION_STRING);
-    d->view->rootContext()->setContextProperty("window", this);
+    //d->view->rootContext()->setContextProperty("window", this);
 
     d->view->setSource(QUrl(ui));
     d->view->rootContext()->setContextProperty("screen", d->view->rootObject());

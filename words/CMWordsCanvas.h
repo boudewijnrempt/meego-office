@@ -18,12 +18,12 @@ public:
 public Q_SLOTS:
     void loadDocument();
     void changePage(int newPage);
-
-Q_SIGNALS:
-    void pageChanged(int newPage);
     void find(const QString& pattern);
     void findNext();
     void findFinished();
+
+Q_SIGNALS:
+    void pageChanged(int newPage);
 
 private:
     class Private;

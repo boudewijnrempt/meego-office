@@ -1,4 +1,5 @@
 import QtQuick 1.0
+import MeeGo.Components 0.1
 import org.calligra.mobile 1.0
 
 Item {
@@ -35,9 +36,13 @@ Item {
 //         ]
 //     }
 
+    property int textPixelSize: theme.fontPixelSizeLarge;
+
     ListView {
         id: documentListView
         clip: true
+
+        property int textMargin: 20;
 
         anchors.fill: parent;
         
@@ -46,13 +51,14 @@ Item {
 //         anchors.bottom: parent.bottom 
 
         model: DocumentListModel { }
-        delegate: Rectangle {
+        delegate: Image {
             id: delegate
             
-            width: ListView.view.width
-            height: text.height + 10
+            width: parent.width
+            height: 55;
             
-            color: index % 2 ? "transparent" : "#eeeeee"
+            //color: index % 2 ? "transparent" : "#eeeeee"
+            source: index % 2 == 0 ? "image://themedimage/media/music_row_landscape" : "";
 
             Text {
                 id: text
@@ -60,6 +66,8 @@ Item {
                 anchors.left: parent.left
                 anchors.leftMargin: 10
                 anchors.verticalCenter: parent.verticalCenter
+
+		font.pixelSize: textPixelSize;
             }
 
             MouseArea {
@@ -83,6 +91,13 @@ Item {
                 text: section
             }
         }
+    }
+    
+    Theme {
+        id: theme;
+    }
+    SystemPalette {
+        id: activePalette;
     }
 /*
     AboutDialog {

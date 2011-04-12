@@ -70,6 +70,7 @@ int CMWordsCanvas::page() const
 
 void CMWordsCanvas::loadDocument()
 {
+    qDebug() << "Loading words document";
     emit progress(1);
 
     KWDocument* doc = new KWDocument();

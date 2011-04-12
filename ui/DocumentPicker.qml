@@ -4,7 +4,9 @@ import org.calligra.mobile 1.0
 
 Item {
     id: root
-    property alias model : documentListView.model
+    property alias model : documentListModel;
+    property alias filter: documentListModel.filter;
+    
     signal selected(int index, string filePath)
 
 //     TitleBar {
@@ -50,7 +52,7 @@ Item {
 //         anchors.right: parent.right
 //         anchors.bottom: parent.bottom 
 
-        model: DocumentListModel { }
+        model: DocumentListModel { id: documentListModel;        }
         delegate: Image {
             id: delegate
             
@@ -76,21 +78,21 @@ Item {
             }
         }
 
-        section.property: "sectionCategory"
-        section.criteria: ViewSection.FullString
-        section.delegate : Rectangle {
-            width: documentListView.width
-            height: text.height + 5
-            color: "#dfbd9f"
-
-            Text {
-                id: text
-                anchors.left: parent.left
-                anchors.leftMargin: 3
-                anchors.verticalCenter: parent.verticalCenter
-                text: section
-            }
-        }
+//         section.property: "sectionCategory"
+//         section.criteria: ViewSection.FullString
+//         section.delegate : Rectangle {
+//             width: documentListView.width
+//             height: text.height + 5
+//             color: "#dfbd9f"
+// 
+//             Text {
+//                 id: text
+//                 anchors.left: parent.left
+//                 anchors.leftMargin: 3
+//                 anchors.verticalCenter: parent.verticalCenter
+//                 text: section
+//             }
+//         }
     }
     
     Theme {

@@ -24,7 +24,6 @@ Item {
         loader.item.file = file
         loader.item.progress.connect(centralView.onProgress);
         loader.item.completed.connect(centralView.onCompleted);
-        titleBar.title = file
         return true
     }
     
@@ -54,48 +53,49 @@ Item {
             loader.sourceComponent = undefined
     }
 
-    SearchBar {
-        id: searchBar
-        width: root.width
-        y: -searchBar.height
-        Behavior on y { NumberAnimation { duration: 200 } }
-        
-        onSearch: loader.item.find(str);
-        onSearchNext: loader.item.findNext();
-        onFinished: { loader.item.findFinished(); hide(); }
-
-        function show() { y = 0; input.focus = true; }
-        function hide() { y = -searchBar.height; input.focus = false; }
-    }
-
-    TitleBar {
-        id: titleBar
-        width: root.width
-        anchors.top: searchBar.bottom
-
-        leftArea: ToolButton {
-            id: backButton
-            image: "image://icon/draw-arrow-back";
-            borderPosition: "right"
-            onClicked: { thumbnailList.state = "hidden"; searchBar.hide(); root.viewingFinished(); centralView.state = "" }
-        }
-
-        pullDownGestureTarget: searchBar
-        onPullDownGestureFinished: {
-            if (searchBar.y+searchBar.height >= searchBar.height/2)
-                searchBar.show()
-            else
-                searchBar.hide()
-        }
-    }
+//     SearchBar {
+//         id: searchBar
+//         width: root.width
+//         y: -searchBar.height
+//         Behavior on y { NumberAnimation { duration: 200 } }
+//         
+//         onSearch: loader.item.find(str);
+//         onSearchNext: loader.item.findNext();
+//         onFinished: { loader.item.findFinished(); hide(); }
+// 
+//         function show() { y = 0; input.focus = true; }
+//         function hide() { y = -searchBar.height; input.focus = false; }
+//     }
+// 
+//     TitleBar {
+//         id: titleBar
+//         width: root.width
+//         anchors.top: searchBar.bottom
+// 
+//         leftArea: ToolButton {
+//             id: backButton
+//             image: "image://icon/draw-arrow-back";
+//             borderPosition: "right"
+//             onClicked: { thumbnailList.state = "hidden"; searchBar.hide(); root.viewingFinished(); centralView.state = "" }
+//         }
+// 
+//         pullDownGestureTarget: searchBar
+//         onPullDownGestureFinished: {
+//             if (searchBar.y+searchBar.height >= searchBar.height/2)
+//                 searchBar.show()
+//             else
+//                 searchBar.hide()
+//         }
+//     }
 
     Item {
         id: centralView
 
-        anchors.top: titleBar.bottom;
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: actionBar.top;
+        anchors.fill: parent;
+//         anchors.top: parent.top;
+//         anchors.left: parent.left
+//         anchors.right: parent.right
+//         anchors.bottom: actionBar.top;
 
         function onCompleted() {
             centralView.state = "loaded";
@@ -179,47 +179,47 @@ Item {
         }
     }
 
-    ActionBar {
-        id: actionBar
-        width: parent.width
-        y: parent.height - actionBar.height
-
-        ToolButton {
-            image: "image://icon/pages-list"
-            onClicked: thumbnailList.state = (thumbnailList.state == "") ? "visible" : ""
-        }
-        ToolButton {
-            image: "image://icon/zoom-in"
-            onClicked: loader.item.zoomIn()
-        }
-        ToolButton {
-            image: "image://icon/zoom-out"
-            onClicked: loader.item.zoomOut()
-        }
-        ToolButton {
-            image: "image://icon/zoom-original"
-            opacity: (loader.item && loader.item.resetZoom) ? 1 : 0
-            onClicked: loader.item.resetZoom()
-        }
-        ToolButton {
-            image: "image://icon/go-previous"
-            opacity: (loader.item && loader.item.previousSheet) ? 1 : 0
-            onClicked: loader.item.previousSheet()
-        }
-        ToolButton {
-            image: "image://icon/go-next"
-            opacity: (loader.item && loader.item.previousSheet) ? 1 : 0
-            onClicked: loader.item.nextSheet()
-        }
-        ToolButton {
-            image: "image://icon/view-fullscreen"
-            onClicked: window.fullScreen = true;
-        }
-    }
+//     ActionBar {
+//         id: actionBar
+//         width: parent.width
+//         y: parent.height - actionBar.height
+// 
+//         ToolButton {
+//             image: "image://icon/pages-list"
+//             onClicked: thumbnailList.state = (thumbnailList.state == "") ? "visible" : ""
+//         }
+//         ToolButton {
+//             image: "image://icon/zoom-in"
+//             onClicked: loader.item.zoomIn()
+//         }
+//         ToolButton {
+//             image: "image://icon/zoom-out"
+//             onClicked: loader.item.zoomOut()
+//         }
+//         ToolButton {
+//             image: "image://icon/zoom-original"
+//             opacity: (loader.item && loader.item.resetZoom) ? 1 : 0
+//             onClicked: loader.item.resetZoom()
+//         }
+//         ToolButton {
+//             image: "image://icon/go-previous"
+//             opacity: (loader.item && loader.item.previousSheet) ? 1 : 0
+//             onClicked: loader.item.previousSheet()
+//         }
+//         ToolButton {
+//             image: "image://icon/go-next"
+//             opacity: (loader.item && loader.item.previousSheet) ? 1 : 0
+//             onClicked: loader.item.nextSheet()
+//         }
+//         ToolButton {
+//             image: "image://icon/view-fullscreen"
+//             onClicked: window.fullScreen = true;
+//         }
+//     }
     
     DocumentThumbnailList {
         id: thumbnailList
-        y: parent.height - (actionBar.height + thumbnailList.height)
+        y: parent.height - thumbnailList.height;
         anchors.left: parent.left
         anchors.right: parent.right
         height: 140

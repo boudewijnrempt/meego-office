@@ -10,7 +10,9 @@ class SearchThread;
 class CMDocumentListModel : public QAbstractListModel, public QDeclarativeParserStatus
 {
     Q_OBJECT
+    Q_PROPERTY(Filter filter READ filter WRITE setFilter)
     Q_ENUMS(GroupBy)
+    Q_ENUMS(Filter)
     Q_INTERFACES(QDeclarativeParserStatus)
 
 public:
@@ -25,6 +27,8 @@ public:
     };
 
     enum GroupBy { GroupByName, GroupByDocType };
+
+    enum Filter { None, Presentations, Spreadsheets, TextDocuments };
 
     struct DocumentInfo {
         bool operator==(const DocumentInfo &other) const { return filePath == other.filePath; }
@@ -43,12 +47,15 @@ public:
     void classBegin();
     void componentComplete();
 
+    Filter filter();
+
 public slots:
     void startSearch();
     void stopSearch();
     void addDocument(const CMDocumentListModel::DocumentInfo &info);
     void addRecent(int index);
     void addRecent(const QString &path);
+    void setFilter(Filter newFilter);
 
 public:
     Q_INVOKABLE void groupBy(GroupBy role);
@@ -62,9 +69,12 @@ private:
 
     QHash<QString, QString> m_docTypes;
     QList<DocumentInfo> m_recentDocuments;
-    QList<DocumentInfo> m_documentInfos;
+    QList<DocumentInfo> m_allDocumentInfos;
+    QList<DocumentInfo> m_currentDocumentInfos;
     SearchThread *m_searchThread;
     GroupBy m_groupBy;
+    Filter m_filter;
+    QString m_filteredTypes;
     friend class SearchThread;
 };
 

@@ -74,8 +74,9 @@ set(calligramobile_ui_SRCS
     ui/SearchBar.qml
     ui/TextCopiedToClipboardMessage.qml
     ui/ViewLoader.qml
-    ui/MainPage.qml
-    ui/AllDocumentsPage.qml
+    ui/DocumentsPage.qml
+    ui/ViewDocumentPage.qml
+    ui/Settings.qml
 )
 
 set(calligramobile_ui_RES

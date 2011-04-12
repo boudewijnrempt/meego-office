@@ -18,6 +18,9 @@ public:
 public Q_SLOTS:
     void loadDocument();
     void changePage(int newPage);
+    void find(const QString& pattern);
+    void findNext();
+    void findFinished();
 
 Q_SIGNALS:
     void pageChanged(int newPage);
@@ -25,6 +28,8 @@ Q_SIGNALS:
 private:
     class Private;
     Private * const d;
+
+    Q_PRIVATE_SLOT(d, void matchFound(KoFindMatch));
 };
 
 #endif // CALLIGRAMOBILE_WORDSCANVAS_H

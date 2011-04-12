@@ -59,9 +59,10 @@ Item {
         width: root.width
         y: -searchBar.height
         Behavior on y { NumberAnimation { duration: 200 } }
-        onSearch: console.log('search and highlight ' + str)
-        onSearchNext: console.log('scroll to next result')
-        onFinished: hide()
+        
+        onSearch: loader.item.find(str);
+        onSearchNext: loader.item.findNext();
+        onFinished: { loader.item.findFinished(); hide(); }
 
         function show() { y = 0; input.focus = true; }
         function hide() { y = -searchBar.height; input.focus = false; }

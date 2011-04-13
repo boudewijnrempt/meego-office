@@ -11,6 +11,9 @@
 #include <KDE/KSharedConfig>
 #include <KDE/KConfigGroup>
 
+#include <QtSparql/QSparqlConnection>
+#include <QtSparql/QSparqlResult>
+
 SearchThread::SearchThread(const QHash<QString, QString> &docTypes, QObject *parent) 
     : QObject(parent), m_abort(false), m_docTypes(docTypes)
 {
@@ -22,6 +25,7 @@ SearchThread::~SearchThread()
 
 void SearchThread::run()
 {
+    // Get documents from the device storage's document directory...
     QString documentsDir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
     QStringList nameFilters;
     for (QHash<QString, QString>::const_iterator it = m_docTypes.constBegin(); it != m_docTypes.constEnd(); ++it)
@@ -35,6 +39,13 @@ void SearchThread::run()
         info.filePath = it.filePath();
         info.docType = m_docTypes.value(info.fileName.right(3));
         emit documentFound(info);
+    }
+
+    // Get documents from the device's tracker instance
+    QSparqlConnection connection("QTRACKER");
+    QSparqlQuery query("");
+    QSparqlResult* result = connection.exec(query);
+    while (result->next()) {
     }
 
     emit finished();

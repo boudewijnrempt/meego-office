@@ -51,36 +51,18 @@ set(calligramobile_SRCS
 
 set(calligramobile_ui_components_SRCS
     components/qmldir
-#     components/Action.qml
-#     components/ActionBar.qml
     components/DocumentThumbnailList.qml
-#     components/Button.qml
-#     components/Menu.qml
-#     components/ScreenOrientation.qml
-#     components/TitleBar.qml
-#     components/ToolButton.qml
-#    components/ProgressBar.qml
 )
-
-set(calligramobile_ui_components_RES
-    components/resources/arrowhead.png
-   )
 
 set(calligramobile_ui_SRCS
     ui/main.qml
-    ui/AboutDialog.qml
     ui/DocumentPicker.qml
     ui/Marker.qml
-    ui/SearchBar.qml
     ui/TextCopiedToClipboardMessage.qml
     ui/ViewLoader.qml
     ui/DocumentsPage.qml
     ui/ViewDocumentPage.qml
     ui/Settings.qml
-)
-
-set(calligramobile_ui_RES
-    ui/resources/marker.png
 )
 
 set(calligramobile_headers
@@ -134,9 +116,7 @@ set_target_properties(calligramobile PROPERTIES VERSION ${GENERIC_KOFFICE_LIB_VE
 
 install(TARGETS calligramobile ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${calligramobile_ui_SRCS} DESTINATION ${DATA_INSTALL_DIR}/calligramobile)
-install(FILES ${calligramobile_ui_RES} DESTINATION ${DATA_INSTALL_DIR}/calligramobile/resources)
 install(FILES ${calligramobile_ui_components_SRCS} DESTINATION ${DATA_INSTALL_DIR}/calligramobile/org/calligra/mobile)
-install(FILES ${calligramobile_ui_components_RES} DESTINATION ${DATA_INSTALL_DIR}/calligramobile/org/calligra/mobile/resources)
 install(FILES ${calligramobile_headers} DESTINATION ${INCLUDE_INSTALL_DIR})
 install(PROGRAMS intel-documents.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
 

@@ -65,14 +65,6 @@ CMDocumentListModel::CMDocumentListModel(QObject *parent)
 CMDocumentListModel::~CMDocumentListModel()
 {
     stopSearch();
-
-//     KConfigGroup group(KGlobal::config(), "Recent Files");
-//     int index = 0;
-//     foreach(const DocumentInfo &info, m_recentDocuments) {
-//         group.writeEntry(QString().setNum(index), info.filePath);
-//         index++;
-//     }
-//     group.sync();
 }
 
 void CMDocumentListModel::startSearch()
@@ -115,32 +107,18 @@ static bool docTypeLessThan(const CMDocumentListModel::DocumentInfo &info1, cons
 
 void CMDocumentListModel::addDocument(const DocumentInfo &info)
 {
-//     bool (*lessThanFunc)(const CMDocumentListModel::DocumentInfo &, const CMDocumentListModel::DocumentInfo &) = 0;
-//     if (m_groupBy == GroupByName)
-//         lessThanFunc = fileNameLessThan;
-//     else
-//         lessThanFunc = docTypeLessThan;
-//     QList<DocumentInfo>::iterator it = qLowerBound(m_allDocumentInfos.begin(), m_allDocumentInfos.end(), info, fileNameLessThan);
-//     const int pos = it - m_allDocumentInfos.begin();
-    //+ m_recentDocuments.count();
-//    m_allDocumentInfos.insert(it, info);
     m_allDocumentInfos.append(info);
     
     if(m_filteredTypes.isEmpty() || info.docType == m_filteredTypes) {
         beginInsertRows(QModelIndex(), m_currentDocumentInfos.count() - 1, m_currentDocumentInfos.count());
-        qDebug() << info.filePath;
         m_currentDocumentInfos.append(info);
         endInsertRows();
     }
-    qDebug() << rowCount();
 }
 
 int CMDocumentListModel::rowCount(const QModelIndex &parent) const
 {
-    //if (parent.isValid())
-    //    return 0;
     return m_currentDocumentInfos.count();
-    //m_recentDocuments.count() +s
 }
 
 int CMDocumentListModel::columnCount(const QModelIndex &parent) const
@@ -163,8 +141,6 @@ QVariant CMDocumentListModel::data(const QModelIndex &index, int role) const
     case FilePathRole: return info.filePath;
     case DocTypeRole: return info.docType;
     case SectionCategoryRole: 
-//         if (row < m_recentDocuments.count())
-//             return tr("Recently viewed");
         return m_groupBy == GroupByName ? info.fileName[0].toUpper() : info.docType;
     default: return QVariant();
     }
@@ -191,24 +167,6 @@ void CMDocumentListModel::groupBy(GroupBy role)
 void CMDocumentListModel::relayout()
 {
     emit layoutAboutToBeChanged();
-//     QMap<QString, QList<int> > map;
-//     for (int i = 0; i < m_allDocumentInfos.count(); i++) {
-//         QString section;
-//         if (m_groupBy == GroupByName)
-//             section = m_allDocumentInfos[i].fileName[0].toUpper();
-//         else
-//             section = m_allDocumentInfos[i].docType;
-//         map[section].append(i);
-//     }
-//     QList<DocumentInfo> newList;
-//     for (QMap<QString, QList<int> >::const_iterator it = map.constBegin(); it != map.constEnd(); ++it) {
-//         QList<int> indices = it.value();
-//         foreach(int index, indices) {
-//             if(m_filteredTypes.isEmpty() || m_allDocumentInfos[index].docType == m_filteredTypes) {
-//                 newList.append(m_allDocumentInfos[index]);
-//             }
-//         }
-//     }
 
     QList<DocumentInfo> newList;
     foreach(const DocumentInfo &docInfo, m_allDocumentInfos) {
@@ -221,48 +179,6 @@ void CMDocumentListModel::relayout()
     m_currentDocumentInfos = newList;
     emit layoutChanged();
     reset(); // ## Required for <= Qt 4.7.2
-}
-
-void CMDocumentListModel::addRecent(const QString &path)
-{
-//     QFileInfo fi(path);
-//     CMDocumentListModel::DocumentInfo info;
-//     info.fileName = fi.fileName();
-//     info.filePath = fi.absoluteFilePath();
-//     info.docType = m_docTypes.value(info.fileName.right(3));
-//     addRecent(info);
-}
-
-void CMDocumentListModel::addRecent(int index)
-{
-//     Q_ASSERT(index >= 0 && index < rowCount());
-//     DocumentInfo info = (index >= m_recentDocuments.count()) ? m_allDocumentInfos[index - m_recentDocuments.count()] : m_recentDocuments[index];
-//     addRecent(info);
-}
-
-void CMDocumentListModel::addRecent(const DocumentInfo &info)
-{
-//     const int MAX_RECENT = 5;
-//     int toRemove = -1;
-//     for (int i = 0; i < m_recentDocuments.count(); ++i) {
-//         if (m_recentDocuments[i] == info) {
-//             toRemove = i;
-//             break;
-//         }
-//     }
-// 
-//     if (toRemove == -1 && m_recentDocuments.count() == MAX_RECENT)
-//         toRemove = MAX_RECENT - 1;
-// 
-//     if (toRemove != -1) {
-//         beginRemoveRows(QModelIndex(), toRemove, toRemove);
-//         m_recentDocuments.removeAt(toRemove);
-//         endRemoveRows();
-//     }
-//  
-//     beginInsertRows(QModelIndex(), 0, 0);
-//     m_recentDocuments.prepend(info);
-//     endInsertRows();
 }
 
 void CMDocumentListModel::classBegin()
@@ -296,22 +212,6 @@ void CMDocumentListModel::setFilter(CMDocumentListModel::Filter newFilter)
 
 void CMDocumentListModel::componentComplete()
 {
-//     KConfigGroup group(KGlobal::config(), "Recent Files");
-// 
-//     QStringList keys = group.keyList();
-//     for (int i = keys.count() - 1; i >= 0; --i) {
-//         DocumentInfo info;
-//         info.filePath = group.readEntry(keys[i]);
-//         QFileInfo fi(info.filePath);
-//         if (!fi.exists())
-//             continue;
-//         info.fileName = fi.fileName();
-//         info.docType = m_docTypes.value(info.fileName.right(3));
-//         beginInsertRows(QModelIndex(), 0, 0);
-//         m_recentDocuments.prepend(info);
-//         endInsertRows();
-//     }
-
     startSearch();
 }
 

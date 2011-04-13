@@ -32,6 +32,5 @@ AppPage {
 
     onActionMenuTriggered: {
         console.log("ActionMenuTriggered: " + selectedItem);
-        //model.groupBy(selectedItem);
     }
 }

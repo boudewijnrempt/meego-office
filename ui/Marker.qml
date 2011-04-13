@@ -19,8 +19,6 @@ Item {
     width: image.width * 2;
     height: image.width * 2;
 
-    //source: "resources/marker.png"
-
     MouseArea {
         id: mouseArea
         anchors.fill: parent

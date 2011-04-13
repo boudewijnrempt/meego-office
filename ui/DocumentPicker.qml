@@ -15,34 +15,6 @@ Item {
     property variant columnWidth: [ 0.1, 0.5, 0.4 ];
     property int columnSpacing: 20;
 
-//     TitleBar {
-//         id: titleBar
-//         width: root.width
-//         title: qsTr("Calligra Mobile")
-// 
-//         rightArea: [
-//             ToolButton {
-//                 id: groupBy
-//                 image: "image://icon/bookmarks-organize";
-//                 borderPosition: "left"
-// 
-//                 menu: Menu {
-//                     id: menu
-//                     parent: root
-//                     actions: [
-//                         Action { text: qsTr("Group By Name"); onTriggered: model.groupBy(DocumentListModel.GroupByName) },
-//                         Action { text: qsTr("Group By Type"); onTriggered: model.groupBy(DocumentListModel.GroupByDocType) }
-//                     ]
-//                 }
-//             },
-//             ToolButton {
-//                 id: aboutButton
-//                 image: "image://icon/help-about";
-//                 borderPosition: "left"
-//                 onClicked: aboutDialog.opacity = 1;
-//             }
-//         ]
-//     }
     Image {
         id: header;
         anchors.left: parent.left;
@@ -93,22 +65,6 @@ Item {
         model: DocumentListModel { id: documentListModel; }
         delegate: deletegateComponent;
     }
-
-//         section.property: "sectionCategory"
-//         section.criteria: ViewSection.FullString
-//         section.delegate : Rectangle {
-//             width: documentListView.width
-//             height: text.height + 5
-//             color: "#dfbd9f"
-// 
-//             Text {
-//                 id: text
-//                 anchors.left: parent.left
-//                 anchors.leftMargin: 3
-//                 anchors.verticalCenter: parent.verticalCenter
-//                 text: section
-//             }
-//         }
 
     Component {
         id: deletegateComponent;
@@ -175,11 +131,4 @@ Item {
     SystemPalette {
         id: activePalette;
     }
-/*
-    AboutDialog {
-        id: aboutDialog
-        icon: "image://icon/kspread" // ##: Show Calligra icon here
-        title: "Calligra Mobile"
-        opacity: 0
-    }*/
 }

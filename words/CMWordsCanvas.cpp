@@ -28,6 +28,7 @@ public:
     ~Private() { }
 
     void matchFound(KoFindMatch match);
+    void update();
 
     CMWordsCanvas* q;
 
@@ -187,7 +188,10 @@ void CMWordsCanvas::Private::matchFound(KoFindMatch match)
     QTextLine line = cursor.block().layout()->lineForTextPosition(cursor.position() - cursor.block().position());
     QRectF textRect(q->documentOffset().x(), line.y(), 1, line.height());
     q->ensureVisible(textRect, true);
+}
 
+void CMWordsCanvas::Private::update()
+{
     canvas->updateCanvas(QRectF(QPointF(0.f, 0.f), canvas->canvasItem()->size()));
 }
 

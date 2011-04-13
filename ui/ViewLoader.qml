@@ -28,6 +28,7 @@ Item {
         loader.item.progress.connect(centralView.onProgress);
         loader.item.completed.connect(centralView.onCompleted);
         window.search.connect(centralView.find);
+        window.showToolBarSearchChanged.connect(centralView.searchVisibleChanged);
         loadingScreen.show();
         mainToolBar.show();
         return true
@@ -57,6 +58,14 @@ Item {
             loader.item.find(text);
         }
 
+        function searchVisibleChanged() {
+            if(!window.showToolBarSearch) {
+                searchToolBar.hide();
+                loader.item.findFinished();
+                mainToolBar.show();
+            }
+        }
+
         Loader {
             id: loader
             anchors.fill: parent
@@ -84,10 +93,10 @@ Item {
 
             Marker {
                 id: cursorMarker
-                //opacity: 0.5
                 image: "image://themedimage/images/text-selection-marker-start";
                 imageWidth: 19;
                 imageHeight: 41;
+                
                 z: 10
                 x: loader.item ? loader.item.cursorPos.x - width/2 : -100
                 y: loader.item ? loader.item.cursorPos.y - height/4 : -100
@@ -99,7 +108,7 @@ Item {
                 image: "image://themedimage/images/text-selection-marker-end";
                 imageWidth: 19;
                 imageHeight: 41;
-                //opacity: 1
+                
                 z: 10
                 x: loader.item ? loader.item.anchorPos.x - width/2 : -100
                 y: loader.item ? loader.item.anchorPos.y - 3 * (height/4) : -100
@@ -301,12 +310,7 @@ Item {
                 hasBackground: false;
                 //text: "Close";
                 height: findNextButton.height;
-                onClicked: {
-                    searchToolBar.hide();
-                    window.showToolBarSearch = false;
-                    loader.item.findFinished();
-                    mainToolBar.show();
-                }
+                onClicked: window.showToolBarSearch = false;
             }
         }
     }

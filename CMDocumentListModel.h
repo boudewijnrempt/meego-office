@@ -53,8 +53,6 @@ public slots:
     void startSearch();
     void stopSearch();
     void addDocument(const CMDocumentListModel::DocumentInfo &info);
-    void addRecent(int index);
-    void addRecent(const QString &path);
     void setFilter(Filter newFilter);
 
 public:
@@ -65,10 +63,8 @@ private slots:
 
 private:
     void relayout();
-    void addRecent(const DocumentInfo &info);
 
     QHash<QString, QString> m_docTypes;
-    QList<DocumentInfo> m_recentDocuments;
     QList<DocumentInfo> m_allDocumentInfos;
     QList<DocumentInfo> m_currentDocumentInfos;
     SearchThread *m_searchThread;

@@ -38,6 +38,7 @@ private:
     Private * const d;
 
     Q_PRIVATE_SLOT(d, void matchFound(KoFindMatch));
+    Q_PRIVATE_SLOT(d, void update());
 };
 
 #endif // CALLIGRAMOBILE_WORDSCANVAS_H

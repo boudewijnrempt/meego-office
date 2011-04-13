@@ -1,19 +1,31 @@
 import QtQuick 1.0
 
-Image {
+Item {
     id: root
 
     signal moved(variant newX, variant newY)
 
-    width: 32
-    height: 32
-    source: "resources/marker.png"
+    property alias image: image.source;
+    property alias imageWidth: image.width;
+    property alias imageHeight: image.height;
+
+    Image {
+        id: image;
+        anchors.centerIn: parent;
+        width: 32
+        height: 32
+    }
+
+    width: image.width * 2;
+    height: image.width * 2;
+
+    //source: "resources/marker.png"
 
     MouseArea {
         id: mouseArea
         anchors.fill: parent
         onPositionChanged: {
-            root.moved(root.x + mouse.x, root.y + mouse.y - root.height)
+            root.moved(root.x + mouse.x, root.y + mouse.y - root.height / 2)
         }
     }
 }

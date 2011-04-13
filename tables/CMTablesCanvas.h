@@ -11,6 +11,7 @@ class CMTablesCanvas : public CMCanvasControllerDeclarative
     Q_PROPERTY(bool hasNextSheet READ hasNextSheet NOTIFY hasNextSheetChanged)
     Q_PROPERTY(bool hasPreviousSheet READ hasNextSheet NOTIFY hasPreviousSheetChanged)
     Q_PROPERTY(int sheet READ activeSheetIndex WRITE changeSheet NOTIFY sheetChanged)
+    Q_PROPERTY(QString sheetName READ sheetName)
 
 public:
     explicit CMTablesCanvas(QDeclarativeItem* parent = 0);
@@ -21,6 +22,8 @@ public:
 
     bool hasNextSheet() const;
     bool hasPreviousSheet() const;
+
+    QString sheetName() const;
 
     QObject* doc() const;
 

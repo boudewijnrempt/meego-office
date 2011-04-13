@@ -30,44 +30,44 @@ CMPageThumbnailProvider::~CMPageThumbnailProvider()
 
 QImage CMPageThumbnailProvider::requestImage(const QString& id, QSize* size, const QSize& requestedSize)
 {
-    if(d->controller.isNull())
-        return QImage();
-    
-    CMStageCanvas* stageCanvas = qobject_cast<CMStageCanvas*>(d->controller.data());
-    CMTablesCanvas* tablesCanvas = qobject_cast<CMTablesCanvas*>(d->controller.data());
-    CMWordsCanvas* wordsCanvas = qobject_cast<CMWordsCanvas*>(d->controller.data());
-    
-    QString pageNumber = id.section('/', 1);
-    if(stageCanvas) {
-        QImage tmp = QImage( QSize(64,48), QImage::Format_ARGB32 );
-        tmp.fill( QColor("silver").rgb() );
-        QPainter painter(&tmp);
-        painter.setPen(Qt::gray);
-        painter.setFont(QFont("sans-serif", 8));
-        painter.drawText(tmp.rect(), Qt::AlignCenter, QString("Preview of\nSlide %1").arg(pageNumber));
-        painter.end();
-        return tmp;
-    }
-    else if(tablesCanvas) {
-        QImage tmp = QImage( QSize(64,64), QImage::Format_ARGB32 );
-        tmp.fill( QColor("silver").rgb() );
-        QPainter painter(&tmp);
-        painter.setPen(Qt::gray);
-        painter.setFont(QFont("sans-serif", 8));
-        painter.drawText(tmp.rect(), Qt::AlignCenter, QString("Preview of\nSheet %1").arg(pageNumber));
-        painter.end();
-        return tmp;
-    }
-    else if(wordsCanvas) {
-        return qobject_cast<KWDocument*>(wordsCanvas->doc())->pageManager()->page(pageNumber.toInt()).thumbnail(requestedSize, wordsCanvas->canvas()->shapeManager());
-        QImage tmp = QImage( QSize(48,64), QImage::Format_ARGB32 );
-        tmp.fill( QColor("silver").rgb() );
-        QPainter painter(&tmp);
-        painter.setPen(Qt::gray);
-        painter.setFont(QFont("sans-serif", 8));
-        painter.drawText(tmp.rect(), Qt::AlignCenter, QString("Preview of\nPage %1").arg(pageNumber));
-        painter.end();
-        return tmp;
+    if(!d->controller.isNull())
+    {
+        CMStageCanvas* stageCanvas = qobject_cast<CMStageCanvas*>(d->controller.data());
+        CMTablesCanvas* tablesCanvas = qobject_cast<CMTablesCanvas*>(d->controller.data());
+        CMWordsCanvas* wordsCanvas = qobject_cast<CMWordsCanvas*>(d->controller.data());
+
+        QString pageNumber = id.section('/', 1);
+        if(stageCanvas) {
+            QImage tmp = QImage( QSize(64,48), QImage::Format_ARGB32 );
+            tmp.fill( QColor("silver").rgb() );
+            QPainter painter(&tmp);
+            painter.setPen(Qt::gray);
+            painter.setFont(QFont("sans-serif", 8));
+            painter.drawText(tmp.rect(), Qt::AlignCenter, QString("Preview of\nSlide %1").arg(pageNumber));
+            painter.end();
+            return tmp;
+        }
+        else if(tablesCanvas) {
+            QImage tmp = QImage( QSize(64,64), QImage::Format_ARGB32 );
+            tmp.fill( QColor("silver").rgb() );
+            QPainter painter(&tmp);
+            painter.setPen(Qt::gray);
+            painter.setFont(QFont("sans-serif", 8));
+            painter.drawText(tmp.rect(), Qt::AlignCenter, QString("Preview of\nSheet %1").arg(pageNumber));
+            painter.end();
+            return tmp;
+        }
+        else if(wordsCanvas) {
+            return qobject_cast<KWDocument*>(wordsCanvas->doc())->pageManager()->page(pageNumber.toInt()).thumbnail(requestedSize, wordsCanvas->canvas()->shapeManager());
+            QImage tmp = QImage( QSize(48,64), QImage::Format_ARGB32 );
+            tmp.fill( QColor("silver").rgb() );
+            QPainter painter(&tmp);
+            painter.setPen(Qt::gray);
+            painter.setFont(QFont("sans-serif", 8));
+            painter.drawText(tmp.rect(), Qt::AlignCenter, QString("Preview of\nPage %1").arg(pageNumber));
+            painter.end();
+            return tmp;
+        }
     }
 
     QImage tmp = QImage( QSize(64,64), QImage::Format_ARGB32 );

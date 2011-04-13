@@ -1,12 +1,11 @@
 import QtQuick 1.0
 import org.calligra.mobile 1.0
 
-Rectangle {
+Item {
     id: root
     property alias model: documentListView.model
     property alias currentIndex: documentListView.currentIndex
     signal selected(int index)
-    color: "white"
     function pageChanged(newPage) { documentListView.currentIndex = newPage }
 
     

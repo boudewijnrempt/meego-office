@@ -11,6 +11,7 @@
 #include <KoDocumentInfo.h>
 
 #include "CMProgressProxy.h"
+#include <Sheet.h>
 
 class CMTablesCanvas::Private
 {
@@ -104,6 +105,11 @@ void CMTablesCanvas::updateDocumentSizePrivate(const QSize& size)
     zoomController()->setDocumentSize(size);
 }
 
+QString CMTablesCanvas::sheetName() const
+{
+    return d->canvas->activeSheet()-> sheetName();
+}
+
 void CMTablesCanvas::loadDocument()
 {
     emit progress(1);
@@ -126,6 +132,7 @@ void CMTablesCanvas::loadDocument()
 
     emit progress(100);
     emit completed();
+    emit sheetChanged(0);
 }
 
 void CMTablesCanvas::Private::updateCanvas()

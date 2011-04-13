@@ -9,13 +9,18 @@ AppPage {
     pageTitle: qsTr("All Documents");
 
     property alias filter: picker.filter;
+    property alias showType: picker.showType;
 
     DocumentPicker {
         id: picker;
         anchors.fill: parent;
 
+        showHeader: true;
+
         onSelected: {
             settings.currentFile = filePath;
+            settings.currentName = filePath.substr(filePath.lastIndexOf("/") + 1);
+            window.actionMenuActive = false;
             window.addPage(viewDocumentPageComponent);
         }
     }

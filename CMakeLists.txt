@@ -51,15 +51,15 @@ set(calligramobile_SRCS
 
 set(calligramobile_ui_components_SRCS
     components/qmldir
-    components/Action.qml
-    components/ActionBar.qml
+#     components/Action.qml
+#     components/ActionBar.qml
     components/DocumentThumbnailList.qml
-    components/Button.qml
-    components/Menu.qml
-    components/ScreenOrientation.qml
-    components/TitleBar.qml
-    components/ToolButton.qml
-    components/ProgressBar.qml
+#     components/Button.qml
+#     components/Menu.qml
+#     components/ScreenOrientation.qml
+#     components/TitleBar.qml
+#     components/ToolButton.qml
+#    components/ProgressBar.qml
 )
 
 set(calligramobile_ui_components_RES

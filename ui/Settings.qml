@@ -6,4 +6,10 @@ Item {
     id: settings;
     
     property string currentFile;
+    property string currentName;
+
+    function reset() {
+        currentFile = "";
+        currentName = "";
+    }
 }

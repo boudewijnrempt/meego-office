@@ -9,7 +9,7 @@ Window {
     bookMenuModel: [ qsTr("All Documents"), qsTr("Presentations"), qsTr("Spreadsheets"), qsTr("Text Documents") ];
     bookMenuPayload: [ allDocumentsPageComponent, presentationsPageComponent, spreadsheetsPageComponent, textDocumentsPageComponent ];
     
-    Component { id: allDocumentsPageComponent; DocumentsPage { } }
+    Component { id: allDocumentsPageComponent; DocumentsPage { showType: true; } }
     Component { id: presentationsPageComponent; DocumentsPage { pageTitle: qsTr("Presentations"); filter: DocumentListModel.Presentations; } }
     Component { id: spreadsheetsPageComponent; DocumentsPage { pageTitle: qsTr("Spreadsheets"); filter: DocumentListModel.Spreadsheets; } }
     Component { id: textDocumentsPageComponent; DocumentsPage { pageTitle: qsTr("Text Documents"); filter: DocumentListModel.TextDocuments; } }

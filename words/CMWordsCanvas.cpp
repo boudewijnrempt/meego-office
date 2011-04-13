@@ -36,6 +36,7 @@ public:
     int currentPage;
 
     KoFindText* find;
+    int matchNumber;
 
     void updateCanvas();
 };
@@ -57,6 +58,12 @@ QObject* CMWordsCanvas::doc() const
 
 void CMWordsCanvas::changePage(int newPage)
 {
+    if(newPage < 0)
+        newPage = pageCount() - 1;
+
+    if(newPage >= pageCount())
+        newPage = 0;
+    
     KWPage thePage = d->doc->pageManager()->page(newPage + 1);
     scrollContentsBy( 0, thePage.offsetInDocument() - documentOffset().y());
     d->currentPage = newPage;
@@ -108,11 +115,28 @@ void CMWordsCanvas::loadDocument()
 
     emit progress(100);
     emit completed();
+    emit pageChanged(0);
+}
+
+int CMWordsCanvas::pageCount() const
+{
+    return d->doc->pageCount();
+}
+
+int CMWordsCanvas::matchCount()
+{
+    return d->find->matches().count();
 }
 
 void CMWordsCanvas::find(const QString& pattern)
 {
+    d->matchNumber = 0;
     d->find->find(pattern);
+}
+
+void CMWordsCanvas::findPrevious()
+{
+    d->find->findPrevious();
 }
 
 void CMWordsCanvas::findNext()
@@ -156,10 +180,10 @@ void CMWordsCanvas::Private::matchFound(KoFindMatch match)
         return;
     }
 
+    matchNumber = (matchNumber + 1) % (find->matches().size() + 1);
+    emit q->findMatchFound(matchNumber);
+    
     QTextCursor cursor = match.location().value<QTextCursor>();
-    doc->resourceManager()->setResource(KoText::CurrentTextAnchor, cursor.anchor());
-    doc->resourceManager()->setResource(KoText::CurrentTextPosition, cursor.position());
-
     QTextLine line = cursor.block().layout()->lineForTextPosition(cursor.position() - cursor.block().position());
     QRectF textRect(q->documentOffset().x(), line.y(), 1, line.height());
     q->ensureVisible(textRect, true);

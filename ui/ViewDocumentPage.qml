@@ -5,7 +5,7 @@ import org.calligra.mobile 1.0
 AppPage {
     id: viewDocumentPage;
 
-    pageTitle: settings.currentFile;
+    pageTitle: settings.currentName;
     anchors.fill: parent;
 
     ViewLoader {
@@ -19,5 +19,13 @@ AppPage {
 
     onActivated: {
         view.loadDocument();
+    }
+
+    onDeactivating: {
+        window.showToolBarSearch = false;
+    }
+
+    onDeactivated: {
+        settings.reset();
     }
 }

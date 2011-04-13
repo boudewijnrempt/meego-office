@@ -54,8 +54,19 @@ int CMStageCanvas::slide() const
     return d->view->page();
 }
 
+int CMStageCanvas::slideCount() const
+{
+    return d->doc->pageCount();
+}
+
 void CMStageCanvas::changeSlide(int newSlide)
 {
+    if(newSlide < 0)
+        newSlide = slideCount() - 1;
+
+    if(newSlide >= slideCount())
+        newSlide = 0;
+    
     d->view->setPage(newSlide);
     emit slideChanged(newSlide);
 }
@@ -82,6 +93,7 @@ void CMStageCanvas::loadDocument()
 
     emit progress(100);
     emit completed();
+    emit slideChanged(0);
 }
 
 void CMStageCanvas::Private::updateCanvas()

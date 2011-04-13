@@ -1,4 +1,5 @@
 import QtQuick 1.0
+import MeeGo.Components 0.1
 import org.calligra.mobile 1.0
 
 Item {
@@ -6,16 +7,18 @@ Item {
     signal viewingFinished()
     property alias thumbnailListModel: thumbnailList.model
     property alias controller: loader.item
+    property string documentType: "";
     
     function setFile(file) {
         var ext = file.substr(-3)
-        console.log(file)
-        console.log(ext)
         if (ext == "odt" || ext == "doc") {
+            documentType = "text";
             loader.sourceComponent = wordComponent
         } else if (ext == "odp" || ext == "ppt") {
+            documentType = "presentation";
             loader.sourceComponent = stageComponent
         } else if (ext == "ods" || ext == "xls") {
+            documentType = "spreadsheet";
             loader.sourceComponent = tablesComponent
         } else {
             console.log('Unsupported extension ' + ext)
@@ -24,23 +27,11 @@ Item {
         loader.item.file = file
         loader.item.progress.connect(centralView.onProgress);
         loader.item.completed.connect(centralView.onCompleted);
+        window.search.connect(centralView.find);
+        loadingScreen.show();
+        mainToolBar.show();
         return true
     }
-    
-    states: [
-        State {
-            name: "fullScreen"
-            when: window.fullScreen;
-            PropertyChanges { target: searchBar; y: -(searchBar.height+titleBar.height) }
-            PropertyChanges { target: actionBar; y: root.height }
-        }
-    ]
-
-    transitions: [
-        Transition {
-            NumberAnimation { property: "y"; duration: 250; }
-        }
-    ]
 
     function loadDocument() {
         if(loader.item) {
@@ -48,91 +39,40 @@ Item {
         }
     }
 
-    function unloadDocument() {
-        if (loader.sourceComponent) 
-            loader.sourceComponent = undefined
-    }
-
-//     SearchBar {
-//         id: searchBar
-//         width: root.width
-//         y: -searchBar.height
-//         Behavior on y { NumberAnimation { duration: 200 } }
-//         
-//         onSearch: loader.item.find(str);
-//         onSearchNext: loader.item.findNext();
-//         onFinished: { loader.item.findFinished(); hide(); }
-// 
-//         function show() { y = 0; input.focus = true; }
-//         function hide() { y = -searchBar.height; input.focus = false; }
-//     }
-// 
-//     TitleBar {
-//         id: titleBar
-//         width: root.width
-//         anchors.top: searchBar.bottom
-// 
-//         leftArea: ToolButton {
-//             id: backButton
-//             image: "image://icon/draw-arrow-back";
-//             borderPosition: "right"
-//             onClicked: { thumbnailList.state = "hidden"; searchBar.hide(); root.viewingFinished(); centralView.state = "" }
-//         }
-// 
-//         pullDownGestureTarget: searchBar
-//         onPullDownGestureFinished: {
-//             if (searchBar.y+searchBar.height >= searchBar.height/2)
-//                 searchBar.show()
-//             else
-//                 searchBar.hide()
-//         }
-//     }
-
     Item {
         id: centralView
-
         anchors.fill: parent;
-//         anchors.top: parent.top;
-//         anchors.left: parent.left
-//         anchors.right: parent.right
-//         anchors.bottom: actionBar.top;
 
         function onCompleted() {
-            centralView.state = "loaded";
-            loadingScreenProgressBar.progress = -1;
+            loadingScreen.hide();
             thumbnailList.model.setDocument(loader.item.document)
             thumbnailList.currentIndex = 0
         }
 
         function onProgress(progress) {
-            loadingScreenProgressBar.progress = progress;
+            loadingScreenProgressBar.percentage = progress;
         }
 
-        states: [
-            State {
-                name: "loaded";
-                PropertyChanges { target: loader; opacity: 1; }
-                PropertyChanges { target: loadingScreen; opacity: 0; }
-            }
-        ]
-
-        transitions: [
-            Transition {
-                to: "loaded"
-                NumberAnimation { properties: "opacity"; duration: 500 }
-            }
-        ]
+        function find(text) {
+            loader.item.find(text);
+        }
 
         Loader {
             id: loader
             anchors.fill: parent
             clip: true
-            opacity: 0;
 
             Connections {
                 target: loader.item
                 onLinkActivated: window.openUrl(url)
                 onTextCopiedToClipboard: textCopiedMessage.show()
+                onFindMatchFound: {
+                    if(!searchToolBar.visible) {
+                        mainToolBar.hide();
+                        searchToolBar.show();
+                    }
+                    findMatchesText.text = "Match " + match + " of " + loader.item.matchCount();
+                }
             }
 
             TextCopiedToClipboardMessage {
@@ -144,99 +84,243 @@ Item {
 
             Marker {
                 id: cursorMarker
-                opacity: 0.5
+                //opacity: 0.5
+                image: "image://themedimage/images/text-selection-marker-start";
+                imageWidth: 19;
+                imageHeight: 41;
                 z: 10
                 x: loader.item ? loader.item.cursorPos.x - width/2 : -100
-                y: loader.item ? loader.item.cursorPos.y : -100
+                y: loader.item ? loader.item.cursorPos.y - height/4 : -100
                 onMoved: loader.item.moveMarker(1, newX, newY)
             }
 
             Marker {
                 id: anchorMarker
-                opacity: 0.5
+                image: "image://themedimage/images/text-selection-marker-end";
+                imageWidth: 19;
+                imageHeight: 41;
+                //opacity: 1
                 z: 10
                 x: loader.item ? loader.item.anchorPos.x - width/2 : -100
-                y: loader.item ? loader.item.anchorPos.y : -100
+                y: loader.item ? loader.item.anchorPos.y - 3 * (height/4) : -100
                 onMoved: loader.item.moveMarker(2, newX, newY)
             }
         }
 
-        Item {
+        ModalFog {
             id: loadingScreen;
-            anchors.fill: parent
+            anchors.fill: parent;
 
-            Rectangle {
-                anchors.fill: parent;
-                color: "#000000";
-                opacity: 0.5;
-            }
+            fogClickable: false;
 
             ProgressBar {
                 id: loadingScreenProgressBar;
                 anchors.centerIn: parent;
-                width: 200;
+                width: parent.width / 4;
+                percentage: 0;
             }
         }
     }
 
-//     ActionBar {
-//         id: actionBar
-//         width: parent.width
-//         y: parent.height - actionBar.height
-// 
-//         ToolButton {
-//             image: "image://icon/pages-list"
-//             onClicked: thumbnailList.state = (thumbnailList.state == "") ? "visible" : ""
-//         }
-//         ToolButton {
-//             image: "image://icon/zoom-in"
-//             onClicked: loader.item.zoomIn()
-//         }
-//         ToolButton {
-//             image: "image://icon/zoom-out"
-//             onClicked: loader.item.zoomOut()
-//         }
-//         ToolButton {
-//             image: "image://icon/zoom-original"
-//             opacity: (loader.item && loader.item.resetZoom) ? 1 : 0
-//             onClicked: loader.item.resetZoom()
-//         }
-//         ToolButton {
-//             image: "image://icon/go-previous"
-//             opacity: (loader.item && loader.item.previousSheet) ? 1 : 0
-//             onClicked: loader.item.previousSheet()
-//         }
-//         ToolButton {
-//             image: "image://icon/go-next"
-//             opacity: (loader.item && loader.item.previousSheet) ? 1 : 0
-//             onClicked: loader.item.nextSheet()
-//         }
-//         ToolButton {
-//             image: "image://icon/view-fullscreen"
-//             onClicked: window.fullScreen = true;
-//         }
-//     }
-    
-    DocumentThumbnailList {
-        id: thumbnailList
-        y: parent.height - thumbnailList.height;
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: 140
-        opacity: 0;
-        
-        onSelected: loader.item.setPage(index);
-        states: [
-            State {
-                name: "visible"
-                PropertyChanges { target: thumbnailList; opacity: 1; }
+    BottomToolBar {
+        id: mainToolBar;
+        content: BottomToolBarRow {
+            IconButton {
+                id: showThumbnailsButton;
+                
+                anchors.left: parent.left;
+                anchors.leftMargin: 10;
+                anchors.verticalCenter: parent.verticalCenter;
+                
+                icon: "image://themedimage/icons/actionbar/mail-message-previous";
+                hasBackground: false;
+                
+                onClicked: {
+                    thumbnailMenu.setPosition(-10, mapToItem( window, window.width, showThumbnailsButton.y).y);
+                    thumbnailMenu.show();
+                }
             }
-        ]
-        transitions: [
-            Transition {
-                PropertyAnimation { properties: "opacity"; duration: 150 }
+
+            Button {
+                id: pageDescriptionText;
+                anchors.left: showThumbnailsButton.right;
+                anchors.leftMargin: 10;
+                anchors.verticalCenter: parent.verticalCenter;
+
+                textColor: theme.fontColorHighlight;
+                font.pixelSize: theme.toolbarFontPixelSize;
+
+                Component.onCompleted: pageDescriptionText.clicked.connect(showThumbnailsButton.clicked);
             }
-        ]
+
+            IconButton {
+                id: prevPageButton;
+
+                anchors.left: pageDescriptionText.right;
+                anchors.leftMargin: 10;
+                anchors.verticalCenter: parent.verticalCenter;
+                
+                icon: "image://themedimage/icons/actionbar/media-backward";
+                iconDown: "image://themedimage/icons/actionbar/media-backward-active";
+                
+                hasBackground: false;
+                visible: documentType != "spreadsheet";
+
+                onClicked: {
+                    if(documentType == "presentation") {
+                        loader.item.changeSlide(loader.item.slide - 1);
+                    } else {
+                        loader.item.changePage(loader.item.page - 1);
+                    }
+                }
+            }
+            
+            IconButton {
+                id: nextPageButton;
+
+                anchors.left: prevPageButton.right;
+                anchors.leftMargin: 10;
+                anchors.verticalCenter: parent.verticalCenter;
+                
+                icon: "image://themedimage/icons/actionbar/media-forward";
+                iconDown: "image://themedimage/icons/actionbar/media-forward-active";
+
+                hasBackground: false;
+                visible: documentType != "spreadsheet";
+
+                onClicked: {
+                    if(documentType == "presentation") {
+                        loader.item.changeSlide(loader.item.slide + 1);
+                    } else {
+                        loader.item.changePage(loader.item.page + 1);
+                    }
+                }
+            }
+
+            IconButton {
+                id: zoomInButton;
+                anchors.right: zoomOutButton.left;
+                anchors.rightMargin: 10;
+                icon: "image://icon/zoom-in";
+                hasBackground: false;
+
+                onClicked: {
+                    loader.item.zoomIn();
+                }
+            }
+
+            IconButton {
+                id: zoomOutButton;
+                anchors.centerIn: parent;
+                icon: "image://icon/zoom-out";
+                hasBackground: false;
+                
+                onClicked: {
+                    loader.item.zoomOut();
+                }
+            }
+            IconButton {
+                id: zoomRestoreButton;
+                anchors.left: zoomOutButton.right;
+                anchors.leftMargin: 10;
+                icon: "image://icon/zoom-original";
+                hasBackground: false;
+
+                onClicked: {
+                    loader.item.resetZoom();
+                }
+            }
+            
+            
+            IconButton {
+                id: viewFullScreenButton;
+                
+                anchors.verticalCenter: parent.verticalCenter;
+                anchors.right: parent.right;
+                anchors.rightMargin: 10;
+                
+                icon: "image://themedimage/icons/actionbar/view-fullscreen";
+                iconDown: "image://themedimage/icons/actionbar/view-fullscreen-active";
+                hasBackground: false;
+                
+                onClicked: { mainToolBar.hide(); window.fullScreen = true; window.fullContent = true; }
+            }
+        }
+    }
+
+    BottomToolBar {
+        id: searchToolBar;
+        content: BottomToolBarRow {
+            IconButton {
+                id: findPreviousButton;
+                
+                anchors.right: findMatchesText.left;
+                anchors.verticalCenter: parent.verticalCenter;
+                anchors.leftMargin: 5;
+                anchors.rightMargin: 5;
+                
+                icon: "image://themedimage/icons/actionbar/mail-message-previous";
+                hasBackground: false;
+                
+                onClicked: loader.item.findPrevious();
+            }
+            Text {
+                id: findMatchesText;
+                
+                anchors.horizontalCenter: parent.horizontalCenter;
+                anchors.leftMargin: 5;
+                anchors.rightMargin: 5;
+                anchors.verticalCenter: parent.verticalCenter;
+
+                font.pixelSize: theme.toolbarFontPixelSize;
+                color: theme.fontColorHighlight;
+            }
+            IconButton {
+                id: findNextButton;
+                
+                anchors.left: findMatchesText.right;
+                anchors.leftMargin: 5;
+                anchors.rightMargin: 5;
+                anchors.verticalCenter: parent.verticalCenter;
+                
+                icon: "image://themedimage/icons/actionbar/mail-message-next";
+                hasBackground: false;
+                
+                onClicked: loader.item.findNext();
+            }
+            IconButton {
+                id: findCloseButton;
+                
+                anchors.right: parent.right;
+                anchors.leftMargin: 5;
+                anchors.rightMargin: 5;
+                anchors.verticalCenter: parent.verticalCenter;
+                
+                icon: "image://themedimage/images/contacts/icn_cross_up";
+                iconDown: "image://themedimage/images/contacts/icn_cross_dn";
+                hasBackground: false;
+                //text: "Close";
+                height: findNextButton.height;
+                onClicked: {
+                    searchToolBar.hide();
+                    window.showToolBarSearch = false;
+                    loader.item.findFinished();
+                    mainToolBar.show();
+                }
+            }
+        }
+    }
+
+    ModalContextMenu {
+        id: thumbnailMenu;
+        forceFingerMode: 3;
+
+        content: DocumentThumbnailList {
+            id: thumbnailList;
+            height: 130;
+            width: window.width - (window.width * 0.02);
+            onSelected: loader.item.setPage(index);
+        }
     }
 
     Component {
@@ -245,7 +329,7 @@ Item {
             id: document
             anchors.fill: parent
             function setPage(newPage) { page = newPage }
-            onPageChanged: thumbnailList.currentIndex = newPage
+            onPageChanged: { thumbnailList.currentIndex = newPage; pageDescriptionText.text = "Page " + (newPage + 1) + " of " + document.pageCount; }
             onDocMoved: thumbnailList.state = ""
         }
     }
@@ -256,7 +340,7 @@ Item {
             id: document
             anchors.fill: parent
             function setPage(newPage) { sheet = newPage }
-            onSheetChanged: thumbnailList.currentIndex = newIndex
+            onSheetChanged: { thumbnailList.currentIndex = newIndex; pageDescriptionText.text = document.sheetName; }
             onDocMoved: thumbnailList.state = ""
         }
     }
@@ -267,7 +351,7 @@ Item {
             id: document
             anchors.fill: parent
             function setPage(newPage) { slide = newPage }
-            onSlideChanged: thumbnailList.currentIndex = newSlide
+            onSlideChanged: { thumbnailList.currentIndex = newSlide; pageDescriptionText.text = "Slide " + (newSlide + 1) + " of " + document.slideCount; }
             onDocMoved: thumbnailList.state = ""
         }
     }
@@ -282,14 +366,20 @@ Item {
             autoHideTimer.restart()
         }
 
-        ToolButton {
+        IconButton {
             id: restoreButton
             opacity: 0
-            image: "image://icon/view-restore"
+
+            icon: "image://themedimage/icons/actionbar/view-smallscreen"
+            iconDown: "image://themedimage/icons/actionbar/view-smallscreen-active"
+            
             anchors.bottom: parent.bottom
+            anchors.bottomMargin: 10;
             anchors.right: parent.right
+            anchors.rightMargin: 10;
+            
             Behavior on opacity { NumberAnimation { duration: 200 } }
-            onClicked: { opacity = 0; autoHideTimer.stop(); window.fullScreen = false; }
+            onClicked: { opacity = 0; autoHideTimer.stop(); window.fullScreen = false; window.fullContent = false; mainToolBar.show(); }
 
             Timer {
                 id: autoHideTimer
@@ -299,6 +389,10 @@ Item {
                 onTriggered: restoreButton.opacity = 0
             }
         }
+    }
+
+    Theme {
+        id: theme;
     }
 }
 

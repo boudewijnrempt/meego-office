@@ -53,7 +53,7 @@ CMDocumentListModel::CMDocumentListModel(QObject *parent)
     setRoleNames(roleNames);
 
     // ## FIXME : Get this from the parts
-    QString docTypesText[] = { tr("Words Document"), tr("Stage Document"), tr("Tables Document") };
+    QString docTypesText[] = { tr("Text Document"), tr("Presentation"), tr("Spreadsheet") };
     m_docTypes["odt"] = docTypesText[0];
     m_docTypes["doc"] = docTypesText[0];
     m_docTypes["odp"] = docTypesText[1];
@@ -66,13 +66,13 @@ CMDocumentListModel::~CMDocumentListModel()
 {
     stopSearch();
 
-    KConfigGroup group(KGlobal::config(), "Recent Files");
-    int index = 0;
-    foreach(const DocumentInfo &info, m_recentDocuments) {
-        group.writeEntry(QString().setNum(index), info.filePath);
-        index++;
-    }
-    group.sync();
+//     KConfigGroup group(KGlobal::config(), "Recent Files");
+//     int index = 0;
+//     foreach(const DocumentInfo &info, m_recentDocuments) {
+//         group.writeEntry(QString().setNum(index), info.filePath);
+//         index++;
+//     }
+//     group.sync();
 }
 
 void CMDocumentListModel::startSearch()
@@ -115,27 +115,32 @@ static bool docTypeLessThan(const CMDocumentListModel::DocumentInfo &info1, cons
 
 void CMDocumentListModel::addDocument(const DocumentInfo &info)
 {
-    bool (*lessThanFunc)(const CMDocumentListModel::DocumentInfo &, const CMDocumentListModel::DocumentInfo &) = 0;
-    if (m_groupBy == GroupByName)
-        lessThanFunc = fileNameLessThan;
-    else
-        lessThanFunc = docTypeLessThan;
-    QList<DocumentInfo>::iterator it = qLowerBound(m_allDocumentInfos.begin(), m_allDocumentInfos.end(), info, fileNameLessThan);
-    const int pos = it - m_allDocumentInfos.begin() + m_recentDocuments.count();
-    m_allDocumentInfos.insert(it, info);
+//     bool (*lessThanFunc)(const CMDocumentListModel::DocumentInfo &, const CMDocumentListModel::DocumentInfo &) = 0;
+//     if (m_groupBy == GroupByName)
+//         lessThanFunc = fileNameLessThan;
+//     else
+//         lessThanFunc = docTypeLessThan;
+//     QList<DocumentInfo>::iterator it = qLowerBound(m_allDocumentInfos.begin(), m_allDocumentInfos.end(), info, fileNameLessThan);
+//     const int pos = it - m_allDocumentInfos.begin();
+    //+ m_recentDocuments.count();
+//    m_allDocumentInfos.insert(it, info);
+    m_allDocumentInfos.append(info);
     
     if(m_filteredTypes.isEmpty() || info.docType == m_filteredTypes) {
         beginInsertRows(QModelIndex(), m_currentDocumentInfos.count() - 1, m_currentDocumentInfos.count());
+        qDebug() << info.filePath;
         m_currentDocumentInfos.append(info);
         endInsertRows();
     }
+    qDebug() << rowCount();
 }
 
 int CMDocumentListModel::rowCount(const QModelIndex &parent) const
 {
-    if (parent.isValid())
-        return 0;
-    return m_recentDocuments.count() + m_currentDocumentInfos.count();
+    //if (parent.isValid())
+    //    return 0;
+    return m_currentDocumentInfos.count();
+    //m_recentDocuments.count() +s
 }
 
 int CMDocumentListModel::columnCount(const QModelIndex &parent) const
@@ -158,8 +163,8 @@ QVariant CMDocumentListModel::data(const QModelIndex &index, int role) const
     case FilePathRole: return info.filePath;
     case DocTypeRole: return info.docType;
     case SectionCategoryRole: 
-        if (row < m_recentDocuments.count())
-            return tr("Recently viewed");
+//         if (row < m_recentDocuments.count())
+//             return tr("Recently viewed");
         return m_groupBy == GroupByName ? info.fileName[0].toUpper() : info.docType;
     default: return QVariant();
     }
@@ -186,24 +191,33 @@ void CMDocumentListModel::groupBy(GroupBy role)
 void CMDocumentListModel::relayout()
 {
     emit layoutAboutToBeChanged();
-    QMap<QString, QList<int> > map;
-    for (int i = 0; i < m_allDocumentInfos.count(); i++) {
-        QString section;
-        if (m_groupBy == GroupByName)
-            section = m_allDocumentInfos[i].fileName[0].toUpper();
-        else
-            section = m_allDocumentInfos[i].docType;
-        map[section].append(i);
-    }
+//     QMap<QString, QList<int> > map;
+//     for (int i = 0; i < m_allDocumentInfos.count(); i++) {
+//         QString section;
+//         if (m_groupBy == GroupByName)
+//             section = m_allDocumentInfos[i].fileName[0].toUpper();
+//         else
+//             section = m_allDocumentInfos[i].docType;
+//         map[section].append(i);
+//     }
+//     QList<DocumentInfo> newList;
+//     for (QMap<QString, QList<int> >::const_iterator it = map.constBegin(); it != map.constEnd(); ++it) {
+//         QList<int> indices = it.value();
+//         foreach(int index, indices) {
+//             if(m_filteredTypes.isEmpty() || m_allDocumentInfos[index].docType == m_filteredTypes) {
+//                 newList.append(m_allDocumentInfos[index]);
+//             }
+//         }
+//     }
+
     QList<DocumentInfo> newList;
-    for (QMap<QString, QList<int> >::const_iterator it = map.constBegin(); it != map.constEnd(); ++it) {
-        QList<int> indices = it.value();
-        foreach(int index, indices) {
-            if(m_filteredTypes.isEmpty() || m_allDocumentInfos[index].docType == m_filteredTypes) {
-                newList.append(m_allDocumentInfos[index]);
-            }
+    foreach(const DocumentInfo &docInfo, m_allDocumentInfos) {
+        if(m_filteredTypes.isEmpty() || docInfo.docType == m_filteredTypes) {
+            qDebug() << docInfo.filePath;
+            newList.append(docInfo);
         }
     }
+    
     m_currentDocumentInfos = newList;
     emit layoutChanged();
     reset(); // ## Required for <= Qt 4.7.2
@@ -266,13 +280,13 @@ void CMDocumentListModel::setFilter(CMDocumentListModel::Filter newFilter)
     switch(m_filter)
     {
         case Presentations:
-            m_filteredTypes = tr("Stage Document");
+            m_filteredTypes = tr("Presentation");
             break;
         case Spreadsheets:
-            m_filteredTypes = tr("Tables Document");
+            m_filteredTypes = tr("Spreadsheet");
             break;
         case TextDocuments:
-            m_filteredTypes = tr("Words Document");
+            m_filteredTypes = tr("Text Document");
             break;
         default:
             m_filteredTypes = QString();

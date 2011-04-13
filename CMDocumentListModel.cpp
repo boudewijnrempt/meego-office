@@ -43,9 +43,14 @@ void SearchThread::run()
 
     // Get documents from the device's tracker instance
     QSparqlConnection connection("QTRACKER");
-    QSparqlQuery query("");
+    QSparqlQuery query("SELECT * WHERE { ?item a nfo:Spreadsheet }");
     QSparqlResult* result = connection.exec(query);
-    while (result->next()) {
+    while (result->next() && !m_abort) {
+        CMDocumentListModel::DocumentInfo info;
+        info.fileName = result->binding(0).value().toString().section('/', 0, -2);
+        info.filePath = result->binding(0).value().toString().section('/', -2, -1);
+        info.docType = m_docTypes.value(info.fileName.right(3));
+        emit documentFound(info);
     }
 
     emit finished();

@@ -12,8 +12,9 @@ find_package(Qt4 4.7.1 REQUIRED)
 
 include(KDE4Defaults)
 include(MacroLibrary)
-include (MacroAdditionalCleanFiles)
-include (MacroAddFileDependencies)
+include(MacroAdditionalCleanFiles)
+include(MacroAddFileDependencies)
+include(FindPkgConfig)
 
 # Find Calligra
 find_package(CalligraLibs REQUIRED)
@@ -21,7 +22,10 @@ find_package(CalligraLibs REQUIRED)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package(QtMobility COMPONENTS SystemInfo)
 
-include_directories(${QT_INCLUDES} ${KDE4_INCLUDES} ${KOMAIN_INCLUDES} ${KOPAGEAPP_INCLUDES} ${WORDS_INCLUDES}
+pkg_check_modules(QSPARQL REQUIRED QtSparql)
+
+include_directories(${QT_INCLUDES} ${KDE4_INCLUDES} ${QSPARQL_INCLUDE_DIRS}
+                    ${KOMAIN_INCLUDES} ${KOPAGEAPP_INCLUDES} ${WORDS_INCLUDES}
                     ${TABLES_INCLUDES} ${STAGE_INCLUDES})
 
 if(QTMOBILITY_FOUND)
@@ -87,6 +91,7 @@ target_link_libraries(calligramobile
     ${QT_QTDECLARATIVE_LIBRARY}
     ${KDE4_KDEUI_LIBS}
     ${KDE4_KFILE_LIBS}
+    ${QSPARQL_LIBRARIES}
     ${FLAKE_LIBRARY}
     ${KOWIDGETS_LIBRARY}
     ${KOPAGEAPP_LIBRARY}

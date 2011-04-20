@@ -677,24 +677,26 @@ void CMCanvasControllerDeclarative::timerUpdate()
 
     bool positionValid = true;
     if(position.x() < d->minX) {
-        position.setX(position.x() * d->springCoeff);
+        float diff = position.x() - d->minX;
+        position.setX(d->minX + diff * d->springCoeff);
         positionValid = false;
     }
     if(position.y() < d->minY) {
-        position.setY(position.y() * d->springCoeff);
+        float diff = position.y() - d->minX;
+        position.setY(d->minY + diff * d->springCoeff);
         positionValid = false;
     }
 
-    /*if(position.x() > d->maxX) {
+    if(position.x() > d->maxX) {
         float diff = position.x() - d->maxX;
-        position.setX(d->maxX + diff * 0.9);
+        position.setX(d->maxX + diff * d->springCoeff);
         positionValid = false;
     }
     if(position.y() > d->maxY) {
         float diff = position.y() - d->maxY;
-        position.setY(d->maxY + diff * 0.9);
+        position.setY(d->maxY + diff * d->springCoeff);
         positionValid = false;
-    }*/
+    }
 
     d->velocity += accel * d->timeStep;
 

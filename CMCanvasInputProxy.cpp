@@ -72,6 +72,12 @@ void CMCanvasInputProxy::handleMouseMoveEvent(QGraphicsSceneMouseEvent* event)
     
     force.setX(prev.x() - cur.x());
     force.setY(prev.y() - cur.y());
+
+    if(qAbs(force.x()) < QApplication::startDragDistance())
+        force.setX(0.0);
+ 
+    if(qAbs(force.y()) < QApplication::startDragDistance())
+        force.setY(0.0);
     
     d->canvasController->setForce(force);
     d->canvasController->scrollContentsBy(force.x(), force.y());

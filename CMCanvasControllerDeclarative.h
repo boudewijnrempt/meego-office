@@ -18,6 +18,8 @@ class CALLIGRAMOBILE_EXPORT CMCanvasControllerDeclarative : public QDeclarativeI
     Q_PROPERTY(QString file READ file WRITE setFile)
     Q_PROPERTY(int visibleWidth READ visibleWidth)
     Q_PROPERTY(int visibleHeight READ visibleHeight)
+
+    Q_PROPERTY(QSize documentSize READ documentSize NOTIFY documentSizeChanged)
     // These provide the bottom right positions
     Q_PROPERTY(QPointF cursorPos READ cursorPos NOTIFY cursorPosChanged)
     Q_PROPERTY(QPointF anchorPos READ anchorPos NOTIFY anchorPosChanged)
@@ -90,6 +92,8 @@ Q_SIGNALS:
 
     void linkActivated(const QString &url);
     void textCopiedToClipboard();
+
+    void documentSizeChanged();
 protected:
     virtual bool eventFilter(QObject* target, QEvent* event );
     KoZoomController* zoomController(KoViewConverter* viewConverter = 0, bool recreate = false);

@@ -82,6 +82,10 @@ Item {
                     }
                     findMatchesText.text = "Match " + match + " of " + loader.item.matchCount();
                 }
+//                 onDocumentSizeChanged: {
+//                     debugRect.width = loader.item.documentSize.width;
+//                     debugRect.height = loader.item.documentSize.height;
+//                 }
             }
 
             TextCopiedToClipboardMessage {
@@ -114,6 +118,16 @@ Item {
                 y: loader.item ? loader.item.anchorPos.y - 3 * (height/4) : -100
                 onMoved: loader.item.moveMarker(2, newX, newY)
             }
+
+//             Rectangle {
+//                 id: debugRect;
+//                 color: "transparent";
+//                 border.width: 4;
+//                 border.color: "#ff0000";
+//                 width: 100;
+//                 height: 100;
+//                 z: 100;
+//             }
         }
 
         ModalFog {
@@ -158,6 +172,7 @@ Item {
 
                 textColor: theme.fontColorHighlight;
                 font.pixelSize: theme.toolbarFontPixelSize;
+                hasBackground: false;
 
                 Component.onCompleted: pageDescriptionText.clicked.connect(showThumbnailsButton.clicked);
             }

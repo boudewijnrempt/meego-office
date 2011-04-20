@@ -53,9 +53,10 @@ public:
         , minY(0)
         , maxX(0)
         , maxY(0)
-        ,dragging(false)
+        , dragging(false)
         , zoom(1.0)
         , currentGesture(NoGesture)
+        , moveThreshold(5)
     {
         selection.cursorPos = selection.anchorPos = QPointF(-1000, -1000);
     }
@@ -113,6 +114,7 @@ public:
         QPointF cursorPos, anchorPos;
         KoShape *shape;
     } selection;
+    qreal moveThreshold;
 };
 
 CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* parent)
@@ -135,7 +137,7 @@ CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* p
 
     d->mass = 10.f;
     d->dragCoeff = 0.05f;
-    d->springCoeff = 0.8f;
+    d->springCoeff = 0.6f;
     d->timeStep = 1000.f / d->timer->interval();
 
     connect(this, SIGNAL(heightChanged()), this, SLOT(onHeightChanged()));
@@ -179,11 +181,17 @@ void CMCanvasControllerDeclarative::updateDocumentSize(const QSize& sz, bool rec
     proxyObject->emitSizeChanged(sz);
     KoCanvasController::setDocumentSize(sz);
     d->updateMinMax();
+    emit documentSizeChanged();
 }
 
 void CMCanvasControllerDeclarative::resetDocumentOffset(const QPoint& offset)
 {
-    QPoint o = offset;
+    QPoint o;
+    if(!offset.isNull()) {
+        o = offset;
+    } else {
+        o = QPoint(d->minX, d->minY);
+    }
     setDocumentOffset(o);
     proxyObject->emitMoveDocumentOffset(offset);
     if(d->inputProxy->updateCanvas()) {
@@ -641,10 +649,25 @@ void CMCanvasControllerDeclarative::onWidthChanged()
 
 void CMCanvasControllerDeclarative::Private::updateMinMax()
 {
-    minX = -(q->width() * vastScrollingFactor) - q->margin();
-    minY = -(q->height() * vastScrollingFactor) - q->margin();
-    maxX = (q->documentSize().width() + (q->width() * vastScrollingFactor) ) - q->width() + q->margin();
-    maxY = (q->documentSize().height() + (q->height() * vastScrollingFactor) ) - q->height() + q->margin();
+    if(q->canvasMode() != KoCanvasController::Infinite ) {
+        int halfWindowWidth = q->width() / 2;
+        int halfDocWidth = q->documentSize().width() / 2;
+        int margin = q->margin();
+
+        minX = halfWindowWidth - (halfDocWidth + margin) + qMin(0, halfWindowWidth - halfDocWidth);
+        maxX = minX + ( qMax(0, -(halfWindowWidth - halfDocWidth)) + q->margin()) * 2;
+
+        int halfWindowHeight = q->height() / 2;
+        int halfDocHeight = q->documentSize().height() / 2;
+
+        minY = halfWindowHeight - (halfDocHeight + margin) + qMin(0, halfWindowHeight - halfDocHeight);
+        maxY = minY + ( qMax(0, -(halfWindowHeight - halfDocHeight)) + q->margin()) * 2;
+    } else {
+        minX = 1 - q->documentSize().width();
+        maxX = 1;
+        minY = 1 - q->documentSize().height();
+        maxY = 1;
+    }
 }
 
 void CMCanvasControllerDeclarative::Private::updateCanvasSize()
@@ -661,7 +684,7 @@ void CMCanvasControllerDeclarative::Private::updateCanvasSize()
 void CMCanvasControllerDeclarative::documentOffsetMoved(const QPoint& point)
 {
     Q_UNUSED(point);
-    d->updateMinMax();
+    //d->updateMinMax();
     d->updateSelectionMarkerPositions();
 }
 
@@ -676,34 +699,50 @@ void CMCanvasControllerDeclarative::timerUpdate()
     position += d->velocity;
 
     bool positionValid = true;
-    if(position.x() < d->minX) {
-        float diff = position.x() - d->minX;
-        position.setX(d->minX + diff * d->springCoeff);
-        positionValid = false;
+    if(-position.x() < d->minX) {
+        float diff = (position.x() + d->minX) * d->springCoeff;
+        position.setX(-d->minX + diff);
+        if(qAbs(diff) > d->moveThreshold) {
+            positionValid = false;
+        } else {
+            position.setX(-d->minX);
+        }
     }
-    if(position.y() < d->minY) {
-        float diff = position.y() - d->minX;
-        position.setY(d->minY + diff * d->springCoeff);
-        positionValid = false;
+    if(-position.y() < d->minY) {
+        float diff = (position.y() + d->minY) * d->springCoeff;
+        position.setY(-d->minY + diff * d->springCoeff);
+        if(qAbs(diff) > d->moveThreshold) {
+            positionValid = false;
+        } else {
+            position.setY(-d->minY);
+        }
     }
 
-    if(position.x() > d->maxX) {
-        float diff = position.x() - d->maxX;
-        position.setX(d->maxX + diff * d->springCoeff);
-        positionValid = false;
+    if(-position.x() > d->maxX) {
+        float diff = (position.x() + d->maxX) * d->springCoeff;
+        position.setX(-d->maxX + diff);
+        if(qAbs(diff) > d->moveThreshold) {
+            positionValid = false;
+        } else {
+            position.setX(-d->maxX);
+        }
     }
-    if(position.y() > d->maxY) {
-        float diff = position.y() - d->maxY;
-        position.setY(d->maxY + diff * d->springCoeff);
-        positionValid = false;
+
+    if(-position.y() > d->maxY) {
+        float diff = (position.y() + d->maxY) * d->springCoeff;
+        position.setY(-d->maxY + diff);
+        if(qAbs(diff) > d->moveThreshold) {
+            positionValid = false;
+        } else {
+            position.setY(-d->maxY);
+        }
     }
 
     d->velocity += accel * d->timeStep;
 
     resetDocumentOffset(QPoint(position.x(), position.y()));
 
-
-    if(d->velocity.x() > -0.1f && d->velocity.x() < 0.1f && d->velocity.y() > -0.1f && d->velocity.y() < 0.1f && positionValid)
+    if(qAbs(d->velocity.x()) < d->moveThreshold && qAbs(d->velocity.y()) < d->moveThreshold && positionValid)
         d->timer->stop();
 }
 

@@ -43,16 +43,18 @@ void SearchThread::run()
 
     // Get documents from the device's tracker instance
     QSparqlConnection connection("QTRACKER");
-    QSparqlQuery query("SELECT * WHERE { { ?u a nfo:PaginatedTextDocument } UNION { ?u a nfo:Presentation } UNION { ?u a nfo:Spreadsheet } }");
+    QSparqlQuery query(
+        "SELECT ?name WHERE { "
+        "{ ?u a nfo:PaginatedTextDocument . ?u nfo:fileName ?name . ?u nie:url ?url } "
+        "UNION { ?u a nfo:Presentation . ?u nfo:fileName ?name . ?u nie:url ?url } "
+        "UNION { ?u a nfo:Spreadsheet . ?u nfo:fileName ?name . ?u nie:url ?url } }");
     QSparqlResult* result = connection.exec(query);
     result->waitForFinished();
     while (result->next() && !m_abort) {
         CMDocumentListModel::DocumentInfo info;
-        info.fileName = result->binding(0).value().toString().section('/', 0, -2);
-        info.filePath = result->binding(0).value().toString().section('/', -2, -1);
+        info.fileName = result->binding(0).value().toString();
+        info.filePath = result->binding(1).value().toString();
         info.docType = m_docTypes.value(info.fileName.right(3));
-        if (info.fileName.isEmpty())
-            info.fileName = result->binding(0).value().toString();
         emit documentFound(info);
     }
 

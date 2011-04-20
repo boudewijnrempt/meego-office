@@ -113,6 +113,8 @@ QString CMTablesCanvas::sheetName() const
 void CMTablesCanvas::loadDocument()
 {
     emit progress(1);
+
+    setCanvasMode(KoCanvasController::Infinite);
     
     Calligra::Tables::Doc* doc = new Calligra::Tables::Doc();
     d->doc = doc;

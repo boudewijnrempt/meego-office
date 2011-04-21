@@ -14,6 +14,12 @@
 #include <QtSparql/QSparqlConnection>
 #include <QtSparql/QSparqlResult>
 
+
+QDebug operator<<(QDebug dbg, const CMDocumentListModel::DocumentInfo& d) { 
+    dbg.nospace() << d.filePath << "," << d.fileName << "," << d.docType << "," << d.fileSize << "," << d.authorName << "," << d.accessedTime << "," << d.modifiedTime;
+    return dbg.space();
+};
+
 SearchThread::SearchThread(const QHash<QString, QString> &docTypes, QObject *parent) 
     : QObject(parent), m_abort(false), m_docTypes(docTypes)
 {
@@ -25,6 +31,27 @@ SearchThread::~SearchThread()
 
 void SearchThread::run()
 {
+    // Get documents from the device's tracker instance
+    QSparqlConnection connection("QTRACKER");
+    QSparqlQuery query(
+        "SELECT nfo:fileName(?u) nie:url(?u) nfo:fileSize(?u) nco:creator(?u) nfo:fileLastAccessed(?u) nfo:fileLastModified(?u)"
+        "WHERE { { ?u a nfo:PaginatedTextDocument } UNION { ?u a nfo:Presentation } UNION { ?u a nfo:Spreadsheet } }");
+    QSparqlResult* result = connection.exec(query);
+    result->waitForFinished();
+    while (result->next() && !m_abort) {
+        CMDocumentListModel::DocumentInfo info;
+        info.fileName = result->binding(0).value().toString();
+        info.filePath = result->binding(1).value().toString();
+        info.docType = m_docTypes.value(info.fileName.right(3));
+        info.fileSize = result->binding(2).value().toString();
+        info.authorName = result->binding(3).value().toString();
+        if(info.authorName.isEmpty())
+            info.authorName = "(unknown)";
+        info.accessedTime = result->binding(4).value().toString();
+        info.modifiedTime = result->binding(5).value().toString();
+        emit documentFound(info);
+    }
+
     // Get documents from the device storage's document directory...
     QString documentsDir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
     QStringList nameFilters;
@@ -38,24 +65,7 @@ void SearchThread::run()
         info.fileName = it.fileName();
         info.filePath = it.filePath();
         info.docType = m_docTypes.value(info.fileName.right(3));
-        emit documentFound(info);
-    }
-
-    // Get documents from the device's tracker instance
-    QSparqlConnection connection("QTRACKER");
-    QSparqlQuery query(
-        "SELECT ?name WHERE { "
-        "{ ?u a nfo:PaginatedTextDocument . ?u nfo:fileName ?name . ?u nie:url ?url } "
-        "UNION { ?u a nfo:Presentation . ?u nfo:fileName ?name . ?u nie:url ?url } "
-        "UNION { ?u a nfo:Spreadsheet . ?u nfo:fileName ?name . ?u nie:url ?url } }");
-    QSparqlResult* result = connection.exec(query);
-    result->waitForFinished();
-    while (result->next() && !m_abort) {
-        CMDocumentListModel::DocumentInfo info;
-        info.fileName = result->binding(0).value().toString();
-        info.filePath = result->binding(1).value().toString();
-        info.docType = m_docTypes.value(info.fileName.right(3));
-        emit documentFound(info);
+        //emit documentFound(info);
     }
 
     emit finished();
@@ -71,6 +81,10 @@ CMDocumentListModel::CMDocumentListModel(QObject *parent)
     roleNames[FilePathRole] = "filePath";
     roleNames[DocTypeRole] = "docType";
     roleNames[SectionCategoryRole] = "sectionCategory";
+    roleNames[FileSizeRole] = "fileSize";
+    roleNames[AuthorNameRole] = "authorName";
+    roleNames[AccessedTimeRole] = "accessedTime";
+    roleNames[ModifiedTimeRole] = "modifiedTime";
     setRoleNames(roleNames);
 
     // ## FIXME : Get this from the parts
@@ -128,6 +142,10 @@ static bool docTypeLessThan(const CMDocumentListModel::DocumentInfo &info1, cons
 
 void CMDocumentListModel::addDocument(const DocumentInfo &info)
 {
+    qDebug() << "Attempting to add " << info;
+    if(m_allDocumentInfos.contains(info))
+        return;
+    
     m_allDocumentInfos.append(info);
     
     if(m_filteredTypes.isEmpty() || info.docType == m_filteredTypes) {
@@ -161,6 +179,10 @@ QVariant CMDocumentListModel::data(const QModelIndex &index, int role) const
     case Qt::DisplayRole: return info.fileName;
     case FilePathRole: return info.filePath;
     case DocTypeRole: return info.docType;
+    case FileSizeRole: return info.fileSize;
+    case AuthorNameRole: return info.authorName;
+    case AccessedTimeRole: return info.accessedTime;
+    case ModifiedTimeRole: return info.modifiedTime;
     case SectionCategoryRole: 
         return m_groupBy == GroupByName ? info.fileName[0].toUpper() : info.docType;
     default: return QVariant();

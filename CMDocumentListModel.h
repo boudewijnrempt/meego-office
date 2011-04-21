@@ -23,7 +23,11 @@ public:
         FileNameRole = Qt::UserRole + 1,
         FilePathRole,
         DocTypeRole,
-        SectionCategoryRole
+        SectionCategoryRole,
+        FileSizeRole,
+        AuthorNameRole,
+        AccessedTimeRole,
+        ModifiedTimeRole
     };
 
     enum GroupBy { GroupByName, GroupByDocType };
@@ -35,6 +39,10 @@ public:
         QString filePath;
         QString fileName;
         QString docType;
+        QString fileSize;
+        QString authorName;
+        QString accessedTime;
+        QString modifiedTime;
     };
 
     // reimp from QAbstractListModel

@@ -57,6 +57,8 @@ public:
         , zoom(1.0)
         , currentGesture(NoGesture)
         , moveThreshold(5)
+        , verticalScrollHandle(0)
+        , horizontalScrollHandle(0)
     {
         selection.cursorPos = selection.anchorPos = QPointF(-1000, -1000);
     }
@@ -71,6 +73,8 @@ public:
     void updateSelection(int option);
     void clearSelection();
     void updateSelectionMarkerPositions();
+
+    void updateScrollHandles();
 
     QString file;
 
@@ -115,6 +119,9 @@ public:
         KoShape *shape;
     } selection;
     qreal moveThreshold;
+
+    QDeclarativeItem *verticalScrollHandle;
+    QDeclarativeItem *horizontalScrollHandle;
 };
 
 CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* parent)
@@ -181,6 +188,8 @@ void CMCanvasControllerDeclarative::updateDocumentSize(const QSize& sz, bool rec
     proxyObject->emitSizeChanged(sz);
     KoCanvasController::setDocumentSize(sz);
     d->updateMinMax();
+    d->updateScrollHandles();
+    
     emit documentSizeChanged();
 }
 
@@ -198,6 +207,7 @@ void CMCanvasControllerDeclarative::resetDocumentOffset(const QPoint& offset)
         d->updateCanvasSize();
     }
     d->updateSelectionMarkerPositions();
+    d->updateScrollHandles();
 }
 
 void CMCanvasControllerDeclarative::setScrollBarValue(const QPoint& value)
@@ -383,6 +393,26 @@ void CMCanvasControllerDeclarative::scrollContentsBy(int dx, int dy)
     resetDocumentOffset(offset);
 }
 
+QDeclarativeItem* CMCanvasControllerDeclarative::horizontalScrollHandle()
+{
+    return d->horizontalScrollHandle;
+}
+
+QDeclarativeItem* CMCanvasControllerDeclarative::verticalScrollHandle()
+{
+    return d->verticalScrollHandle;
+}
+
+void CMCanvasControllerDeclarative::setHorizontalScrollHandle ( QDeclarativeItem* handle )
+{
+    d->horizontalScrollHandle = handle;
+}
+
+void CMCanvasControllerDeclarative::setVerticalScrollHandle ( QDeclarativeItem* handle )
+{
+    d->verticalScrollHandle = handle;
+}
+
 static QRectF selectionBoundingBox(QTextCursor &cursor)
 {
     QTextFrame *frame = cursor.document()->rootFrame();
@@ -489,7 +519,7 @@ void CMCanvasControllerDeclarative::Private::updateSelectionMarkerPositions()
     QTextDocument *doc = selection.textCursor.document();
     KoTextDocumentLayout *lay = qobject_cast<KoTextDocumentLayout *>(doc->documentLayout());
 
-    KoShape *shape1 = lay->shapeForPosition(selection.textCursor.position());
+    KoShape *shape1 = 0; //lay->shapeForPosition(selection.textCursor.position());
     if(!shape1 || shape1->shapeId() != TextShape_SHAPEID) {
         return;
     }
@@ -500,7 +530,7 @@ void CMCanvasControllerDeclarative::Private::updateSelectionMarkerPositions()
     QPointF positionBottomRight = shape1->absoluteTransformation(0).map(selectionBoundingBox(c1).bottomRight() - QPointF(0, shapeData1->documentOffset()));
     selection.cursorPos = (mode ? mode->documentToView(positionBottomRight) : q->canvas()->viewConverter()->documentToView(positionBottomRight)) - q->documentOffset();
 
-    KoShape *shape2 = lay->shapeForPosition(selection.textCursor.anchor());
+    KoShape *shape2 = 0; //lay->shapeForPosition(selection.textCursor.anchor());
     KoTextShapeData *shapeData2 = qobject_cast<KoTextShapeData *>(shape2->userData());
     QTextCursor c2(selection.textCursor);
     c2.setPosition(selection.textCursor.anchor());
@@ -668,6 +698,7 @@ void CMCanvasControllerDeclarative::Private::updateMinMax()
         minY = 1 - q->documentSize().height();
         maxY = 1;
     }
+    updateSelectionMarkerPositions();
 }
 
 void CMCanvasControllerDeclarative::Private::updateCanvasSize()
@@ -678,6 +709,8 @@ void CMCanvasControllerDeclarative::Private::updateCanvasSize()
         canvas->canvasItem()->setGeometry(0, 0, q->width(), q->height());
         canvas->updateCanvas(canvas->viewConverter()->viewToDocument(QRectF(0, 0, q->width(), q->height())));
         canvas->canvasItem()->update();
+
+        updateSelectionMarkerPositions();
     }
 }
 
@@ -742,8 +775,11 @@ void CMCanvasControllerDeclarative::timerUpdate()
 
     resetDocumentOffset(QPoint(position.x(), position.y()));
 
-    if(qAbs(d->velocity.x()) < d->moveThreshold && qAbs(d->velocity.y()) < d->moveThreshold && positionValid)
+    if(qAbs(d->velocity.x()) < d->moveThreshold && qAbs(d->velocity.y()) < d->moveThreshold && positionValid) {
         d->timer->stop();
+        emit hideHorizontalScrollHandle();
+        emit hideVerticalScrollHandle();
+    }
 }
 
 QVector2D CMCanvasControllerDeclarative::force() const
@@ -781,4 +817,38 @@ KoZoomHandler* CMCanvasControllerDeclarative::zoomHandler() const
 {
     return d->zoomHandler;
 }
+
+void CMCanvasControllerDeclarative::Private::updateScrollHandles()
+{
+    if(horizontalScrollHandle) {
+        qreal docWidthPerc = q->width() / q->documentSize().width();
+        if(docWidthPerc < 1.0) {
+            horizontalScrollHandle->setWidth(q->width() * docWidthPerc);
+            emit q->showHorizontalScrollHandle();
+        } else {
+            horizontalScrollHandle->setWidth(q->width());
+            emit q->hideHorizontalScrollHandle();
+        }
+
+        qreal offset = qreal(q->documentOffset().x()) / q->documentSize().width();
+        qreal pos = offset * q->width();
+        horizontalScrollHandle->setX(pos);
+    }
+
+    if(verticalScrollHandle) {
+        qreal docHeightPerc = q->height() / q->documentSize().height();
+        if(docHeightPerc < 1.0) {
+            verticalScrollHandle->setHeight(q->height() * docHeightPerc);
+            emit q->showVerticalScrollHandle();
+        } else {
+            verticalScrollHandle->setHeight(q->height());
+            emit q->hideVerticalScrollHandle();
+        }
+
+        qreal offset = qreal(q->documentOffset().y()) / q->documentSize().height();
+        qreal pos = offset * q->height();
+        verticalScrollHandle->setY(pos);
+    }
+}
+
 

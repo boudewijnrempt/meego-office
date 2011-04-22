@@ -24,6 +24,9 @@ class CALLIGRAMOBILE_EXPORT CMCanvasControllerDeclarative : public QDeclarativeI
     Q_PROPERTY(QPointF cursorPos READ cursorPos NOTIFY cursorPosChanged)
     Q_PROPERTY(QPointF anchorPos READ anchorPos NOTIFY anchorPosChanged)
 
+    Q_PROPERTY(QDeclarativeItem* verticalScrollHandle READ verticalScrollHandle WRITE setVerticalScrollHandle)
+    Q_PROPERTY(QDeclarativeItem* horizontalScrollHandle READ horizontalScrollHandle WRITE setHorizontalScrollHandle)
+
 public:
     CMCanvasControllerDeclarative(QDeclarativeItem* parent = 0);
     virtual ~CMCanvasControllerDeclarative();
@@ -72,7 +75,13 @@ public:
 
     Q_INVOKABLE void moveMarker(int which, qreal x, qreal y);
 
+    QDeclarativeItem *verticalScrollHandle();
+    QDeclarativeItem *horizontalScrollHandle();
+
 public Q_SLOTS:
+    virtual void setVerticalScrollHandle(QDeclarativeItem *handle);
+    virtual void setHorizontalScrollHandle(QDeclarativeItem *handle);
+    
     virtual void zoomOut(const QPoint& center = QPoint());
     virtual void zoomIn(const QPoint& center = QPoint());
     virtual void zoomBy(const QPoint& center, qreal zoom);
@@ -94,6 +103,12 @@ Q_SIGNALS:
     void textCopiedToClipboard();
 
     void documentSizeChanged();
+
+    void showVerticalScrollHandle();
+    void hideVerticalScrollHandle();
+    void showHorizontalScrollHandle();
+    void hideHorizontalScrollHandle();
+    
 protected:
     virtual bool eventFilter(QObject* target, QEvent* event );
     KoZoomController* zoomController(KoViewConverter* viewConverter = 0, bool recreate = false);

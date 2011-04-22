@@ -27,6 +27,8 @@ Item {
         loader.item.file = file
         loader.item.progress.connect(centralView.onProgress);
         loader.item.completed.connect(centralView.onCompleted);
+        loader.item.horizontalScrollHandle = horizScrollHandle;
+        loader.item.verticalScrollHandle = vertScrollHandle;
         window.search.connect(centralView.find);
         window.showToolBarSearchChanged.connect(centralView.searchVisibleChanged);
         loadingScreen.show();
@@ -68,8 +70,12 @@ Item {
 
         Loader {
             id: loader
-            anchors.fill: parent
-            clip: true
+            anchors.top: parent.top;
+            anchors.left: parent.left;
+            anchors.right: parent.right;
+            clip: true;
+
+            height: parent.height - (mainToolBar.visible || searchToolBar.visible ? mainToolBar.height : 0);
 
             Connections {
                 target: loader.item
@@ -82,10 +88,11 @@ Item {
                     }
                     findMatchesText.text = "Match " + match + " of " + loader.item.matchCount();
                 }
-//                 onDocumentSizeChanged: {
-//                     debugRect.width = loader.item.documentSize.width;
-//                     debugRect.height = loader.item.documentSize.height;
-//                 }
+
+                onShowVerticalScrollHandle: vertScrollHandle.opacity = 0.75;
+                onHideVerticalScrollHandle: vertScrollHandle.opacity = 0.0;
+                onShowHorizontalScrollHandle: horizScrollHandle.opacity = 0.75;
+                onHideHorizontalScrollHandle: horizScrollHandle.opacity = 0.0;
             }
 
             TextCopiedToClipboardMessage {
@@ -119,15 +126,30 @@ Item {
                 onMoved: loader.item.moveMarker(2, newX, newY)
             }
 
-//             Rectangle {
-//                 id: debugRect;
-//                 color: "transparent";
-//                 border.width: 4;
-//                 border.color: "#ff0000";
-//                 width: 100;
-//                 height: 100;
-//                 z: 100;
-//             }
+            Rectangle {
+                id: horizScrollHandle;
+
+                anchors.bottom: parent.bottom;
+                
+                color: "#000000";
+                opacity: 0;
+                Behavior on opacity { NumberAnimation { duration: 500 } }
+                
+                height: 5;
+                z: 10;
+            }
+            Rectangle {
+                id: vertScrollHandle;
+
+                anchors.right: parent.right;
+                
+                color: "#000000";
+                opacity: 0;
+                Behavior on opacity { NumberAnimation { duration: 500 } }
+                
+                width: 5;
+                z: 10;
+            }
         }
 
         ModalFog {

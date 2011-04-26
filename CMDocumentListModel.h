@@ -4,6 +4,7 @@
 #include <QAbstractListModel>
 #include <QDeclarativeParserStatus>
 #include <QRunnable>
+#include <QDateTime>
 
 class SearchThread;
 
@@ -41,8 +42,8 @@ public:
         QString docType;
         QString fileSize;
         QString authorName;
-        QString accessedTime;
-        QString modifiedTime;
+        QDateTime accessedTime;
+        QDateTime modifiedTime;
     };
 
     // reimp from QAbstractListModel
@@ -56,6 +57,8 @@ public:
     void componentComplete();
 
     Filter filter();
+    
+    static QString prettyTime(QDateTime theTime);
 
 public slots:
     void startSearch();

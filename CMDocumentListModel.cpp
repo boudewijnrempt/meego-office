@@ -14,6 +14,7 @@
 
 #include <QtSparql/QSparqlConnection>
 #include <QtSparql/QSparqlResult>
+#include <QtSparql/QSparqlError>
 
 
 QDebug operator<<(QDebug dbg, const CMDocumentListModel::DocumentInfo& d) { 
@@ -55,6 +56,8 @@ void SearchThread::run()
             emit documentFound(info);
         }
     }
+    else
+        qDebug() << "Error while querying Tracker:" << result->lastError().message();
     
     // Query Virtuoso if available... This allows us to test on desktop
     // so...
@@ -80,6 +83,8 @@ void SearchThread::run()
             emit documentFound(info);
         }
     }
+    else
+        qDebug() << "Error while querying Virtuoso:" << result2->lastError().message();
 
 // Keeping this code around, in case Tracker later blows up horribly and we
 // have to rapidly reenable the filesystem only support

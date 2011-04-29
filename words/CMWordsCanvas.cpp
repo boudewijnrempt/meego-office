@@ -64,7 +64,7 @@ void CMWordsCanvas::changePage(int newPage)
 
     if(newPage >= pageCount())
         newPage = 0;
-    
+
     KWPage thePage = d->doc->pageManager()->page(newPage + 1);
     scrollContentsBy( 0, thePage.offsetInDocument() - documentOffset().y());
     d->currentPage = newPage;
@@ -166,7 +166,7 @@ void CMWordsCanvas::Private::updateCanvas()
     }
 
     canvas->updateCanvas(QRectF(0, 0, q->width(), q->height()));
-    
+
     // This is horrendously expensive - please let there be a better way...
     int theCurrentPage = q->page();
     if(theCurrentPage != currentPage) {
@@ -183,7 +183,7 @@ void CMWordsCanvas::Private::matchFound(KoFindMatch match)
 
     matchNumber = find->matches().indexOf(match) + 1;
     emit q->findMatchFound(matchNumber);
-    
+
     QTextCursor cursor = match.location().value<QTextCursor>();
     QTextLine line = cursor.block().layout()->lineForTextPosition(cursor.position() - cursor.block().position());
     QRectF textRect(line.cursorToX(cursor.anchor() - cursor.block().position()) , line.y(), 1, line.height());
@@ -194,5 +194,12 @@ void CMWordsCanvas::Private::update()
 {
     canvas->updateCanvas(QRectF(QPointF(0.f, 0.f), canvas->canvasItem()->size()));
 }
+
+
+void CMWordsCanvas::handleShortTap(QPointF pos)
+{
+    // select the shape under the current position and then activate the text tool, send mouse events
+}
+
 
 #include "CMWordsCanvas.moc"

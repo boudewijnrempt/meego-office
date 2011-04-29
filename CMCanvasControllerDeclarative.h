@@ -60,7 +60,7 @@ public:
     virtual KoCanvasBase* canvas() const;
     virtual void setCanvas(KoCanvasBase* canvas);
     virtual void setMargin(int margin);
-    
+
     KoZoomHandler* zoomHandler() const;
     void setZoomMax(qreal newZoomMax);
     qreal zoomMax() const;
@@ -81,7 +81,7 @@ public:
 public Q_SLOTS:
     virtual void setVerticalScrollHandle(QDeclarativeItem *handle);
     virtual void setHorizontalScrollHandle(QDeclarativeItem *handle);
-    
+
     virtual void zoomOut(const QPoint& center = QPoint());
     virtual void zoomIn(const QPoint& center = QPoint());
     virtual void zoomBy(const QPoint& center, qreal zoom);
@@ -108,10 +108,13 @@ Q_SIGNALS:
     void hideVerticalScrollHandle();
     void showHorizontalScrollHandle();
     void hideHorizontalScrollHandle();
-    
+
 protected:
     virtual bool eventFilter(QObject* target, QEvent* event );
     KoZoomController* zoomController(KoViewConverter* viewConverter = 0, bool recreate = false);
+
+    // reimplement to execute an app-specific action on shortTap gesture
+    virtual void handleShortTap(QPointF pos) = 0;
 
 private Q_SLOTS:
     void onHeightChanged();

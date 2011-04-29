@@ -39,6 +39,7 @@ signals:
     void sheetChanged(int newIndex);
 
 protected:
+    void handleShortTap(QPointF pos);
 
 private:
     class Private;

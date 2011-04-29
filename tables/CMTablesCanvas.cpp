@@ -115,7 +115,7 @@ void CMTablesCanvas::loadDocument()
     emit progress(1);
 
     setCanvasMode(KoCanvasController::Infinite);
-    
+
     Calligra::Tables::Doc* doc = new Calligra::Tables::Doc();
     d->doc = doc;
     d->updateCanvas();
@@ -124,7 +124,7 @@ void CMTablesCanvas::loadDocument()
     doc->setProgressProxy(proxy);
 
     connect(proxy, SIGNAL(valueChanged(int)), SIGNAL(progress(int)));
-    
+
     if(!d->doc->openUrl(KUrl(file()))) {
         kWarning() << "Could not open file:" << file();
         return;
@@ -160,3 +160,7 @@ void CMTablesCanvas::Private::updateCanvas()
 }
 
 
+void CMTablesCanvas::handleShortTap(QPointF pos)
+{
+    // select the shape under the current position and then activate the text tool, send mouse events
+}

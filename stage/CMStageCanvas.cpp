@@ -66,7 +66,7 @@ void CMStageCanvas::changeSlide(int newSlide)
 
     if(newSlide >= slideCount())
         newSlide = 0;
-    
+
     d->view->setPage(newSlide);
     emit slideChanged(newSlide);
 }
@@ -119,6 +119,11 @@ void CMStageCanvas::Private::updateCanvas()
 void CMStageCanvas::Private::setDocumentSize(const QSize& size)
 {
     q->zoomController()->setDocumentSize(size);
+}
+
+void CMStageCanvas::handleShortTap(QPointF pos)
+{
+    // select the shape under the current position and then activate the text tool, send mouse events
 }
 
 #include "CMStageCanvas.moc"

@@ -10,14 +10,14 @@ class CMStageCanvas : public CMCanvasControllerDeclarative
     Q_PROPERTY(QObject* view READ view)
     Q_PROPERTY(int slide READ slide WRITE changeSlide NOTIFY slideChanged)
     Q_PROPERTY(int slideCount READ slideCount)
-    
+
 public:
     CMStageCanvas(QDeclarativeItem* parent = 0);
     virtual ~CMStageCanvas();
 
     QObject* doc() const;
     QObject* view() const;
-    
+
     int slide() const;
     int slideCount() const;
 
@@ -27,6 +27,9 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void slideChanged(int newSlide);
+
+protected:
+    void handleShortTap(QPointF pos);
 
 private:
     class Private;

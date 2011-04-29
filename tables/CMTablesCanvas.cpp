@@ -2,13 +2,16 @@
 
 #include <QtGui/QGraphicsWidget>
 #include <QtCore/QTimer>
+#include <QtGui/QGraphicsSceneMouseEvent>
 
 #include <tables/part/Doc.h>
 #include <tables/part/CanvasItem.h>
 #include <tables/Map.h>
 #include <KoView.h>
+#include <KoToolManager.h>
 #include <KoZoomController.h>
 #include <KoDocumentInfo.h>
+#include <KoToolProxy.h>
 
 #include "CMProgressProxy.h"
 #include <Sheet.h>
@@ -162,5 +165,29 @@ void CMTablesCanvas::Private::updateCanvas()
 
 void CMTablesCanvas::handleShortTap(QPointF pos)
 {
-    // select the shape under the current position and then activate the text tool, send mouse events
+    const QString KSpreadCellToolId = "KSpreadCellToolId";
+
+    // the cell tool is responsible for clicking on url's in Tables
+    KoToolManager::instance()->switchToolRequested(KSpreadCellToolId);
+
+    // convert the position from qgraphicsscene to the canvas item
+    pos = canvas()->canvasItem()->mapFromScene(pos);
+
+    // Click...
+    QMouseEvent press(QEvent::MouseButtonPress,
+                      pos.toPoint(),
+                      Qt::LeftButton,
+                      Qt::LeftButton,
+                      Qt::NoModifier);
+    canvas()->toolProxy()->mousePressEvent(&press, canvas()->viewConverter()->viewToDocument(pos + documentOffset()));
+
+
+    // And release...
+    QMouseEvent release(QEvent::MouseButtonRelease,
+                        pos.toPoint(),
+                        Qt::LeftButton,
+                        Qt::LeftButton,
+                        Qt::NoModifier);
+    canvas()->toolProxy()->mousePressEvent(&release, canvas()->viewConverter()->viewToDocument(pos + documentOffset()));
+
 }

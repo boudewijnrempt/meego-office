@@ -19,5 +19,9 @@ Window {
     Settings {
         id: settings;
     }
+
+    function open(file) {
+        window.pageStack.currentPage.openFile(file);
+    }
 }
 

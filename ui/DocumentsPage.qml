@@ -33,4 +33,11 @@ AppPage {
     onActionMenuTriggered: {
         console.log("ActionMenuTriggered: " + selectedItem);
     }
+
+    function openFile(file) {
+        settings.currentFile = file;
+        settings.currentName = file.substr(file.lastIndexOf("/") + 1);
+        window.actionMenuActive = false;
+        window.addPage(viewDocumentPageComponent);
+    }
 }

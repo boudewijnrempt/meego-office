@@ -12,10 +12,20 @@ Item {
     signal selected(int index, string filePath)
 
     property int textPixelSize: theme.fontPixelSizeLarge;
-    property variant columnWidth: [ 0.05, 0.3, 0.25, 0.15, 0.15, 0.1 ];
+    property variant columnWidth:       [ 0.05, 0.3, 0.25, 0.15, 0.15, 0.1 ];
+    property variant narrowColumnWidth: [ 0.05, 0.5, 0,    0.3,  0.3,  0 ];
     property int columnSpacing: 20;
+    property int narrowSize: 700;
     property int adjustedParentWidth: parent.width - (columnSpacing * columnWidth.length)
 
+    function getColumnWidth(column) {
+        var percentage = columnWidth[column];
+        if( adjustedParentWidth < narrowSize ) {
+            percentage = narrowColumnWidth[column];
+        }
+        return adjustedParentWidth * percentage;
+    }
+    
     Image {
         id: header;
         anchors.left: parent.left;
@@ -27,10 +37,10 @@ Item {
         Text {
             id: filenameHeader;
             anchors.left: parent.left;
-            anchors.leftMargin: adjustedParentWidth * columnWidth[0] + columnSpacing;
+            anchors.leftMargin: getColumnWidth(0) + columnSpacing;
             anchors.verticalCenter: parent.verticalCenter;
 
-            width: adjustedParentWidth * columnWidth[1];
+            width: getColumnWidth(1);
             
             text: "Filename";
             font.pixelSize: textPixelSize;
@@ -40,12 +50,12 @@ Item {
 
         Text {
             id: authorHeader
-            visible: showType;
+            visible: width > 5 ? true : false;
             
             anchors.left: filenameHeader.right;
             anchors.leftMargin: columnSpacing;
             anchors.verticalCenter: parent.verticalCenter;
-            width: adjustedParentWidth * columnWidth[2];
+            width: getColumnWidth(2);
 
             text: "Author";
             font.pixelSize: textPixelSize;
@@ -58,7 +68,7 @@ Item {
             anchors.left: authorHeader.right;
             anchors.leftMargin: columnSpacing;
             anchors.verticalCenter: parent.verticalCenter;
-            width: adjustedParentWidth * columnWidth[3];
+            width: getColumnWidth(3);
 
             text: "Type";
             font.pixelSize: textPixelSize;
@@ -71,7 +81,7 @@ Item {
             anchors.left: typeHeader.right;
             anchors.leftMargin: columnSpacing;
             anchors.verticalCenter: parent.verticalCenter;
-            width: adjustedParentWidth * columnWidth[4];
+            width: getColumnWidth(4);
 
             text: "Modified";
             font.pixelSize: textPixelSize;
@@ -80,6 +90,7 @@ Item {
 
         Text {
             id: sizeHeader
+            visible: width > 5 ? true : false;
             
             anchors.left: modifiedHeader.right;
             anchors.leftMargin: columnSpacing;
@@ -120,7 +131,7 @@ Item {
             Item {
                 id: icon;
                 anchors.verticalCenter: parent.verticalCenter;
-                width: adjustedParentWidth * columnWidth[0];
+                width: getColumnWidth(0);
                 
                 Image {
                     anchors.centerIn: parent;
@@ -135,7 +146,7 @@ Item {
                 anchors.left: icon.right;
                 anchors.leftMargin: columnSpacing;
                 anchors.verticalCenter: parent.verticalCenter;
-                width: adjustedParentWidth * columnWidth[1];
+                width: getColumnWidth(1);
 
                 text: model.fileName
                 font.pixelSize: textPixelSize;
@@ -144,10 +155,11 @@ Item {
             
             Text {
                 id: author
+                visible: width > 5 ? true : false;
                 anchors.left: title.right;
                 anchors.leftMargin: columnSpacing;
                 anchors.verticalCenter: parent.verticalCenter;
-                width: adjustedParentWidth * columnWidth[2];
+                width: getColumnWidth(2);
                 
                 text: model.authorName;
                 font.pixelSize: textPixelSize;
@@ -163,7 +175,7 @@ Item {
                 anchors.leftMargin: columnSpacing;
                 anchors.verticalCenter: parent.verticalCenter;
 
-                width: adjustedParentWidth * columnWidth[3];
+                width: getColumnWidth(3);
                 
                 text: model.docType;
                 font.pixelSize: textPixelSize;
@@ -176,7 +188,7 @@ Item {
                 anchors.left: type.right
                 anchors.leftMargin: columnSpacing
                 anchors.verticalCenter: parent.verticalCenter
-                width: adjustedParentWidth * columnWidth[4]
+                width: getColumnWidth(4)
                 text: model.modifiedTime;
                 font.pixelSize: textPixelSize;
                 font.bold: false
@@ -184,11 +196,12 @@ Item {
 
             Text {
                 id: size
+                visible: width > 5 ? true : false;
                 
                 anchors.left: mtime.right
                 anchors.leftMargin: columnSpacing
                 anchors.verticalCenter: parent.verticalCenter
-                width: adjustedParentWidth * columnWidth[5]
+                width: getColumnWidth(5)
                 function humanifySize(bytes) {
                     if (bytes == 0) return 'n/a';
                     var sizes = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'],

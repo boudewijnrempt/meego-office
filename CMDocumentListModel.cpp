@@ -59,9 +59,10 @@ void SearchThread::run()
     else
         qDebug() << "Error while querying Tracker:" << result->lastError().message();
     
-    // Query Virtuoso if available... This allows us to test on desktop
-    // so...
-    QSparqlConnection connection2("QVIRTUOSO");
+    // Query Virtuoso if available... This allows us to test on desktop so...
+    QSparqlConnectionOptions options2;
+    options2.setDatabaseName("DRIVER=/usr/lib64/virtodbc_r.so");
+    QSparqlConnection connection2("QVIRTUOSO", options2);
     QSparqlQuery query2(
         "SELECT nfo:fileName(?u) nie:url(?u) nfo:fileSize(?u) nco:creator(?u) nfo:fileLastAccessed(?u) nfo:fileLastModified(?u)"
         "WHERE { { ?u a nfo:PaginatedTextDocument } UNION { ?u a nfo:Presentation } UNION { ?u a nfo:Spreadsheet } }");

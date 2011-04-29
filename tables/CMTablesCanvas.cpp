@@ -4,15 +4,18 @@
 #include <QtCore/QTimer>
 #include <QtGui/QGraphicsSceneMouseEvent>
 
+#include <tables/ui/Selection.h>
 #include <tables/part/Doc.h>
 #include <tables/part/CanvasItem.h>
 #include <tables/Map.h>
+#include <tables/part/KoFindTables.h>
 #include <tables/part/ToolRegistry.h>
 #include <KoView.h>
 #include <KoToolManager.h>
 #include <KoZoomController.h>
 #include <KoDocumentInfo.h>
 #include <KoToolProxy.h>
+#include <KoToolManager.h>
 
 #include "CMProgressProxy.h"
 #include <Sheet.h>
@@ -23,17 +26,22 @@ class CMTablesCanvas::Private
 public:
     Private(CMTablesCanvas* qq)
         : q(qq),
-          activeSheetIndex(0),
+          activeSheetIndex(-1),
           doc(0),
           canvas(0),
           KSpreadCellToolId("KSpreadCellToolId")
     {}
+
+    void updateCanvas();
+    void updateDocumentSize(const QSize &size);
+    void matchFound(KoFindMatch match);
 
     CMTablesCanvas* q;
 
     int activeSheetIndex;
     Calligra::Tables::Doc* doc;
     Calligra::Tables::CanvasItem* canvas;
+    Calligra::Tables::KoFindTables* finder;
 
     bool hasNextSheet;
     bool hasPreviousSheet;
@@ -41,6 +49,7 @@ public:
     void updateCanvas();
 
     const QString KSpreadCellToolId;
+    int matchNumber;
 };
 
 CMTablesCanvas::CMTablesCanvas(QDeclarativeItem* parent)
@@ -108,14 +117,14 @@ void CMTablesCanvas::changeSheet(int newIndex)
     emit sheetChanged(newIndex);
 }
 
-void CMTablesCanvas::updateDocumentSizePrivate(const QSize& size)
-{
-    zoomController()->setDocumentSize(size);
-}
-
 QString CMTablesCanvas::sheetName() const
 {
     return d->canvas->activeSheet()-> sheetName();
+}
+
+int CMTablesCanvas::matchCount()
+{
+    return d->finder->matches().count();
 }
 
 void CMTablesCanvas::loadDocument()
@@ -128,6 +137,8 @@ void CMTablesCanvas::loadDocument()
     Calligra::Tables::Doc* doc = new Calligra::Tables::Doc();
     d->doc = doc;
     d->updateCanvas();
+    d->finder = new Calligra::Tables::KoFindTables(this);
+    connect(d->finder, SIGNAL(matchFound(KoFindMatch)), SLOT(matchFound(KoFindMatch)));
 
     CMProgressProxy *proxy = new CMProgressProxy(this);
     doc->setProgressProxy(proxy);
@@ -139,6 +150,7 @@ void CMTablesCanvas::loadDocument()
         return;
     }
 
+    d->activeSheetIndex = 0;
     d->updateCanvas();
 
     KoToolManager::instance()->switchToolRequested(d->KSpreadCellToolId);
@@ -146,6 +158,32 @@ void CMTablesCanvas::loadDocument()
     emit progress(100);
     emit completed();
     emit sheetChanged(0);
+}
+
+void CMTablesCanvas::find ( const QString& pattern )
+{
+    d->matchNumber = 0;
+    d->finder->find(pattern);
+}
+
+void CMTablesCanvas::findFinished()
+{
+    d->finder->finished();
+}
+
+void CMTablesCanvas::findNext()
+{
+    d->finder->findNext();
+}
+
+void CMTablesCanvas::findPrevious()
+{
+    d->finder->findPrevious();
+}
+
+void CMTablesCanvas::Private::updateDocumentSize(const QSize& size)
+{
+    q->zoomController()->setDocumentSize(size);
 }
 
 void CMTablesCanvas::Private::updateCanvas()
@@ -156,20 +194,32 @@ void CMTablesCanvas::Private::updateCanvas()
     }
 
     if (!canvas && doc != 0) {
-
         canvas = static_cast<Calligra::Tables::CanvasItem*>(doc->canvasItem());
         q->setCanvas(canvas);
 
         connect(q->proxyObject, SIGNAL(moveDocumentOffset(const QPoint&)), canvas, SLOT(setDocumentOffset(QPoint)));
-        connect(canvas, SIGNAL(documentSizeChanged(QSize)), q, SLOT(updateDocumentSizePrivate(QSize)));
+        connect(canvas, SIGNAL(documentSizeChanged(QSize)), q, SLOT(updateDocumentSize(QSize)));
     }
 
     canvas->updateCanvas(QRectF(0, 0, q->width(), q->height()));
     if (canvas && activeSheetIndex >= 0) {
         canvas->setActiveSheet(doc->map()->sheet(activeSheetIndex));
+        finder->setCurrentSheet(doc->map()->sheet(activeSheetIndex));
     }
 }
 
+void CMTablesCanvas::Private::matchFound ( KoFindMatch match )
+{
+    matchNumber = finder->matches().indexOf(match) + 1;
+    emit q->findMatchFound(matchNumber);
+    
+    Calligra::Tables::Sheet* sheet = match.container().value<Calligra::Tables::Sheet*>();
+    Calligra::Tables::Cell cell = match.location().value<Calligra::Tables::Cell>();
+    canvas->selection()->initialize(cell.cellPosition());
+    QRectF pos = sheet->cellCoordinatesToDocument(QRect(canvas->selection()->anchor(), canvas->selection()->cursor()));
+    pos = canvas->viewConverter()->documentToView(pos);
+    q->ensureVisible(pos, false);
+}
 
 void CMTablesCanvas::handleShortTap(QPointF pos)
 {
@@ -196,3 +246,5 @@ void CMTablesCanvas::handleShortTap(QPointF pos)
     canvas()->toolProxy()->mousePressEvent(&release, canvas()->viewConverter()->viewToDocument(pos + documentOffset()));
 
 }
+
+#include "CMTablesCanvas.moc"

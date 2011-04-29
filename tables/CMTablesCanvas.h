@@ -3,6 +3,8 @@
 
 #include "../CMCanvasControllerDeclarative.h"
 
+#include <KoFindMatch.h>
+
 class CMTablesCanvas : public CMCanvasControllerDeclarative
 {
     Q_OBJECT
@@ -27,16 +29,24 @@ public:
 
     QObject* doc() const;
 
+    Q_INVOKABLE int matchCount();
+
 public Q_SLOTS:
     void nextSheet();
     void previousSheet();
     void changeSheet(int newIndex);
     void loadDocument();
 
+    void find(const QString& pattern);
+    void findPrevious();
+    void findNext();
+    void findFinished();
+
 signals:
     void hasNextSheetChanged();
     void hasPreviousSheetChanged();
     void sheetChanged(int newIndex);
+    void findMatchFound(int match);
 
 protected:
     void handleShortTap(QPointF pos);
@@ -44,9 +54,9 @@ protected:
 private:
     class Private;
     Private * const d;
-
-private Q_SLOTS:
-    void updateDocumentSizePrivate(const QSize& size);
+    
+    Q_PRIVATE_SLOT(d, void updateDocumentSize(const QSize& size))
+    Q_PRIVATE_SLOT(d, void matchFound(KoFindMatch match))
 };
 
 #endif // CALLIGRAMOBILE_TABLESCANVAS_H

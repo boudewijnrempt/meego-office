@@ -181,13 +181,13 @@ void CMWordsCanvas::Private::matchFound(KoFindMatch match)
         return;
     }
 
-    matchNumber = (matchNumber + 1) % (find->matches().size() + 1);
+    matchNumber = find->matches().indexOf(match) + 1;
     emit q->findMatchFound(matchNumber);
     
     QTextCursor cursor = match.location().value<QTextCursor>();
     QTextLine line = cursor.block().layout()->lineForTextPosition(cursor.position() - cursor.block().position());
-    QRectF textRect(q->documentOffset().x(), line.y(), 1, line.height());
-    q->ensureVisible(textRect, true);
+    QRectF textRect(line.cursorToX(cursor.anchor() - cursor.block().position()) , line.y(), 1, line.height());
+    q->ensureVisible(canvas->viewConverter()->documentToView(textRect), false);
 }
 
 void CMWordsCanvas::Private::update()

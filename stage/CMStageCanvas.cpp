@@ -3,12 +3,17 @@
 #include <QtGui/QGraphicsItem>
 #include <KDE/KDebug>
 #include <KoPACanvasItem.h>
+#include <KoCanvasBase.h>
 #include <part/KPrDocument.h>
 #include <part/KPrView.h>
 #include "CMStageDeclarativeView.h"
 #include "CMProgressProxy.h"
 #include <KoPAPageBase.h>
 #include <KoZoomController.h>
+#include <KoShapeManager.h>
+#include <KoToolManager.h>
+#include <KoToolProxy.h>
+#include <KoSelection.h>
 
 class CMStageCanvas::Private
 {
@@ -123,7 +128,44 @@ void CMStageCanvas::Private::setDocumentSize(const QSize& size)
 
 void CMStageCanvas::handleShortTap(QPointF pos)
 {
+    KoCanvasBase *canvasItem = dynamic_cast<KoCanvasBase *>(canvas()->canvasItem());
+    KoShapeManager *shapeManager = canvasItem->shapeManager();
+
     // select the shape under the current position and then activate the text tool, send mouse events
+    pos = canvas()->canvasItem()->mapFromScene(pos);
+
+    // get the current location in document coordinates
+    QPointF docPos = (canvasItem->viewConverter()->viewToDocument(pos + scrollBarValue() - canvas()->canvasItem()->pos()));
+
+    // find text shape at current position
+    KoShape *shape = shapeManager->shapeAt(docPos);
+
+    if (!shape || shape->shapeId() != "TextShapeID") return;
+
+    KoSelection *selection = shapeManager->selection();
+    if (!selection) return;
+    selection->select(shape);
+
+    // The text tool is responsible for handling clicks...
+    KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
+
+    // Click...
+    QMouseEvent press(QEvent::MouseButtonPress,
+                      pos.toPoint(),
+                      Qt::LeftButton,
+                      Qt::LeftButton,
+                      Qt::NoModifier);
+    canvas()->toolProxy()->mousePressEvent(&press, canvas()->viewConverter()->viewToDocument(pos + documentOffset()));
+
+
+    // And release...
+    QMouseEvent release(QEvent::MouseButtonRelease,
+                        pos.toPoint(),
+                        Qt::LeftButton,
+                        Qt::LeftButton,
+                        Qt::NoModifier);
+    canvas()->toolProxy()->mousePressEvent(&release, canvas()->viewConverter()->viewToDocument(pos + documentOffset()));
+
 }
 
 #include "CMStageCanvas.moc"

@@ -62,7 +62,6 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
     d->view->viewport()->grabGesture(Qt::SwipeGesture);
 
     CMPageThumbnailProvider* thumbProvider = new CMPageThumbnailProvider();
-    connect(d->view->rootObject(), SIGNAL(documentOpened(QVariant)), thumbProvider, SLOT(documentChanged(QVariant)));
     d->engine->addImageProvider("pagethumbnails", thumbProvider);
 
     setCentralWidget(d->view);

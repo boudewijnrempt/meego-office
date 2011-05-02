@@ -7,7 +7,6 @@ Item {
     property alias currentIndex: documentListView.currentIndex
     signal selected(int index)
     function pageChanged(newPage) { documentListView.currentIndex = newPage }
-
     
     ListView {
         id: documentListView
@@ -45,6 +44,7 @@ Item {
                         width: parent.width - 6
                         height: parent.height - 6
                         fillMode: Image.PreserveAspectFit
+                        //asynchronous: true
                         source: model.thumbnail
                     }
                 }

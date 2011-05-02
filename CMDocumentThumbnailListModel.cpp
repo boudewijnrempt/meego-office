@@ -1,11 +1,34 @@
 #include "CMDocumentThumbnailListModel.h"
 
+#include "CMCanvasControllerDeclarative.h"
+#include "CMWordsCanvas.h"
+#include "CMTablesCanvas.h"
+#include "CMStageCanvas.h"
+#include "CMPageThumbnailProvider.h"
+
+#include <KoZoomHandler.h>
+#include <KoCanvasBase.h>
 #include <KoDocument.h>
 #include <KoDocumentInfo.h>
-#include <QImage>
+#include <KoShapeManager.h>
+
+#include <KoPAPageBase.h>
+#include <KoPADocument.h>
+
+#include <words/part/KWPage.h>
+#include <words/part/KWDocument.h>
+
 #include <tables/DocBase.h>
 #include <tables/Map.h>
 #include <tables/Sheet.h>
+#include <tables/ui/SheetView.h>
+#include <tables/DocBase.h>
+
+#include <QImage>
+#include <QPainter>
+#include <QDeclarativeEngine>
+#include <QDeclarativeContext>
+#include <QDeclarativeImageProvider>
 
 class CMDocumentThumbnailListModel::Private
 {
@@ -16,6 +39,8 @@ public:
     ~Private() {}
     
     KoDocument* document;
+    QDeclarativeEngine* engine;
+    QWeakPointer<CMCanvasControllerDeclarative> controller;
 };
 
 CMDocumentThumbnailListModel::CMDocumentThumbnailListModel(QObject* parent)
@@ -90,10 +115,86 @@ QVariant CMDocumentThumbnailListModel::headerData(int section, Qt::Orientation o
     return QAbstractItemModel::headerData(section, orientation, role);
 }
 
+void CMDocumentThumbnailListModel::setCanvasController(QObject* newCanvasController)
+{
+    QDeclarativeContext* context = QDeclarativeEngine::contextForObject(newCanvasController);
+    d->engine = context->engine();
+    CMCanvasControllerDeclarative* newController = qobject_cast<CMCanvasControllerDeclarative*>(newCanvasController);
+    d->controller = QWeakPointer<CMCanvasControllerDeclarative>(newController);
+    if(newController)
+    {
+        qDebug() << "New controller, set successfully! Type" << d->controller.data()->metaObject()->className();
+    }
+    else
+    {
+        qDebug() << "New controller, pah!";
+    }
+}
+
 void CMDocumentThumbnailListModel::setDocument(QObject* doc)
 {
     if(qobject_cast<KoDocument*>(doc))
+    {
         d->document = qobject_cast<KoDocument*>(doc);
+        QSize thumbSize(64, 64);
+        CMPageThumbnailProvider* provider = dynamic_cast<CMPageThumbnailProvider*>(d->engine->imageProvider(QLatin1String("pagethumbnails")));
+        
+        KoPADocument *stageDocument = qobject_cast<KoPADocument*>(d->document);
+        Calligra::Tables::DocBase *tablesDocument = qobject_cast<Calligra::Tables::DocBase*>(d->document);
+        KWDocument *wordsDocument = qobject_cast<KWDocument*>(d->document);
+
+        //QString pageNumber = id.section('/', 1);
+        if(stageDocument) {
+            QString someIDWhichDefinesTheDocumentUniquely = QString::number(reinterpret_cast<int64_t>(d->document));
+            int i = 0;
+            foreach(KoPAPageBase *page, stageDocument->pages(false)) {
+                QString id = QString("image://pagethumbnails/%1/%2").arg(someIDWhichDefinesTheDocumentUniquely).arg(++i);
+                provider->addThumbnail(id, page->thumbnail(thumbSize).toImage());
+            }
+        }
+        else if(tablesDocument) {
+            QString someIDWhichDefinesTheDocumentUniquely = QString::number(reinterpret_cast<int64_t>(d->document));
+            if(tablesDocument->map()) {
+                int i = 0;
+                foreach(Calligra::Tables::Sheet* sheet, tablesDocument->map()->sheetList()) {
+                    QPixmap pix(thumbSize);
+                    pix.fill(Qt::white);
+                    QRect rect(0, 0, pix.width(), pix.height());
+                    QPainter p(&pix);
+
+                    p.fillRect(rect, Qt::white);
+
+                    Calligra::Tables::SheetView sheetView(sheet);
+
+                    qreal zoom = 0.5;
+                    KoZoomHandler zoomHandler;
+                    zoomHandler.setZoom(zoom);
+                    p.setClipRect(rect);
+                    p.scale(zoom, zoom);
+                    sheetView.setViewConverter(&zoomHandler);
+
+                    QRectF area = zoomHandler.viewToDocument(rect);
+                    QRect range = sheet->documentToCellCoordinates(area).adjusted(0, 0, 2, 2);
+                    sheetView.setPaintCellRange(range);
+                    sheetView.paintCells(p, area, QPointF(0,0));
+                    QString id = QString("image://pagethumbnails/%1/%2").arg(someIDWhichDefinesTheDocumentUniquely).arg(++i);
+                    provider->addThumbnail(id, pix.toImage());
+                }
+            }
+        }
+        else if(wordsDocument) {
+            CMWordsCanvas* canvas = qobject_cast<CMWordsCanvas*>(d->controller.data());
+            KoShapeManager* shapeManager = canvas->canvas()->shapeManager();
+            QList<KWPage> pages = wordsDocument->pageManager()->pages();
+            QString someIDWhichDefinesTheDocumentUniquely = QString::number(reinterpret_cast<int64_t>(d->document));
+            int i = 0;
+            foreach(KWPage page, pages) {
+                QImage thumb = page.thumbnail(thumbSize, shapeManager);
+                QString id = QString("image://pagethumbnails/%1/%2").arg(someIDWhichDefinesTheDocumentUniquely).arg(++i);
+                provider->addThumbnail(id, thumb);
+            }
+        }
+    }
     reset();
 }
 

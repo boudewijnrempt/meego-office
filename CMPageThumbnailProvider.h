@@ -12,7 +12,7 @@ public:
     CMPageThumbnailProvider();
     virtual ~CMPageThumbnailProvider();
     virtual QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize);
-    Q_SLOT void documentChanged(QVariant newCanvasController);
+    void addThumbnail(QString id, QImage thumb);
 private:
     class Private;
     Private* d;

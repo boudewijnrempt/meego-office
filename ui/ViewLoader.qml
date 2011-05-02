@@ -48,7 +48,7 @@ Item {
 
         function onCompleted() {
             loadingScreen.hide();
-            thumbnailList.model.setDocument(loader.item.document)
+            thumbnailList.model.setCanvasController(loader.item);
             thumbnailList.currentIndex = 0
         }
 
@@ -181,7 +181,8 @@ Item {
                 hasBackground: false;
                 
                 onClicked: {
-                    thumbnailMenu.setPosition(-10, mapToItem( window, window.width, showThumbnailsButton.y).y);
+                    //thumbnailList.model.setDocument(loader.item.document);
+                    thumbnailMenu.setPosition(0, mapToItem( window, window.width, showThumbnailsButton.y).y);
                     thumbnailMenu.show();
                 }
             }

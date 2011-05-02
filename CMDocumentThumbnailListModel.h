@@ -27,6 +27,7 @@ class CMDocumentThumbnailListModel : public QAbstractListModel
         Q_INVOKABLE bool hasOwnPageNumbering() const;
     public Q_SLOTS:
         void setDocument(QObject* doc);
+        void setCanvasController(QObject* newCanvasController);
         
     private:
         class Private;

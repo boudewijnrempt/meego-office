@@ -6,6 +6,8 @@
 #include <QPainter>
 #include <part/KWPage.h>
 #include <part/KWCanvas.h>
+#include <KoShapeManager.h>
+#include <QApplication>
 
 class CMPageThumbnailProvider::Private
 {
@@ -13,7 +15,7 @@ public:
     Private() { }
     ~Private() { }
     
-    QWeakPointer<CMCanvasControllerDeclarative> controller;
+    QHash<QString,QImage> thumbnails;
 };
 
 CMPageThumbnailProvider::CMPageThumbnailProvider()
@@ -30,62 +32,32 @@ CMPageThumbnailProvider::~CMPageThumbnailProvider()
 
 QImage CMPageThumbnailProvider::requestImage(const QString& id, QSize* size, const QSize& requestedSize)
 {
-    if(!d->controller.isNull())
-    {
-        CMStageCanvas* stageCanvas = qobject_cast<CMStageCanvas*>(d->controller.data());
-        CMTablesCanvas* tablesCanvas = qobject_cast<CMTablesCanvas*>(d->controller.data());
-        CMWordsCanvas* wordsCanvas = qobject_cast<CMWordsCanvas*>(d->controller.data());
-
-        QString pageNumber = id.section('/', 1);
-        if(stageCanvas) {
-            QImage tmp = QImage( QSize(64,48), QImage::Format_ARGB32 );
-            tmp.fill( QColor("silver").rgb() );
-            QPainter painter(&tmp);
-            painter.setPen(Qt::gray);
-            painter.setFont(QFont("sans-serif", 8));
-            painter.drawText(tmp.rect(), Qt::AlignCenter, QString("Preview of\nSlide %1").arg(pageNumber));
-            painter.end();
-            return tmp;
-        }
-        else if(tablesCanvas) {
-            QImage tmp = QImage( QSize(64,64), QImage::Format_ARGB32 );
-            tmp.fill( QColor("silver").rgb() );
-            QPainter painter(&tmp);
-            painter.setPen(Qt::gray);
-            painter.setFont(QFont("sans-serif", 8));
-            painter.drawText(tmp.rect(), Qt::AlignCenter, QString("Preview of\nSheet %1").arg(pageNumber));
-            painter.end();
-            return tmp;
-        }
-        else if(wordsCanvas) {
-            return qobject_cast<KWDocument*>(wordsCanvas->doc())->pageManager()->page(pageNumber.toInt()).thumbnail(requestedSize, wordsCanvas->canvas()->shapeManager());
-            QImage tmp = QImage( QSize(48,64), QImage::Format_ARGB32 );
-            tmp.fill( QColor("silver").rgb() );
-            QPainter painter(&tmp);
-            painter.setPen(Qt::gray);
-            painter.setFont(QFont("sans-serif", 8));
-            painter.drawText(tmp.rect(), Qt::AlignCenter, QString("Preview of\nPage %1").arg(pageNumber));
-            painter.end();
-            return tmp;
-        }
-    }
-
-    QImage tmp = QImage( QSize(64,64), QImage::Format_ARGB32 );
-    tmp.fill( QColor("silver").rgb() );
-    QPainter painter(&tmp);
-    painter.setPen(Qt::gray);
-    painter.setFont(QFont("sans-serif", 8));
-    painter.drawText(tmp.rect(), Qt::AlignCenter, "Unknown\ncanvas\ntype");
-    painter.end();
-    return tmp;
+    if(d->thumbnails.contains(id))
+        return d->thumbnails[id];
+    return QImage();
 }
 
-void CMPageThumbnailProvider::documentChanged(QVariant newCanvasController)
+void CMPageThumbnailProvider::addThumbnail(QString id, QImage thumb)
 {
-    CMCanvasControllerDeclarative* newController = qobject_cast<CMCanvasControllerDeclarative*>(newCanvasController.value<QObject*>());
-    if(newController)
-    {
-        d->controller = QWeakPointer<CMCanvasControllerDeclarative>(newController);
+    d->thumbnails[id] = thumb;
+}
+
+void doThatDebugThang(int level, QObject* object)
+{
+    if (object) {
+        QByteArray buf;
+        buf.fill(' ', level / 2 * 8);
+        if (level % 2)
+            buf += "    ";
+        QString name = object->objectName();    
+        QString flags = QLatin1String("");
+        qDebug("%s%s::%s %s", (const char*)buf, object->metaObject()->className(), name.toLocal8Bit().data(),
+            flags.toLatin1().data());
+        QObjectList children = object->children();
+        if (!children.isEmpty()) {
+            for (int i = 0; i < children.size(); ++i)
+                doThatDebugThang(level+1, children.at(i));
+        }
     }
 }
 

@@ -1,9 +1,10 @@
 #ifndef CALLIGRAMOBILE_WORDSCANVAS_H
 #define CALLIGRAMOBILE_WORDSCANVAS_H
 
-#include "../CMCanvasControllerDeclarative.h"
+#include "CMCanvasControllerDeclarative.h"
+#include "CMSearchingInterface.h"
 
-class CMWordsCanvas : public CMCanvasControllerDeclarative
+class CMWordsCanvas : public CMCanvasControllerDeclarative, public CMSearchingInterface
 {
     Q_OBJECT
     Q_PROPERTY(QObject* document READ doc)

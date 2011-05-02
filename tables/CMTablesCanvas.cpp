@@ -7,6 +7,7 @@
 #include <tables/part/Doc.h>
 #include <tables/part/CanvasItem.h>
 #include <tables/Map.h>
+#include <tables/part/ToolRegistry.h>
 #include <KoView.h>
 #include <KoToolManager.h>
 #include <KoZoomController.h>
@@ -15,6 +16,7 @@
 
 #include "CMProgressProxy.h"
 #include <Sheet.h>
+#include <KoToolRegistry.h>
 
 class CMTablesCanvas::Private
 {
@@ -23,7 +25,8 @@ public:
         : q(qq),
           activeSheetIndex(0),
           doc(0),
-          canvas(0)
+          canvas(0),
+          KSpreadCellToolId("KSpreadCellToolId")
     {}
 
     CMTablesCanvas* q;
@@ -36,6 +39,8 @@ public:
     bool hasPreviousSheet;
 
     void updateCanvas();
+
+    const QString KSpreadCellToolId;
 };
 
 CMTablesCanvas::CMTablesCanvas(QDeclarativeItem* parent)
@@ -118,7 +123,8 @@ void CMTablesCanvas::loadDocument()
     emit progress(1);
 
     setCanvasMode(KoCanvasController::Infinite);
-
+    
+    Calligra::Tables::ToolRegistry::instance()->loadTools();
     Calligra::Tables::Doc* doc = new Calligra::Tables::Doc();
     d->doc = doc;
     d->updateCanvas();
@@ -134,6 +140,8 @@ void CMTablesCanvas::loadDocument()
     }
 
     d->updateCanvas();
+
+    KoToolManager::instance()->switchToolRequested(d->KSpreadCellToolId);
 
     emit progress(100);
     emit completed();
@@ -165,10 +173,7 @@ void CMTablesCanvas::Private::updateCanvas()
 
 void CMTablesCanvas::handleShortTap(QPointF pos)
 {
-    const QString KSpreadCellToolId = "KSpreadCellToolId";
-
-    // the cell tool is responsible for clicking on url's in Tables
-    KoToolManager::instance()->switchToolRequested(KSpreadCellToolId);
+    KoToolManager::instance()->switchToolRequested(d->KSpreadCellToolId);
 
     // convert the position from qgraphicsscene to the canvas item
     pos = canvas()->canvasItem()->mapFromScene(pos);

@@ -55,13 +55,15 @@ void SearchThread::run()
             info.modifiedTime = result->binding(5).value().toDateTime();
             emit documentFound(info);
         }
+        emit finished();
+        return;
     }
     else
         qDebug() << "Error while querying Tracker:" << result->lastError().message();
     
     // Query Virtuoso if available... This allows us to test on desktop so...
     QSparqlConnectionOptions options2;
-    options2.setDatabaseName("DRIVER=/usr/lib64/virtodbc_r.so");
+    options2.setDatabaseName("DRIVER=/usr/lib/virtodbc_r.so");
     QSparqlConnection connection2("QVIRTUOSO", options2);
     QSparqlQuery query2(
         "SELECT nfo:fileName(?u) nie:url(?u) nfo:fileSize(?u) nco:creator(?u) nfo:fileLastAccessed(?u) nfo:fileLastModified(?u)"
@@ -83,27 +85,34 @@ void SearchThread::run()
             info.modifiedTime = result2->binding(5).value().toDateTime();
             emit documentFound(info);
         }
+
+        emit finished();
+        return;
     }
     else
         qDebug() << "Error while querying Virtuoso:" << result2->lastError().message();
 
 // Keeping this code around, in case Tracker later blows up horribly and we
 // have to rapidly reenable the filesystem only support
-//     // Get documents from the device storage's document directory...
-//     QString documentsDir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
-//     QStringList nameFilters;
-//     for (QHash<QString, QString>::const_iterator it = m_docTypes.constBegin(); it != m_docTypes.constEnd(); ++it)
-//         nameFilters.append("*." + it.key());
-// 
-//     QDirIterator it(documentsDir, nameFilters, QDir::Files, QDirIterator::Subdirectories);
-//     while (it.hasNext() && !m_abort) {
-//         it.next();
-//         CMDocumentListModel::DocumentInfo info;
-//         info.fileName = it.fileName();
-//         info.filePath = it.filePath();
-//         info.docType = m_docTypes.value(info.fileName.right(3));
-//         emit documentFound(info);
-//     }
+    // Get documents from the device storage's document directory...
+    QString documentsDir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
+    QStringList nameFilters;
+    for (QHash<QString, QString>::const_iterator it = m_docTypes.constBegin(); it != m_docTypes.constEnd(); ++it)
+        nameFilters.append("*." + it.key());
+
+    QDirIterator it(documentsDir, nameFilters, QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext() && !m_abort) {
+        it.next();
+        CMDocumentListModel::DocumentInfo info;
+        info.fileName = it.fileName();
+        info.authorName = "-";
+        info.filePath = it.filePath();
+        info.modifiedTime = it.fileInfo().lastModified();
+        info.accessedTime = it.fileInfo().lastRead();
+        info.fileSize = QString("%1").arg(it.fileInfo().size());
+        info.docType = m_docTypes.value(info.fileName.right(3));
+        emit documentFound(info);
+    }
 
     emit finished();
 }

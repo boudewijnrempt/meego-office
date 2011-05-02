@@ -22,6 +22,7 @@
 #include <KoTextEditor.h>
 #include <KoTextShapeData.h>
 #include <KoToolSelection.h>
+#include <KoTextLayoutRootArea.h>
 #include <KoCanvasBase.h>
 #include <KoViewConverter.h>
 #include <KoToolManager.h>
@@ -482,13 +483,13 @@ void CMCanvasControllerDeclarative::Private::updateSelection(int option)
     q->canvas()->shapeManager()->selection()->select(shapeUnderCursor);
     KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
 
+    KoTextLayoutRootArea *root = shapeData->rootArea();
     QTextDocument *doc = shapeData->document();
-    KoTextDocumentLayout *lay = qobject_cast<KoTextDocumentLayout *>(doc->documentLayout());
     KoTextEditor *editor = KoTextDocument(doc).textEditor();
     QPointF shapeMousePos = shapeUnderCursor->absoluteTransformation(0).inverted().map(docMousePos);
     QPointF textDocMousePos = shapeMousePos + QPointF(0.0, shapeData->documentOffset());
 
-    int cursorPos = lay->hitTest(textDocMousePos, Qt::FuzzyHit);
+    int cursorPos = root->hitTest(textDocMousePos, Qt::FuzzyHit);
     if (option == ProcessTextUnderMouse) {
         editor->setPosition(cursorPos);
         if (!editor->charFormat().anchorHref().isEmpty()) { // user clicked on link

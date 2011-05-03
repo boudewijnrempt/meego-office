@@ -17,7 +17,7 @@ Item {
     }
 
     width: image.width * 2;
-    height: image.width * 2;
+    height: image.height * 2;
 
     MouseArea {
         id: mouseArea

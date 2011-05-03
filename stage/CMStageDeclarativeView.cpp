@@ -12,6 +12,7 @@
 #include <KoSelection.h>
 #include <KoPAMasterPage.h>
 #include <KoShapeLayer.h>
+#include <KoTextShapeData.h>
 
 class CMStageDeclarativeView::Private
 {
@@ -178,6 +179,16 @@ void CMStageDeclarativeView::setActivePage(KoPAPageBase* page)
 
     QList<KoShape*> shapes = page->shapes();
     d->canvas->shapeManager()->setShapes(shapes, KoShapeManager::AddWithoutRepaint);
+    foreach(KoShape* shape, shapes) {
+        KoTextShapeData *shapeData = dynamic_cast<KoTextShapeData *>(shape->userData());
+        if (shapeData == 0)
+            continue;
+
+        if(shapeData->document()) {
+            QVariant var = QVariant::fromValue<void*>(shapeData->document());
+            d->doc->resourceManager()->setResource(KoText::CurrentTextDocument, var);
+        }
+    }
 
     // Make the top most layer active
     if(!shapes.isEmpty()) {
@@ -210,7 +221,6 @@ void CMStageDeclarativeView::setActivePage(KoPAPageBase* page)
         d->canvas->resourceManager()->setResource(KoCanvasResource::CurrentPage,
                                                      doc->pageIndex(d->page) + 1);
     }
-
 }
 
 
@@ -247,7 +257,7 @@ void CMStageDeclarativeView::setPage(int newPage)
     KoPAPageBase *theNewPage = doc->pageByIndex(newPage, false);// pageByNavigation(d->page, pageNavigation);
     
     if (theNewPage != d->page) {
-        proxyObject->updateActivePage(theNewPage);
+        setActivePage(theNewPage);
     }
 }
 

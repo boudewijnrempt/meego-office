@@ -19,6 +19,7 @@
 #include <QTextCursor>
 #include <QTextLine>
 #include <QTextBlock>
+#include <KoTextShapeData.h>
 
 class CMStageCanvas::Private
 {
@@ -150,7 +151,7 @@ void CMStageCanvas::Private::updateCanvas()
     if (!canvas && doc != 0) {
         canvas = static_cast<KoPACanvasItem*>(doc->canvasItem());
         canvas->setCanvasController(q);
-        view = new CMStageDeclarativeView( q->zoomController(new KoZoomHandler()), doc, canvas);
+        view = new CMStageDeclarativeView( q->zoomController(), doc, canvas);
         q->setCanvas(canvas);
         connect(q->proxyObject, SIGNAL(moveDocumentOffset(const QPoint&)), canvas, SLOT(slotSetDocumentOffset(QPoint)));
         connect(canvas, SIGNAL(documentSize(const QSize&)), q, SLOT(setDocumentSize(const QSize&)));

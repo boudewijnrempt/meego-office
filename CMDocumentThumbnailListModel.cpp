@@ -1,9 +1,9 @@
 #include "CMDocumentThumbnailListModel.h"
 
 #include "CMCanvasControllerDeclarative.h"
-#include "CMWordsCanvas.h"
-#include "CMTablesCanvas.h"
-#include "CMStageCanvas.h"
+#include "words/CMWordsCanvas.h"
+#include "tables/CMTablesCanvas.h"
+#include "stage/CMStageCanvas.h"
 #include "CMPageThumbnailProvider.h"
 
 #include <KoZoomHandler.h>

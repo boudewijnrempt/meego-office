@@ -20,6 +20,7 @@ AppPage {
         onSelected: {
             settings.currentFile = filePath;
             settings.currentName = filePath.substr(filePath.lastIndexOf("/") + 1);
+            settings.currentType = fileType;
             window.actionMenuActive = false;
             window.addPage(viewDocumentPageComponent);
         }
@@ -27,16 +28,17 @@ AppPage {
 
     Component { id: viewDocumentPageComponent; ViewDocumentPage { } }
 
-    actionMenuModel: [ qsTr("All"), qsTr("Recently Added"), qsTr("Favourites"), qsTr("Last Viewed") ];
+    /*actionMenuModel: [ qsTr("All"), qsTr("Recently Added"), qsTr("Favourites"), qsTr("Last Viewed") ];
     actionMenuPayload: [ 1, 2, 3, 4 ];
 
     onActionMenuTriggered: {
         console.log("ActionMenuTriggered: " + selectedItem);
-    }
+    }*/
 
-    function openFile(file) {
+    function openFile(file, type) {
         settings.currentFile = file;
         settings.currentName = file.substr(file.lastIndexOf("/") + 1);
+        settings.currentType = type;
         window.actionMenuActive = false;
         window.addPage(viewDocumentPageComponent);
     }

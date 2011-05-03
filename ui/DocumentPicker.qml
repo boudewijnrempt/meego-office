@@ -9,7 +9,7 @@ Item {
     property alias showHeader: header.visible;
     property bool showType: false;
     
-    signal selected(int index, string filePath)
+    signal selected(int index, string filePath, string fileType)
 
     property int textPixelSize: theme.fontPixelSizeLarge;
     property variant columnWidth:       [ 0.05, 0.3, 0.25, 0.15, 0.15, 0.1 ];
@@ -100,7 +100,6 @@ Item {
             font.pixelSize: textPixelSize;
             color: theme.fontColorHighlightBlue;
         }
-
     }
     
     ListView {
@@ -137,7 +136,7 @@ Item {
                     anchors.centerIn: parent;
                     width: 22;
                     height: 22;
-                    source: "image://icon/text-x-plain";
+                    source: "image://icon/" + mimeType;
                 }
             }
 
@@ -148,7 +147,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter;
                 width: getColumnWidth(1);
 
-                text: model.fileName
+                text: fileName;
                 font.pixelSize: textPixelSize;
                 font.bold: true;
             }
@@ -161,7 +160,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter;
                 width: getColumnWidth(2);
                 
-                text: model.authorName;
+                text: authorName;
                 font.pixelSize: textPixelSize;
                 font.bold: false
             }
@@ -177,7 +176,7 @@ Item {
 
                 width: getColumnWidth(3);
                 
-                text: model.docType;
+                text: docType;
                 font.pixelSize: textPixelSize;
                 font.bold: false
             }
@@ -189,7 +188,7 @@ Item {
                 anchors.leftMargin: columnSpacing
                 anchors.verticalCenter: parent.verticalCenter
                 width: getColumnWidth(4)
-                text: model.modifiedTime;
+                text: modifiedTime;
                 font.pixelSize: textPixelSize;
                 font.bold: false
             }
@@ -215,7 +214,7 @@ Item {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: root.selected(index, model.filePath)
+                onClicked: root.selected(index, filePath, docType)
             }
         }
     }

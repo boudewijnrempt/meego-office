@@ -7,23 +7,18 @@ Item {
     signal viewingFinished()
     property alias thumbnailListModel: thumbnailList.model
     property alias controller: loader.item
-    property string documentType: "";
     
     function setFile(file) {
-        var ext = file.substr(-3)
-        if (ext == "odt" || ext == "doc") {
-            documentType = "text";
-            loader.sourceComponent = wordComponent
-        } else if (ext == "odp" || ext == "ppt") {
-            documentType = "presentation";
-            loader.sourceComponent = stageComponent
-        } else if (ext == "ods" || ext == "xls") {
-            documentType = "spreadsheet";
-            loader.sourceComponent = tablesComponent
+        if(settings.currentType == "Text Document") {
+            loader.sourceComponent = wordsComponent;
+        } else if(settings.currentType == "Spreadsheet") {
+            loader.sourceComponent = tablesComponent;
+        } else if(settings.currentType == "Presentation") {
+            loader.sourceComponent = stageComponent;
         } else {
-            console.log('Unsupported extension ' + ext)
-            return false
+            console.log("Unable to open file. Unrecognised file type.");
         }
+
         loader.item.file = file
         loader.item.progress.connect(centralView.onProgress);
         loader.item.completed.connect(centralView.onCompleted);
@@ -109,8 +104,8 @@ Item {
                 imageHeight: 41;
                 
                 z: 10
-                x: loader.item ? loader.item.cursorPos.x - width/2 : -100
-                y: loader.item ? loader.item.cursorPos.y - height/4 : -100
+                x: loader.item ? loader.item.cursorPos.x : -100
+                y: loader.item ? loader.item.cursorPos.y : -100
                 onMoved: loader.item.moveMarker(1, newX, newY)
             }
 
@@ -121,8 +116,8 @@ Item {
                 imageHeight: 41;
                 
                 z: 10
-                x: loader.item ? loader.item.anchorPos.x - width/2 : -100
-                y: loader.item ? loader.item.anchorPos.y - 3 * (height/4) : -100
+                x: loader.item ? loader.item.anchorPos.x : -100
+                y: loader.item ? loader.item.anchorPos.y : -100
                 onMoved: loader.item.moveMarker(2, newX, newY)
             }
 
@@ -211,10 +206,10 @@ Item {
                 iconDown: "image://themedimage/icons/actionbar/media-backward-active";
                 
                 hasBackground: false;
-                visible: documentType != "spreadsheet";
+                visible: settings.currentType != "Spreadsheet";
 
                 onClicked: {
-                    if(documentType == "presentation") {
+                    if(settings.currentType == "Presentation") {
                         loader.item.changeSlide(loader.item.slide - 1);
                     } else {
                         loader.item.changePage(loader.item.page - 1);
@@ -233,10 +228,10 @@ Item {
                 iconDown: "image://themedimage/icons/actionbar/media-forward-active";
 
                 hasBackground: false;
-                visible: documentType != "spreadsheet";
+                visible: settings.currentType != "Spreadsheet";
 
                 onClicked: {
-                    if(documentType == "presentation") {
+                    if(settings.currentType == "Presentation") {
                         loader.item.changeSlide(loader.item.slide + 1);
                     } else {
                         loader.item.changePage(loader.item.page + 1);
@@ -366,7 +361,7 @@ Item {
     }
 
     Component {
-        id: wordComponent
+        id: wordsComponent
         WordsCanvas {
             id: document
             anchors.fill: parent

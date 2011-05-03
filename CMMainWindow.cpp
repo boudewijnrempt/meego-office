@@ -69,7 +69,23 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
     if (!file.isEmpty()) {
         QString cleanFileName = QDir::cleanPath(QDir::current().absoluteFilePath(file));
         qDebug() << "Opening" << cleanFileName;
-        QDeclarativeExpression expr(d->view->rootContext(), d->view->rootObject(), QString("open('%1')").arg(cleanFileName));
+
+        QString ext = file.right(file.size() - (file.lastIndexOf('.') + 1));
+        qDebug() << "Ext:" << ext;
+        QString docTypesText[] = { tr("Text Document"), tr("Presentation"), tr("Spreadsheet") };
+        QString fileType;
+        if(ext == "doc" || ext == "docx" || ext == "odt") {
+            fileType = docTypesText[0];
+        } else if(ext == "xls" || ext == "xlsx" || ext == "ods") {
+            fileType = docTypesText[1];
+        } else if(ext == "ppt" || ext == "pptx" || ext == "odp") {
+            fileType = docTypesText[2];
+        } else {
+            return;
+        }
+        qDebug() << "fileType" << fileType;
+
+        QDeclarativeExpression expr(d->view->rootContext(), d->view->rootObject(), QString("pageStack.currentPage.openFile('%1','%2')").arg(cleanFileName, fileType));
         expr.evaluate();
         if(expr.hasError())
             qDebug() << expr.error();

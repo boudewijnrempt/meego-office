@@ -7,9 +7,11 @@ Item {
     
     property string currentFile;
     property string currentName;
+    property string currentType;
 
     function reset() {
         currentFile = "";
         currentName = "";
+        currentType = "";
     }
 }

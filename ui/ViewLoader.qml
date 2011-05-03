@@ -181,7 +181,7 @@ Item {
                 hasBackground: false;
                 
                 onClicked: {
-                    //thumbnailList.model.setDocument(loader.item.document);
+                    thumbnailList.model.setDocument(loader.item.document);
                     thumbnailMenu.setPosition(0, mapToItem( window, window.width, showThumbnailsButton.y).y);
                     thumbnailMenu.show();
                 }

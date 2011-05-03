@@ -148,7 +148,7 @@ void CMDocumentThumbnailListModel::setDocument(QObject* doc)
             QString someIDWhichDefinesTheDocumentUniquely = QString::number(reinterpret_cast<int64_t>(d->document));
             int i = 0;
             foreach(KoPAPageBase *page, stageDocument->pages(false)) {
-                QString id = QString("image://pagethumbnails/%1/%2").arg(someIDWhichDefinesTheDocumentUniquely).arg(++i);
+                QString id = QString("%1/%2").arg(someIDWhichDefinesTheDocumentUniquely).arg(++i);
                 provider->addThumbnail(id, page->thumbnail(thumbSize).toImage());
             }
         }
@@ -177,7 +177,7 @@ void CMDocumentThumbnailListModel::setDocument(QObject* doc)
                     QRect range = sheet->documentToCellCoordinates(area).adjusted(0, 0, 2, 2);
                     sheetView.setPaintCellRange(range);
                     sheetView.paintCells(p, area, QPointF(0,0));
-                    QString id = QString("image://pagethumbnails/%1/%2").arg(someIDWhichDefinesTheDocumentUniquely).arg(++i);
+                    QString id = QString("%1/%2").arg(someIDWhichDefinesTheDocumentUniquely).arg(++i);
                     provider->addThumbnail(id, pix.toImage());
                 }
             }
@@ -190,7 +190,7 @@ void CMDocumentThumbnailListModel::setDocument(QObject* doc)
             int i = 0;
             foreach(KWPage page, pages) {
                 QImage thumb = page.thumbnail(thumbSize, shapeManager);
-                QString id = QString("image://pagethumbnails/%1/%2").arg(someIDWhichDefinesTheDocumentUniquely).arg(++i);
+                QString id = QString("%1/%2").arg(someIDWhichDefinesTheDocumentUniquely).arg(++i);
                 provider->addThumbnail(id, thumb);
             }
         }

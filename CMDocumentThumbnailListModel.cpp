@@ -34,10 +34,13 @@ class CMDocumentThumbnailListModel::Private
 {
 public:
     Private()
-        : document(0)
+        : docType(CMDocumentThumbnailListModel::UnknownDocType)
+        , document(0)
+        , engine(0)
     {}
     ~Private() {}
     
+    CMDocumentThumbnailListModel::DocType docType;
     KoDocument* document;
     QDeclarativeEngine* engine;
     QWeakPointer<CMCanvasControllerDeclarative> controller;
@@ -144,7 +147,9 @@ void CMDocumentThumbnailListModel::setDocument(QObject* doc)
 
         //QString pageNumber = id.section('/', 1);
         if(stageDocument) {
-            QSize thumbSize(128, 96);
+            d->docType = CMDocumentThumbnailListModel::StageDocType;
+            emit docTypeChanged();
+            QSize thumbSize(240, 200);
             QString someIDWhichDefinesTheDocumentUniquely = QString::number(reinterpret_cast<int64_t>(d->document));
             int i = 0;
             foreach(KoPAPageBase *page, stageDocument->pages(false)) {
@@ -153,7 +158,9 @@ void CMDocumentThumbnailListModel::setDocument(QObject* doc)
             }
         }
         else if(tablesDocument) {
-            QSize thumbSize(128, 128);
+            d->docType = CMDocumentThumbnailListModel::TablesDocType;
+            emit docTypeChanged();
+            QSize thumbSize(200, 200);
             QString someIDWhichDefinesTheDocumentUniquely = QString::number(reinterpret_cast<int64_t>(d->document));
             if(tablesDocument->map()) {
                 int i = 0;
@@ -184,7 +191,9 @@ void CMDocumentThumbnailListModel::setDocument(QObject* doc)
             }
         }
         else if(wordsDocument) {
-            QSize thumbSize(128, 192);
+            d->docType = CMDocumentThumbnailListModel::WordsDocType;
+            emit docTypeChanged();
+            QSize thumbSize(134, 200);
             CMWordsCanvas* canvas = qobject_cast<CMWordsCanvas*>(d->controller.data());
             KoShapeManager* shapeManager = canvas->canvas()->shapeManager();
             QList<KWPage> pages = wordsDocument->pageManager()->pages();
@@ -203,6 +212,11 @@ void CMDocumentThumbnailListModel::setDocument(QObject* doc)
 QObject* CMDocumentThumbnailListModel::document() const
 {
     return d->document;
+}
+
+CMDocumentThumbnailListModel::DocType CMDocumentThumbnailListModel::docType() const
+{
+    return d->docType;
 }
 
 bool CMDocumentThumbnailListModel::hasOwnPageNumbering() const

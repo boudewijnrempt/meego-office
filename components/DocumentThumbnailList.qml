@@ -24,7 +24,18 @@ Item {
             Item {
                 id: thumbTile
                 height: ListView.view.height
-                width: height * 0.6
+                function getWidthAdjustment() {
+                    if(documentListView.model.docType === DocumentThumbnailListModel.WordsDocType) {
+                        return 0.67;
+                    }
+                    else if(documentListView.model.docType === DocumentThumbnailListModel.StageDocType) {
+                        return 1.2;
+                    }
+                    else if(documentListView.model.docType === DocumentThumbnailListModel.TablesDocType) {
+                        return 1;
+                    }
+                }
+                width: height * getWidthAdjustment()
                 
                 Rectangle {
                     id: imageFrame

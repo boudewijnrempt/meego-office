@@ -7,8 +7,17 @@
 class CMDocumentThumbnailListModel : public QAbstractListModel
 {
     Q_OBJECT
+    Q_ENUMS(DocType)
     Q_PROPERTY(QObject* document READ document WRITE setDocument);
+    Q_PROPERTY(DocType docType READ docType NOTIFY docTypeChanged)
     public:
+        enum DocType {
+            UnknownDocType,
+            WordsDocType,
+            TablesDocType,
+            StageDocType
+        };
+        
         enum ThumbInfoRoles {
             PageThumbnailRole = Qt::UserRole + 1,
             PageNumberRole,
@@ -23,6 +32,8 @@ class CMDocumentThumbnailListModel : public QAbstractListModel
         virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
         
         QObject* document() const;
+        DocType docType() const;
+        Q_SIGNAL void docTypeChanged();
         
         Q_INVOKABLE bool hasOwnPageNumbering() const;
     public Q_SLOTS:

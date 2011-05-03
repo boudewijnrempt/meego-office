@@ -28,7 +28,8 @@ public:
         FileSizeRole,
         AuthorNameRole,
         AccessedTimeRole,
-        ModifiedTimeRole
+        ModifiedTimeRole,
+        MimeTypeRole
     };
 
     enum GroupBy { GroupByName, GroupByDocType };
@@ -44,6 +45,7 @@ public:
         QString authorName;
         QDateTime accessedTime;
         QDateTime modifiedTime;
+        QString mimeType;
     };
 
     // reimp from QAbstractListModel

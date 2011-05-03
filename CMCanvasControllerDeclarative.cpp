@@ -9,6 +9,7 @@
 #include <QtCore/QBuffer>
 #include <QtGui/QTextDocumentWriter>
 #include <QtGui/QTextDocumentFragment>
+#include <QtGui/QTextCursor>
 
 #include <KDE/KActionCollection>
 
@@ -535,26 +536,21 @@ void CMCanvasControllerDeclarative::Private::updateSelectionMarkerPositions()
     KWCanvasBase *kwcanvasitem = dynamic_cast<KWCanvasBase *>(q->canvas()->canvasItem());
     KWViewMode *mode = kwcanvasitem ? kwcanvasitem->viewMode() : 0;
     QTextDocument *doc = selection.textCursor.document();
-    KoTextDocumentLayout *lay = qobject_cast<KoTextDocumentLayout *>(doc->documentLayout());
 
-    KoShape *shape1 = 0; //lay->shapeForPosition(selection.textCursor.position());
-    if(!shape1 || shape1->shapeId() != TextShape_SHAPEID) {
-        return;
+    QTextCursor cursor = selection.textCursor;
+    QTextLine line = cursor.block().layout()->lineForTextPosition(cursor.positionInBlock());
+    if(line.isValid()) {
+        QRectF textRect(line.cursorToX(cursor.positionInBlock()) , line.y(), 1, line.height());
+        selection.cursorPos = textRect.center() - q->documentOffset();
     }
-    
-    KoTextShapeData *shapeData1 = qobject_cast<KoTextShapeData *>(shape1->userData());
-    QTextCursor c1(selection.textCursor);
-    c1.clearSelection();
-    QPointF positionBottomRight = shape1->absoluteTransformation(0).map(selectionBoundingBox(c1).bottomRight() - QPointF(0, shapeData1->documentOffset()));
-    selection.cursorPos = (mode ? mode->documentToView(positionBottomRight) : q->canvas()->viewConverter()->documentToView(positionBottomRight)) - q->documentOffset();
 
-    KoShape *shape2 = 0; //lay->shapeForPosition(selection.textCursor.anchor());
-    KoTextShapeData *shapeData2 = qobject_cast<KoTextShapeData *>(shape2->userData());
-    QTextCursor c2(selection.textCursor);
-    c2.setPosition(selection.textCursor.anchor());
-    QPointF anchorBottomRight = shape2->absoluteTransformation(0).map(selectionBoundingBox(c2).bottomRight() - QPointF(0, shapeData2->documentOffset()));
-
-    selection.anchorPos = (mode ? mode->documentToView(anchorBottomRight) : q->canvas()->viewConverter()->documentToView(anchorBottomRight)) - q->documentOffset();
+    cursor = QTextCursor(doc);
+    cursor.setPosition(selection.textCursor.anchor());
+    line = cursor.block().layout()->lineForTextPosition(cursor.positionInBlock());
+    if(line.isValid()) {
+        QRectF textRect = QRectF(line.cursorToX(cursor.positionInBlock()) , line.y(), 1, line.height());
+        selection.anchorPos = cursor.block().layout()->position() + textRect.center() - q->documentOffset();
+    }
 
     emit q->cursorPosChanged();
     emit q->anchorPosChanged();

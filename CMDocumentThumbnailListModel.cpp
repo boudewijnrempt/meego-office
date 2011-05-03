@@ -136,7 +136,6 @@ void CMDocumentThumbnailListModel::setDocument(QObject* doc)
     if(qobject_cast<KoDocument*>(doc))
     {
         d->document = qobject_cast<KoDocument*>(doc);
-        QSize thumbSize(64, 64);
         CMPageThumbnailProvider* provider = dynamic_cast<CMPageThumbnailProvider*>(d->engine->imageProvider(QLatin1String("pagethumbnails")));
         
         KoPADocument *stageDocument = qobject_cast<KoPADocument*>(d->document);
@@ -145,6 +144,7 @@ void CMDocumentThumbnailListModel::setDocument(QObject* doc)
 
         //QString pageNumber = id.section('/', 1);
         if(stageDocument) {
+            QSize thumbSize(128, 96);
             QString someIDWhichDefinesTheDocumentUniquely = QString::number(reinterpret_cast<int64_t>(d->document));
             int i = 0;
             foreach(KoPAPageBase *page, stageDocument->pages(false)) {
@@ -153,6 +153,7 @@ void CMDocumentThumbnailListModel::setDocument(QObject* doc)
             }
         }
         else if(tablesDocument) {
+            QSize thumbSize(128, 128);
             QString someIDWhichDefinesTheDocumentUniquely = QString::number(reinterpret_cast<int64_t>(d->document));
             if(tablesDocument->map()) {
                 int i = 0;
@@ -183,6 +184,7 @@ void CMDocumentThumbnailListModel::setDocument(QObject* doc)
             }
         }
         else if(wordsDocument) {
+            QSize thumbSize(128, 192);
             CMWordsCanvas* canvas = qobject_cast<CMWordsCanvas*>(d->controller.data());
             KoShapeManager* shapeManager = canvas->canvas()->shapeManager();
             QList<KWPage> pages = wordsDocument->pageManager()->pages();

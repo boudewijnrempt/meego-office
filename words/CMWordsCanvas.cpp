@@ -80,6 +80,37 @@ void CMWordsCanvas::changePage(int newPage)
     }
 }
 
+bool CMWordsCanvas::hasNextPage() const
+{
+    int pc = pageCount();
+    if(pc == 1)
+        return false;
+    if(d->currentPage < pc - 1) {
+        return true;
+    }
+    return false;
+}
+
+bool CMWordsCanvas::hasPreviousPage() const
+{
+    if(d->currentPage > 0) {
+        return true;
+    }
+    return false;
+}
+
+void CMWordsCanvas::goToNextPage()
+{
+    if(hasNextPage())
+        changePage(d->currentPage + 1);
+}
+
+void CMWordsCanvas::goToPreviousPage()
+{
+    if(hasPreviousPage())
+        changePage(d->currentPage - 1);
+}
+
 int CMWordsCanvas::page() const
 {
     return d->doc->pageManager()->page(documentOffset()).pageNumber();

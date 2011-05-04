@@ -23,7 +23,12 @@ public:
 
 public Q_SLOTS:
     void loadDocument();
+
     void changePage(int newPage);
+    bool hasNextPage() const;
+    bool hasPreviousPage() const;
+    void goToNextPage();
+    void goToPreviousPage();
 
     void find(const QString& pattern);
     void findPrevious();

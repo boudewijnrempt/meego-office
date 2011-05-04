@@ -212,7 +212,7 @@ Item {
                     if(settings.currentType == "Presentation") {
                         loader.item.changeSlide(loader.item.slide - 1);
                     } else {
-                        loader.item.changePage(loader.item.page - 1);
+                        loader.item.goToPreviousPage();
                     }
                 }
             }
@@ -234,7 +234,7 @@ Item {
                     if(settings.currentType == "Presentation") {
                         loader.item.changeSlide(loader.item.slide + 1);
                     } else {
-                        loader.item.changePage(loader.item.page + 1);
+                        loader.item.goToNextPage();
                     }
                 }
             }

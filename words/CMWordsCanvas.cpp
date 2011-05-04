@@ -70,10 +70,14 @@ void CMWordsCanvas::changePage(int newPage)
     if(newPage >= pageCount())
         newPage = 0;
 
-    KWPage thePage = d->doc->pageManager()->page(newPage + 1);
-    scrollContentsBy( 0, thePage.offsetInDocument() - documentOffset().y());
-    d->currentPage = newPage;
-    emit pageChanged(newPage);
+    KWCanvasBase* canvasItem = dynamic_cast<KWCanvasBase *>(canvas()->canvasItem());
+    if(canvasItem) {
+        KWPage thePage = d->doc->pageManager()->page(newPage + 1);
+        QPointF pos = canvasItem->viewMode()->documentToView(QPointF(0, thePage.offsetInDocument()));
+        scrollContentsBy( 0, pos.y() - documentOffset().y());
+        d->currentPage = newPage;
+        emit pageChanged(newPage);
+    }
 }
 
 int CMWordsCanvas::page() const

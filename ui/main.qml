@@ -16,6 +16,10 @@ Window {
 
     Component.onCompleted: { switchBook(allDocumentsPageComponent); }
 
+    function openUrl(url) {
+        Qt.openUrlExternally(url);
+    }
+
     Settings {
         id: settings;
     }

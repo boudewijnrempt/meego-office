@@ -124,10 +124,6 @@ void CMWordsCanvas::loadDocument()
     KWDocument* doc = new KWDocument();
     d->doc = doc;
 
-    d->find = new KoFindText(doc->resourceManager(), this);
-    connect(d->find, SIGNAL(matchFound(KoFindMatch)), this, SLOT(matchFound(KoFindMatch)));
-    connect(d->find, SIGNAL(updateCanvas()), this, SLOT(update()));
-
     CMProgressProxy *proxy = new CMProgressProxy(this);
     doc->setProgressProxy(proxy);
     connect(proxy, SIGNAL(valueChanged(int)), SIGNAL(progress(int)));
@@ -141,17 +137,12 @@ void CMWordsCanvas::loadDocument()
 
     d->updateCanvas();
 
-    QList<KoShape*> shapes = canvas()->shapeManager()->shapes();
-    foreach(KoShape* shape, shapes) {
-        KoTextShapeData *shapeData = dynamic_cast<KoTextShapeData *>(shape->userData());
-        if (shapeData == 0)
-            continue;
+    QList<QTextDocument*> texts;
+    KoFindText::findTextInShapes(d->canvas->shapeManager()->shapes(), texts);
 
-        if(shapeData->document()) {
-            QVariant var = QVariant::fromValue<void*>(shapeData->document());
-            doc->resourceManager()->setResource(KoText::CurrentTextDocument, var);
-        }
-    }
+    d->find = new KoFindText(texts, this);
+    connect(d->find, SIGNAL(matchFound(KoFindMatch)), this, SLOT(matchFound(KoFindMatch)));
+    connect(d->find, SIGNAL(updateCanvas()), this, SLOT(update()));
 
     emit progress(100);
     emit completed();

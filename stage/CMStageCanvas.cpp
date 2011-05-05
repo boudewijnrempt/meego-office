@@ -101,10 +101,6 @@ void CMStageCanvas::loadDocument()
     CMProgressProxy *proxy = new CMProgressProxy(this);
     doc->setProgressProxy(proxy);
 
-    d->finder = new KoFindText(doc->resourceManager(), this);
-    connect(d->finder, SIGNAL(matchFound(KoFindMatch)), this, SLOT(matchFound(KoFindMatch)));
-    connect(d->finder, SIGNAL(updateCanvas()), this, SLOT(update()));
-
     connect(proxy, SIGNAL(valueChanged(int)), SIGNAL(progress(int)));
 
     if(!doc->openUrl(KUrl(file()))) {
@@ -115,6 +111,15 @@ void CMStageCanvas::loadDocument()
     setMargin(10);
     d->updateCanvas();
     d->view->setActivePage(d->doc->pageByIndex(0, false));
+
+    QList<QTextDocument*> texts;
+    QList<KoPAPageBase*> pages = doc->pages();
+    foreach(KoPAPageBase* page, pages) {
+        KoFindText::findTextInShapes(page->shapes(), texts);
+    }
+    d->finder = new KoFindText(texts, this);
+    connect(d->finder, SIGNAL(matchFound(KoFindMatch)), this, SLOT(matchFound(KoFindMatch)));
+    connect(d->finder, SIGNAL(updateCanvas()), this, SLOT(update()));
 
     emit progress(100);
     emit completed();

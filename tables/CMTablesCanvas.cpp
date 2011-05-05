@@ -46,8 +46,6 @@ public:
     bool hasNextSheet;
     bool hasPreviousSheet;
 
-    void updateCanvas();
-
     const QString KSpreadCellToolId;
     int matchNumber;
 };

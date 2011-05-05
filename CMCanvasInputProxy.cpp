@@ -24,6 +24,7 @@ public:
     
     void handlePinchGesture(QPinchGesture* pinch);
     void handleSwipeGesture(QSwipeGesture* swipe);
+    void handleTapGesture(QTapGesture* tap);
 
     void beginPinch();
     void updatePinch(qreal scale);
@@ -87,11 +88,20 @@ void CMCanvasInputProxy::handleGesture(QGestureEvent* event)
 {
     QPinchGesture* pinch = qobject_cast<QPinchGesture*>(event->gesture(Qt::PinchGesture));
     QSwipeGesture* swipe = qobject_cast<QSwipeGesture*>(event->gesture(Qt::SwipeGesture));
+    QTapGesture* tap = qobject_cast<QTapGesture*>(event->gesture(Qt::TapGesture));
     
-    if(pinch)
+    if(pinch) {
+        qDebug() << "Pinched!";
         d->handlePinchGesture(pinch);
-    else if(swipe)
+    }
+    else if(swipe) {
+        qDebug() << "Swiped!";
         d->handleSwipeGesture(swipe);
+    }
+    else if(tap) {
+        qDebug() << "Tapped!";
+        d->handleTapGesture(tap);
+    }
 }
 
 void CMCanvasInputProxy::handleTouchBegin(QTouchEvent* event)
@@ -176,6 +186,22 @@ void CMCanvasInputProxy::Private::handleSwipeGesture(QSwipeGesture* swipe)
                 emit q->previousPage();
             else
                 emit q->nextPage();
+        }
+        default:
+            break;
+    }
+}
+
+void CMCanvasInputProxy::Private::handleTapGesture(QTapGesture* tap)
+{
+    if(!tap)
+        return;
+
+    qDebug() << "tap-tappety-tap";
+    switch(tap->state())
+    {
+        case Qt::GestureFinished:
+        {
         }
         default:
             break;

@@ -2,10 +2,11 @@
 #define CALLIGRAMOBILE_TABLESCANVAS_H
 
 #include "../CMCanvasControllerDeclarative.h"
+#include "../CMSearchingInterface.h"
 
 #include <KoFindMatch.h>
 
-class CMTablesCanvas : public CMCanvasControllerDeclarative
+class CMTablesCanvas : public CMCanvasControllerDeclarative, public CMSearchingInterface
 {
     Q_OBJECT
     Q_PROPERTY(int activeSheetIndex READ activeSheetIndex WRITE setActiveSheetIndex)

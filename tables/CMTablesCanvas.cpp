@@ -8,7 +8,7 @@
 #include <tables/part/Doc.h>
 #include <tables/part/CanvasItem.h>
 #include <tables/Map.h>
-#include <tables/part/KoFindTables.h>
+#include <tables/Find.h>
 #include <tables/part/ToolRegistry.h>
 #include <KoView.h>
 #include <KoToolManager.h>
@@ -41,7 +41,7 @@ public:
     int activeSheetIndex;
     Calligra::Tables::Doc* doc;
     Calligra::Tables::CanvasItem* canvas;
-    Calligra::Tables::KoFindTables* finder;
+    Calligra::Tables::Find* finder;
 
     bool hasNextSheet;
     bool hasPreviousSheet;
@@ -137,7 +137,7 @@ void CMTablesCanvas::loadDocument()
     Calligra::Tables::Doc* doc = new Calligra::Tables::Doc();
     d->doc = doc;
     d->updateCanvas();
-    d->finder = new Calligra::Tables::KoFindTables(this);
+    d->finder = new Calligra::Tables::Find(this);
     connect(d->finder, SIGNAL(matchFound(KoFindMatch)), SLOT(matchFound(KoFindMatch)));
 
     CMProgressProxy *proxy = new CMProgressProxy(this);

@@ -294,6 +294,12 @@ void CMCanvasControllerDeclarative::resetZoom()
     d->updateSelectionMarkerPositions();
 }
 
+void CMCanvasControllerDeclarative::tapTriggered(QPoint pos)
+{
+    qDebug() << "Triggered tap at position" << pos;
+    handleShortTap(pos);
+}
+
 void CMCanvasControllerDeclarative::ensureVisible(KoShape* shape)
 {
     Q_UNUSED(shape)
@@ -624,10 +630,20 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
             return true;
         }
         case QEvent::GraphicsSceneMouseRelease: {
-            d->timer->start();
-            d->tapAndHoldTimer.stop();
-            if (d->currentGesture == Private::NoGesture)
-                d->updateSelection(Private::UpdateClipboardAndClearSelection);
+            qDebug() << "mouse release";
+            // No selection
+            if(d->selection.textCursor.isNull()) {
+                QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(event);
+                qDebug() << "no selection - tap at" << me->pos();
+                handleShortTap(me->pos());
+            }
+            // There's a selection
+            else {
+                d->timer->start();
+                d->tapAndHoldTimer.stop();
+                if (d->currentGesture == Private::NoGesture)
+                    d->updateSelection(Private::UpdateClipboardAndClearSelection);
+            }
             return true;
         }
         case QEvent::GraphicsSceneMouseDoubleClick: {

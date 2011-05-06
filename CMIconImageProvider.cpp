@@ -2,6 +2,7 @@
 
 #include <QtDeclarative/QDeclarativeEngine>
 #include <KDE/KIcon>
+#include <KDE/KMimeType>
 
 CMIconImageProvider::CMIconImageProvider()
     : QDeclarativeImageProvider(QDeclarativeImageProvider::Pixmap)
@@ -22,7 +23,11 @@ QPixmap CMIconImageProvider::requestPixmap( const QString &id, QSize *size, cons
         height = requestedSize.height();
     }
 
-    KIcon icon(id);
+    QString requestedIcon = id;
+    if(id.contains("by-path")) {
+        requestedIcon = KMimeType::iconNameForUrl(KUrl(id.right(id.size() - 8)));
+    }
+    KIcon icon(requestedIcon);
     
     if(size) {
         *size = QSize(width, height);

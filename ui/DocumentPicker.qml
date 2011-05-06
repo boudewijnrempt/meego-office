@@ -120,12 +120,12 @@ Item {
     Component {
         id: deletegateComponent;
         
-        Image {
+        Rectangle {
             id: delegate
 
             width: parent.width
             height: 55;
-            source: index % 2 == 1 ? "image://themedimage/images/browser/bg_list_pink" : "image://themedimage/images/browser/bg_list_white";
+            color: index % 2 == 1 ? "#faf7f7" : "#ffffff";
 
             Item {
                 id: icon;
@@ -134,9 +134,9 @@ Item {
                 
                 Image {
                     anchors.centerIn: parent;
-                    width: 22;
-                    height: 22;
-                    source: "image://icon/" + mimeType;
+                    width: 32;
+                    height: 32;
+                    source: "image://icon/by-path/" + filePath;
                 }
             }
 
@@ -148,6 +148,7 @@ Item {
                 width: getColumnWidth(1);
 
                 text: fileName;
+                elide: Text.ElideRight;
                 font.pixelSize: textPixelSize;
                 font.bold: true;
             }

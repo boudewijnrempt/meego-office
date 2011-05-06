@@ -29,7 +29,6 @@ public:
         AuthorNameRole,
         AccessedTimeRole,
         ModifiedTimeRole,
-        MimeTypeRole
     };
 
     enum GroupBy { GroupByName, GroupByDocType };

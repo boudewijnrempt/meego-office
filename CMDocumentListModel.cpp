@@ -37,7 +37,7 @@ void SearchThread::run()
     // Get documents from the device's tracker instance
     QSparqlConnection connection("QTRACKER");
     QSparqlQuery query(
-        "SELECT nfo:fileName(?u) nie:url(?u) nfo:fileSize(?u) nco:creator(?u) nfo:fileLastAccessed(?u) nfo:fileLastModified(?u) nie:mimeType(?u)"
+        "SELECT nfo:fileName(?u) nie:url(?u) nfo:fileSize(?u) nco:creator(?u) nfo:fileLastAccessed(?u) nfo:fileLastModified(?u)"
         "WHERE { { ?u a nfo:PaginatedTextDocument } UNION { ?u a nfo:Presentation } UNION { ?u a nfo:Spreadsheet } }");
     QSparqlResult* result = connection.exec(query);
     result->waitForFinished();
@@ -54,7 +54,6 @@ void SearchThread::run()
                 info.authorName = "-";
             info.accessedTime = result->binding(4).value().toDateTime();
             info.modifiedTime = result->binding(5).value().toDateTime();
-            info.mimeType = result->binding(6).value().toString();
             emit documentFound(info);
         }
         emit finished();
@@ -68,7 +67,7 @@ void SearchThread::run()
     options2.setDatabaseName("DRIVER=/usr/lib/virtodbc_r.so");
     QSparqlConnection connection2("QVIRTUOSO", options2);
     QSparqlQuery query2(
-        "SELECT nfo:fileName(?u) nie:url(?u) nfo:fileSize(?u) nco:creator(?u) nfo:fileLastAccessed(?u) nfo:fileLastModified(?u) nie:mimeType(?u)"
+        "SELECT nfo:fileName(?u) nie:url(?u) nfo:fileSize(?u) nco:creator(?u) nfo:fileLastAccessed(?u) nfo:fileLastModified(?u)"
         "WHERE { { ?u a nfo:PaginatedTextDocument } UNION { ?u a nfo:Presentation } UNION { ?u a nfo:Spreadsheet } }");
     QSparqlResult* result2 = connection2.exec(query2);
     result2->waitForFinished();
@@ -85,7 +84,6 @@ void SearchThread::run()
                 info.authorName = "-";
             info.accessedTime = result2->binding(4).value().toDateTime();
             info.modifiedTime = result2->binding(5).value().toDateTime();
-            info.mimeType = result->binding(6).value().toString();
             emit documentFound(info);
         }
 
@@ -114,8 +112,6 @@ void SearchThread::run()
         info.accessedTime = it.fileInfo().lastRead();
         info.fileSize = QString("%1").arg(it.fileInfo().size());
         info.docType = m_docTypes.value(info.fileName.right(3));
-        KMimeType::Ptr type = KMimeType::findByUrl(it.filePath(), 0, true);
-        info.mimeType = type->name();
         emit documentFound(info);
     }
 
@@ -136,7 +132,6 @@ CMDocumentListModel::CMDocumentListModel(QObject *parent)
     roleNames[AuthorNameRole] = "authorName";
     roleNames[AccessedTimeRole] = "accessedTime";
     roleNames[ModifiedTimeRole] = "modifiedTime";
-    roleNames[MimeTypeRole] = "mimeType";       
     setRoleNames(roleNames);
 
     // ## FIXME : Get this from the parts

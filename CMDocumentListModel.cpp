@@ -23,7 +23,11 @@ QDebug operator<<(QDebug dbg, const CMDocumentListModel::DocumentInfo& d) {
     return dbg.space();
 };
 
-SearchThread::SearchThread(const QHash<QString, QString> &docTypes, QObject *parent) 
+const QString SearchThread::textDocumentType = QString("http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#PaginatedTextDocument");
+const QString SearchThread::presentationType = QString("http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#PresentationDocument");
+const QString SearchThread::spreadsheetType = QString("http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#SpreadsheetDocument");
+
+SearchThread::SearchThread(const QHash<QString, CMDocumentListModel::DocumentType> &docTypes, QObject *parent) 
     : QObject(parent), m_abort(false), m_docTypes(docTypes)
 {
 }
@@ -37,23 +41,51 @@ void SearchThread::run()
     // Get documents from the device's tracker instance
     QSparqlConnection connection("QTRACKER");
     QSparqlQuery query(
-        "SELECT nfo:fileName(?u) nie:url(?u) nfo:fileSize(?u) nco:creator(?u) nfo:fileLastAccessed(?u) nfo:fileLastModified(?u)"
-        "WHERE { { ?u a nfo:PaginatedTextDocument } UNION { ?u a nfo:Presentation } UNION { ?u a nfo:Spreadsheet } }");
+        "PREFIX nfo: <http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#> "
+        "PREFIX nie: <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#> "
+        "PREFIX nco: <http://www.semanticdesktop.org/ontologies/2007/03/22/nco#> "
+        "SELECT ?name ?path ?size ?lastAccessed ?lastModified ?type "
+        "WHERE { "
+		"?u nfo:fileName ?name . "
+		"?u nie:url ?path . "
+		"?u nfo:fileSize ?size . "
+		"?u nfo:fileLastAccessed ?lastAccessed . "
+		"?u nfo:fileLastModified ?lastModified . "
+		"?u rdf:type ?type . "
+ 		"{ ?u a nfo:PaginatedTextDocument } UNION { ?u a nfo:Presentation } UNION { ?u a nfo:Spreadsheet }"
+	" }");
     QSparqlResult* result = connection.exec(query);
     result->waitForFinished();
     if(!result->hasError())
     {
         while (result->next() && !m_abort) {
+            qDebug() << "result";
             CMDocumentListModel::DocumentInfo info;
             info.fileName = result->binding(0).value().toString();
             info.filePath = result->binding(1).value().toString();
             info.docType = m_docTypes.value(info.filePath.split('.').last());
             info.fileSize = result->binding(2).value().toString();
-            info.authorName = result->binding(3).value().toString();
-            if(info.authorName.isEmpty())
-                info.authorName = "-";
-            info.accessedTime = result->binding(4).value().toDateTime();
-            info.modifiedTime = result->binding(5).value().toDateTime();
+            info.authorName = "-";
+            info.accessedTime = result->binding(3).value().toDateTime();
+            info.modifiedTime = result->binding(4).value().toDateTime();
+            
+            /*QString type = result->binding(5).value().toString();
+	    qDebug() << type;
+		//.split(',').last();
+	    if(type == textDocumentType) {
+                info.docType = CMDocumentListModel::TextDocumentType;
+            } else if(type == presentationType) {
+                info.docType = CMDocumentListModel::PresentationType;
+            } else if(type == spreadsheetType) {
+                info.docType = CMDocumentListModel::SpreadsheetType;
+            } else {
+                info.docType = CMDocumentListModel::UnknownType;
+            }
+
+	    qDebug() << result->binding(6).value();
+	    qDebug() << result->binding(7).value();
+	    qDebug() << result->binding(8).value();*/
+
             emit documentFound(info);
         }
         emit finished();
@@ -63,7 +95,7 @@ void SearchThread::run()
         qDebug() << "Error while querying Tracker:" << result->lastError().message();
     
     // Query Virtuoso if available... This allows us to test on desktop so...
-    QSparqlConnectionOptions options2;
+/*    QSparqlConnectionOptions options2;
     options2.setDatabaseName("DRIVER=/usr/lib/virtodbc_r.so");
     QSparqlConnection connection2("QVIRTUOSO", options2);
     QSparqlQuery query2(
@@ -77,7 +109,11 @@ void SearchThread::run()
             CMDocumentListModel::DocumentInfo info;
             info.fileName = result2->binding(0).value().toString();
             info.filePath = result2->binding(1).value().toString();
+<<<<<<< Updated upstream
             info.docType = m_docTypes.value(info.filePath.split('.').last());
+=======
+            //info.docType = m_docTypes.value(info.fileName.right(3));
+>>>>>>> Stashed changes
             info.fileSize = result2->binding(2).value().toString();
             info.authorName = result2->binding(3).value().toString();
             if(info.authorName.isEmpty())
@@ -92,13 +128,13 @@ void SearchThread::run()
     }
     else
         qDebug() << "Error while querying Virtuoso:" << result2->lastError().message();
-
+*/
 // Keeping this code around, in case Tracker later blows up horribly and we
 // have to rapidly reenable the filesystem only support
     // Get documents from the device storage's document directory...
     QString documentsDir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
     QStringList nameFilters;
-    for (QHash<QString, QString>::const_iterator it = m_docTypes.constBegin(); it != m_docTypes.constEnd(); ++it)
+    for (QHash<QString, CMDocumentListModel::DocumentType>::const_iterator it = m_docTypes.constBegin(); it != m_docTypes.constEnd(); ++it)
         nameFilters.append("*." + it.key());
 
     QDirIterator it(documentsDir, nameFilters, QDir::Files, QDirIterator::Subdirectories);
@@ -134,17 +170,15 @@ CMDocumentListModel::CMDocumentListModel(QObject *parent)
     roleNames[ModifiedTimeRole] = "modifiedTime";
     setRoleNames(roleNames);
 
-    // ## FIXME : Get this from the parts
-    QString docTypesText[] = { tr("Text Document"), tr("Presentation"), tr("Spreadsheet") };
-    m_docTypes["odt"] = docTypesText[0];
-    m_docTypes["doc"] = docTypesText[0];
-    m_docTypes["docx"] = docTypesText[0];
-    m_docTypes["odp"] = docTypesText[1];
-    m_docTypes["ppt"] = docTypesText[1];
-    m_docTypes["pptx"] = docTypesText[1];
-    m_docTypes["ods"] = docTypesText[2];
-    m_docTypes["xls"] = docTypesText[2];
-    m_docTypes["xlsx"] = docTypesText[2];
+    m_docTypes["odt"] = TextDocumentType;
+    m_docTypes["doc"] = TextDocumentType;
+    m_docTypes["docx"] = TextDocumentType;
+    m_docTypes["odp"] = PresentationType;
+    m_docTypes["ppt"] = PresentationType;
+    m_docTypes["pptx"] = PresentationType;
+    m_docTypes["ods"] = SpreadsheetType;
+    m_docTypes["xls"] = SpreadsheetType;
+    m_docTypes["xlsx"] = SpreadsheetType;
 }
 
 CMDocumentListModel::~CMDocumentListModel()
@@ -178,18 +212,6 @@ void CMDocumentListModel::searchFinished()
     m_searchThread = 0;
 }
 
-static bool fileNameLessThan(const CMDocumentListModel::DocumentInfo &info1, const CMDocumentListModel::DocumentInfo &info2)
-{
-    return info1.fileName.toLower() < info2.fileName.toLower();
-}
-
-static bool docTypeLessThan(const CMDocumentListModel::DocumentInfo &info1, const CMDocumentListModel::DocumentInfo &info2)
-{
-    if (info1.docType == info2.docType)
-        return info1.fileName.toLower() < info2.fileName.toLower();
-    return info1.docType < info2.docType;
-}
-
 void CMDocumentListModel::addDocument(const DocumentInfo &info)
 {
     if(m_allDocumentInfos.contains(info))
@@ -200,7 +222,7 @@ void CMDocumentListModel::addDocument(const DocumentInfo &info)
     
     m_allDocumentInfos.append(info);
     
-    if(m_filteredTypes.isEmpty() || info.docType == m_filteredTypes) {
+    if(m_filter == UnknownType || info.docType == m_filter) {
         beginInsertRows(QModelIndex(), m_currentDocumentInfos.count() - 1, m_currentDocumentInfos.count());
         m_currentDocumentInfos.append(info);
         endInsertRows();
@@ -281,7 +303,7 @@ void CMDocumentListModel::relayout()
 
     QList<DocumentInfo> newList;
     foreach(const DocumentInfo &docInfo, m_allDocumentInfos) {
-        if(m_filteredTypes.isEmpty() || docInfo.docType == m_filteredTypes) {
+        if(m_filter == UnknownType || docInfo.docType == m_filter) {
             qDebug() << docInfo.filePath;
             newList.append(docInfo);
         }
@@ -296,28 +318,14 @@ void CMDocumentListModel::classBegin()
 {
 }
 
-CMDocumentListModel::Filter CMDocumentListModel::filter()
+CMDocumentListModel::DocumentType CMDocumentListModel::filter()
 {
     return m_filter;
 }
 
-void CMDocumentListModel::setFilter(CMDocumentListModel::Filter newFilter)
+void CMDocumentListModel::setFilter(CMDocumentListModel::DocumentType newFilter)
 {
     m_filter = newFilter;
-    switch(m_filter)
-    {
-        case Presentations:
-            m_filteredTypes = tr("Presentation");
-            break;
-        case Spreadsheets:
-            m_filteredTypes = tr("Spreadsheet");
-            break;
-        case TextDocuments:
-            m_filteredTypes = tr("Text Document");
-            break;
-        default:
-            m_filteredTypes = QString();
-    }
     relayout();
 }
 

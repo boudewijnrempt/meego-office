@@ -18,11 +18,7 @@ AppPage {
         showHeader: true;
 
         onSelected: {
-            settings.currentFile = filePath;
-            settings.currentName = filePath.substr(filePath.lastIndexOf("/") + 1);
-            settings.currentType = fileType;
-            window.actionMenuActive = false;
-            window.addPage(viewDocumentPageComponent);
+	    openFile(filePath, fileType);
         }
     }
 

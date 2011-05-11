@@ -11,9 +11,10 @@ class SearchThread;
 class CMDocumentListModel : public QAbstractListModel, public QDeclarativeParserStatus
 {
     Q_OBJECT
-    Q_PROPERTY(Filter filter READ filter WRITE setFilter)
+    Q_PROPERTY(DocumentType filter READ filter WRITE setFilter)
     Q_ENUMS(GroupBy)
     Q_ENUMS(Filter)
+    Q_ENUMS(DocumentType)
     Q_INTERFACES(QDeclarativeParserStatus)
 
 public:
@@ -32,19 +33,24 @@ public:
     };
 
     enum GroupBy { GroupByName, GroupByDocType };
-
-    enum Filter { None, Presentations, Spreadsheets, TextDocuments };
+   
+    enum DocumentType
+    {
+        UnknownType,
+	TextDocumentType,
+        PresentationType,
+        SpreadsheetType,
+    };
 
     struct DocumentInfo {
         bool operator==(const DocumentInfo &other) const { return filePath == other.filePath; }
         QString filePath;
         QString fileName;
-        QString docType;
+        DocumentType docType;
         QString fileSize;
         QString authorName;
         QDateTime accessedTime;
         QDateTime modifiedTime;
-        QString mimeType;
     };
 
     // reimp from QAbstractListModel
@@ -57,7 +63,7 @@ public:
     void classBegin();
     void componentComplete();
 
-    Filter filter();
+    DocumentType filter();
     
     static QString prettyTime(QDateTime theTime);
 
@@ -65,7 +71,7 @@ public slots:
     void startSearch();
     void stopSearch();
     void addDocument(const CMDocumentListModel::DocumentInfo &info);
-    void setFilter(Filter newFilter);
+    void setFilter(DocumentType newFilter);
 
 public:
     Q_INVOKABLE void groupBy(GroupBy role);
@@ -76,12 +82,12 @@ private slots:
 private:
     void relayout();
 
-    QHash<QString, QString> m_docTypes;
+    QHash<QString, DocumentType> m_docTypes;
     QList<DocumentInfo> m_allDocumentInfos;
     QList<DocumentInfo> m_currentDocumentInfos;
     SearchThread *m_searchThread;
     GroupBy m_groupBy;
-    Filter m_filter;
+    DocumentType m_filter;
     QString m_filteredTypes;
     friend class SearchThread;
 };
@@ -92,7 +98,7 @@ class SearchThread : public QObject, public QRunnable
 {
     Q_OBJECT
 public:
-    SearchThread(const QHash<QString, QString> &docTypes, QObject *parent = 0);
+    SearchThread(const QHash<QString, CMDocumentListModel::DocumentType> &docTypes, QObject *parent = 0);
     ~SearchThread();
 
     void run();
@@ -105,7 +111,10 @@ signals:
 
 private:
     bool m_abort;
-    QHash<QString, QString> m_docTypes;
+    QHash<QString, CMDocumentListModel::DocumentType> m_docTypes;
+    static const QString textDocumentType;
+    static const QString presentationType;
+    static const QString spreadsheetType;
 };
 
 #endif // CALLIGRAMOBILE_DOCUMENTLISTMODEL_H

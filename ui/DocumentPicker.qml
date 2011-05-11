@@ -177,7 +177,7 @@ Item {
 
                 width: getColumnWidth(3);
                 
-                text: docType;
+                text: documentTypeToString(docType);
                 font.pixelSize: textPixelSize;
                 font.bold: false
             }
@@ -225,5 +225,14 @@ Item {
     }
     SystemPalette {
         id: activePalette;
+    }
+
+    function documentTypeToString(type) {
+        switch(type) {
+	    case 1: return qsTr('Text Document');
+	    case 2: return qsTr('Presentation');
+	    case 3: return qsTr('Spreadsheet');
+	    default: return qsTr('Unknown');
+        }
     }
 }

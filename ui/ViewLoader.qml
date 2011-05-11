@@ -9,11 +9,11 @@ Item {
     property alias controller: loader.item
     
     function setFile(file) {
-        if(settings.currentType == "Text Document") {
+        if(settings.currentType == DocumentListModel.TextDocumentType) {
             loader.sourceComponent = wordsComponent;
-        } else if(settings.currentType == "Spreadsheet") {
+        } else if(settings.currentType == DocumentListModel.SpreadsheetType) {
             loader.sourceComponent = tablesComponent;
-        } else if(settings.currentType == "Presentation") {
+        } else if(settings.currentType == DocumentListModel.PresentationType) {
             loader.sourceComponent = stageComponent;
         } else {
             console.log("Unable to open file. Unrecognised file type.");

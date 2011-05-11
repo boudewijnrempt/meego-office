@@ -476,7 +476,7 @@ void CMCanvasControllerDeclarative::Private::updateSelection(int option)
     KWViewMode *mode = kwcanvasitem ? kwcanvasitem->viewMode() : 0;
 
     QPointF canvasMousePos = currentMousePos + q->documentOffset();
-    QPointF docMousePos = mode ? mode->viewToDocument(canvasMousePos) : q->canvas()->viewConverter()->viewToDocument(canvasMousePos);
+    QPointF docMousePos = q->canvas()->viewConverter()->viewToDocument(canvasMousePos);
     KoShape *shapeUnderCursor = q->canvas()->shapeManager()->shapeAt(docMousePos);
     if (!shapeUnderCursor) {
         if (option == UpdateClipboardAndClearSelection)

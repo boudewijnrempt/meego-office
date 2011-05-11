@@ -73,7 +73,7 @@ void CMWordsCanvas::changePage(int newPage)
     KWCanvasBase* canvasItem = dynamic_cast<KWCanvasBase *>(canvas()->canvasItem());
     if(canvasItem) {
         KWPage thePage = d->doc->pageManager()->page(newPage + 1);
-        QPointF pos = canvasItem->viewMode()->documentToView(QPointF(0, thePage.offsetInDocument()));
+        QPointF pos = d->canvas->viewConverter()->documentToView(QPointF(0, thePage.offsetInDocument()));
         scrollContentsBy( 0, pos.y() - documentOffset().y());
         d->currentPage = newPage;
         emit pageChanged(newPage);
@@ -235,7 +235,7 @@ void CMWordsCanvas::handleShortTap(QPointF pos)
     pos = canvas()->canvasItem()->mapFromScene(pos);
 
     // get the current location in document coordinates
-    QPointF docPos = (kwcanvasitem->viewMode()->viewToDocument(pos + scrollBarValue() - canvas()->canvasItem()->pos()));
+    QPointF docPos = d->canvas->viewConverter()->viewToDocument(pos + scrollBarValue() - canvas()->canvasItem()->pos());
 
     // find text shape at current position
     KoShape *shape = shapeManager->shapeAt(docPos);

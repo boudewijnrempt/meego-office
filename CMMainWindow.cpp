@@ -53,10 +53,8 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
     d->engine->addImageProvider("icon", new CMIconImageProvider);
     d->view->rootContext()->setContextProperty("KOFFICE_VERSION_STRING", KOFFICE_VERSION_STRING);
     d->view->rootContext()->setContextProperty("qApp", qApp);
-    //d->view->rootContext()->setContextProperty("window", this);
 
     d->view->setSource(QUrl(ui));
-    d->view->rootContext()->setContextProperty("screen", d->view->rootObject());
     d->view->setResizeMode(QDeclarativeView::SizeRootObjectToView);
     d->view->viewport()->grabGesture(Qt::PinchGesture);
     d->view->viewport()->grabGesture(Qt::SwipeGesture);
@@ -68,7 +66,6 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
 
     if (!file.isEmpty()) {
         QString cleanFileName = QDir::cleanPath(QDir::current().absoluteFilePath(file));
-        qDebug() << "Opening" << cleanFileName;
 
         QString ext = file.right(file.size() - (file.lastIndexOf('.') + 1));
         qDebug() << "Ext:" << ext;
@@ -83,7 +80,6 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
         } else {
             return;
         }
-        qDebug() << "fileType" << fileType;
 
         QDeclarativeExpression expr(d->view->rootContext(), d->view->rootObject(), QString("pageStack.currentPage.openFile('%1','%2')").arg(cleanFileName, fileType));
         expr.evaluate();

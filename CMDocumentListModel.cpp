@@ -47,7 +47,7 @@ void SearchThread::run()
             CMDocumentListModel::DocumentInfo info;
             info.fileName = result->binding(0).value().toString();
             info.filePath = result->binding(1).value().toString();
-            info.docType = m_docTypes.value(info.fileName.right(3));
+            info.docType = m_docTypes.value(info.filePath.split('.').last());
             info.fileSize = result->binding(2).value().toString();
             info.authorName = result->binding(3).value().toString();
             if(info.authorName.isEmpty())
@@ -77,7 +77,7 @@ void SearchThread::run()
             CMDocumentListModel::DocumentInfo info;
             info.fileName = result2->binding(0).value().toString();
             info.filePath = result2->binding(1).value().toString();
-            info.docType = m_docTypes.value(info.fileName.right(3));
+            info.docType = m_docTypes.value(info.filePath.split('.').last());
             info.fileSize = result2->binding(2).value().toString();
             info.authorName = result2->binding(3).value().toString();
             if(info.authorName.isEmpty())
@@ -111,7 +111,7 @@ void SearchThread::run()
         info.modifiedTime = it.fileInfo().lastModified();
         info.accessedTime = it.fileInfo().lastRead();
         info.fileSize = QString("%1").arg(it.fileInfo().size());
-        info.docType = m_docTypes.value(info.fileName.right(3));
+        info.docType = m_docTypes.value(info.filePath.split('.').last());
         emit documentFound(info);
     }
 

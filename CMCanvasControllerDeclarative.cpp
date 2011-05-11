@@ -555,7 +555,7 @@ void CMCanvasControllerDeclarative::Private::updateSelectionMarkerPositions()
     line = cursor.block().layout()->lineForTextPosition(cursor.positionInBlock());
     if(line.isValid()) {
         QRectF textRect = QRectF(line.cursorToX(cursor.positionInBlock()) , line.y(), 1, line.height());
-        selection.anchorPos = cursor.block().layout()->position() + textRect.center() - q->documentOffset();
+        selection.anchorPos = textRect.center() - q->documentOffset();
     }
 
     emit q->cursorPosChanged();

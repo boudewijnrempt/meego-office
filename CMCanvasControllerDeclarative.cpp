@@ -145,7 +145,7 @@ CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* p
     connect(&d->tapAndHoldTimer, SIGNAL(timeout()), this, SLOT(onTapAndHoldGesture()));
 
     d->mass = 10.f;
-    d->dragCoeff = 0.05f;
+    d->dragCoeff = 0.01f;
     d->springCoeff = 0.6f;
     d->timeStep = 1000.f / d->timer->interval();
 
@@ -632,6 +632,10 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
         case QEvent::GraphicsSceneMouseRelease: {
             qDebug() << "mouse release";
             // No selection
+            if(d->currentGesture == Private::PanGesture) {
+                d->timer->start();
+ 	    }
+
             if(d->selection.textCursor.isNull()) {
                 QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(event);
                 qDebug() << "no selection - tap at" << me->pos();
@@ -639,7 +643,6 @@ bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event 
             }
             // There's a selection
             else {
-                d->timer->start();
                 d->tapAndHoldTimer.stop();
                 if (d->currentGesture == Private::NoGesture)
                     d->updateSelection(Private::UpdateClipboardAndClearSelection);
@@ -728,6 +731,7 @@ void CMCanvasControllerDeclarative::Private::updateMinMax()
         minY = 1 - q->documentSize().height();
         maxY = 1;
     }
+    q->resetDocumentOffset(QPoint(minX, minY));
     updateSelectionMarkerPositions();
 }
 

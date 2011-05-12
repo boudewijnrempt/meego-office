@@ -1,4 +1,4 @@
-project(calligra_mobile)
+project(intel-office-suite)
 
 ########################
 #########################
@@ -33,7 +33,7 @@ if(QTMOBILITY_FOUND)
     add_definitions(-DWITH_QT_SYSTEMINFO)
 endif(QTMOBILITY_FOUND)
 
-set(calligramobile_SRCS
+set(intel-office-suite_SRCS
     CMCanvasInputProxy.cpp
     CMCanvasControllerDeclarative.cpp
     CMIconImageProvider.cpp
@@ -53,12 +53,12 @@ set(calligramobile_SRCS
     main.cpp
 )
 
-set(calligramobile_ui_components_SRCS
+set(intel-office-suite_ui_components_SRCS
     components/qmldir
     components/DocumentThumbnailList.qml
 )
 
-set(calligramobile_ui_SRCS
+set(intel-office-suite_ui_SRCS
     ui/main.qml
     ui/DocumentPicker.qml
     ui/Marker.qml
@@ -69,7 +69,7 @@ set(calligramobile_ui_SRCS
     ui/Settings.qml
 )
 
-set(calligramobile_headers
+set(intel-office-suite_headers
     CMCanvasControllerDeclarative.h
     CMIconImageProvider.h
     CMMainWindow.h
@@ -84,8 +84,8 @@ set(calligramobile_headers
     stage/CMStageDeclarativeView.h
 )
 
-kde4_add_executable(calligramobile ${calligramobile_SRCS})
-target_link_libraries(calligramobile
+kde4_add_executable(intel-office-suite ${intel-office-suite_SRCS})
+target_link_libraries(intel-office-suite
     ${QT_QTCORE_LIBRARY}
     ${QT_QTGUI_LIBRARY}
     ${QT_QTDECLARATIVE_LIBRARY}
@@ -109,19 +109,19 @@ set(CALLIGRA_MOBILE_LIBRARIES
     ${FLAKE_LIBRARY}
     ${KOWIDGETS_LIBRARY}
     ${KOPAGEAPP_LIBRARY}
-    calligramobile
+    intel-office-suite
 )
 
 if(QTMOBILITY_FOUND)
-    target_link_libraries(calligramobile ${QT_MOBILITY_SYSTEMINFO_LIBRARY})
+    target_link_libraries(intel-office-suite ${QT_MOBILITY_SYSTEMINFO_LIBRARY})
     set(CALLIGRA_MOBILE_LIBRARIES ${CALLIGRA_MOBILE_LIBRARIES} ${QT_MOBILITY_SYSTEMINFO_LIBRARY})
 endif()
 
-set_target_properties(calligramobile PROPERTIES VERSION ${GENERIC_KOFFICE_LIB_VERSION} SOVERSION ${GENERIC_KOFFICE_LIB_SOVERSION})
+set_target_properties(intel-office-suite PROPERTIES VERSION ${GENERIC_KOFFICE_LIB_VERSION} SOVERSION ${GENERIC_KOFFICE_LIB_SOVERSION})
 
-install(TARGETS calligramobile ${INSTALL_TARGETS_DEFAULT_ARGS})
-install(FILES ${calligramobile_ui_SRCS} DESTINATION ${DATA_INSTALL_DIR}/calligramobile)
-install(FILES ${calligramobile_ui_components_SRCS} DESTINATION ${DATA_INSTALL_DIR}/calligramobile/org/calligra/mobile)
-install(FILES ${calligramobile_headers} DESTINATION ${INCLUDE_INSTALL_DIR})
+install(TARGETS intel-office-suite ${INSTALL_TARGETS_DEFAULT_ARGS})
+install(FILES ${intel-office-suite_ui_SRCS} DESTINATION ${DATA_INSTALL_DIR}/intel-office-suite)
+install(FILES ${intel-office-suite_ui_components_SRCS} DESTINATION ${DATA_INSTALL_DIR}/intel-office-suite/org/calligra/mobile)
+install(FILES ${intel-office-suite_headers} DESTINATION ${INCLUDE_INSTALL_DIR})
 install(PROGRAMS intel-documents.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
 

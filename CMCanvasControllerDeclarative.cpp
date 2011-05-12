@@ -659,7 +659,6 @@ void CMCanvasControllerDeclarative::Private::updateMinMax()
         minY = 1 - q->documentSize().height();
         maxY = 1;
     }
-    q->resetDocumentOffset(QPoint(minX, minY));
     updateSelectionMarkerPositions();
 }
 

@@ -123,5 +123,5 @@ install(TARGETS intel-office-suite ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${intel-office-suite_ui_SRCS} DESTINATION ${DATA_INSTALL_DIR}/intel-office-suite)
 install(FILES ${intel-office-suite_ui_components_SRCS} DESTINATION ${DATA_INSTALL_DIR}/intel-office-suite/org/calligra/mobile)
 install(FILES ${intel-office-suite_headers} DESTINATION ${INCLUDE_INSTALL_DIR})
-install(PROGRAMS intel-documents.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
+install(PROGRAMS intel-office-suite.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
 

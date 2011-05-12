@@ -88,6 +88,7 @@ Item {
                 onHideVerticalScrollHandle: vertScrollHandle.opacity = 0.0;
                 onShowHorizontalScrollHandle: horizScrollHandle.opacity = 0.75;
                 onHideHorizontalScrollHandle: horizScrollHandle.opacity = 0.0;
+                onEnterFullScreen: { mainToolBar.hide(); window.fullContent = true; }
             }
 
             TextCopiedToClipboardMessage {

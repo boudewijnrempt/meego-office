@@ -1,5 +1,7 @@
 #include "CMWordsCanvas.h"
 
+#include "CMCanvasInputProxy.h"
+
 #include <KDE/KDebug>
 
 #include <KoZoomHandler.h>
@@ -22,7 +24,6 @@
 
 #include <QTextLine>
 #include <QTextBlock>
-
 
 class CMWordsCanvas::Private
 {
@@ -50,6 +51,7 @@ public:
 CMWordsCanvas::CMWordsCanvas(QDeclarativeItem* parent)
     : CMCanvasControllerDeclarative(parent), d(new Private(this))
 {
+    CMProcessInputInterface::setupConnections(inputProxy(), this);
 }
 
 CMWordsCanvas::~CMWordsCanvas()
@@ -226,13 +228,13 @@ void CMWordsCanvas::Private::update()
 }
 
 
-void CMWordsCanvas::handleShortTap(QPointF pos)
+void CMWordsCanvas::onSingleTap( const QPointF& location )
 {
     KWCanvasBase *kwcanvasitem = dynamic_cast<KWCanvasBase *>(canvas()->canvasItem());
     KoShapeManager *shapeManager = kwcanvasitem->shapeManager();
 
     // select the shape under the current position and then activate the text tool, send mouse events
-    pos = canvas()->canvasItem()->mapFromScene(pos);
+    QPointF pos = canvas()->canvasItem()->mapFromScene(location);
 
     // get the current location in document coordinates
     QPointF docPos = d->canvas->viewConverter()->viewToDocument(pos + scrollBarValue() - canvas()->canvasItem()->pos());
@@ -265,8 +267,17 @@ void CMWordsCanvas::handleShortTap(QPointF pos)
                         Qt::LeftButton,
                         Qt::NoModifier);
     canvas()->toolProxy()->mousePressEvent(&release, canvas()->viewConverter()->viewToDocument(pos + documentOffset()));
-
 }
 
+void CMWordsCanvas::onDoubleTap ( const QPointF& location )
+{
+    Q_UNUSED(location);
+    emit enterFullScreen();
+}
+
+void CMWordsCanvas::onLongTap ( const QPointF& location )
+{
+    //Do selection stuff
+}
 
 #include "CMWordsCanvas.moc"

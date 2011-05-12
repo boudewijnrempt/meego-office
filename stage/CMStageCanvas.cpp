@@ -47,7 +47,7 @@ public:
 CMStageCanvas::CMStageCanvas(QDeclarativeItem* parent)
     : CMCanvasControllerDeclarative(parent), d(new Private(this))
 {
-
+    CMProcessInputInterface::setupConnections(inputProxy(), this);
 }
 
 CMStageCanvas::~CMStageCanvas()
@@ -171,13 +171,13 @@ void CMStageCanvas::Private::setDocumentSize(const QSize& size)
     q->zoomController()->setDocumentSize(size);
 }
 
-void CMStageCanvas::handleShortTap(QPointF pos)
+void CMStageCanvas::onSingleTap(const QPointF &location)
 {
     KoCanvasBase *canvasItem = dynamic_cast<KoCanvasBase *>(canvas()->canvasItem());
     KoShapeManager *shapeManager = canvasItem->shapeManager();
 
     // select the shape under the current position and then activate the text tool, send mouse events
-    pos = canvas()->canvasItem()->mapFromScene(pos);
+    QPointF pos = canvas()->canvasItem()->mapFromScene(location);
 
     // get the current location in document coordinates
     QPointF docPos = (canvasItem->viewConverter()->viewToDocument(pos + scrollBarValue() - canvas()->canvasItem()->pos()));
@@ -210,6 +210,16 @@ void CMStageCanvas::handleShortTap(QPointF pos)
                         Qt::LeftButton,
                         Qt::NoModifier);
     canvas()->toolProxy()->mousePressEvent(&release, canvas()->viewConverter()->viewToDocument(pos + documentOffset()));
+}
+
+void CMStageCanvas::onDoubleTap ( const QPointF& location )
+{
+
+}
+
+void CMStageCanvas::onLongTap ( const QPointF& location )
+{
+
 }
 
 void CMStageCanvas::Private::matchFound ( KoFindMatch match )

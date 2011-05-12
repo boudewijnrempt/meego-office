@@ -3,9 +3,10 @@
 
 #include "CMCanvasControllerDeclarative.h"
 #include "CMSearchingInterface.h"
+#include "CMProcessInputInterface.h"
 
 class KoFindMatch;
-class CMStageCanvas : public CMCanvasControllerDeclarative, public CMSearchingInterface
+class CMStageCanvas : public CMCanvasControllerDeclarative, public CMSearchingInterface, private CMProcessInputInterface
 {
     Q_OBJECT
     Q_PROPERTY(QObject* document READ doc)
@@ -38,9 +39,6 @@ Q_SIGNALS:
     void slideChanged(int newSlide);
     virtual void findMatchFound ( int match );
 
-protected:
-    void handleShortTap(QPointF pos);
-
 private:
     class Private;
     Private * const d;
@@ -48,6 +46,11 @@ private:
     Q_PRIVATE_SLOT(d, void setDocumentSize(const QSize& size));
     Q_PRIVATE_SLOT(d, void matchFound(KoFindMatch match));
     Q_PRIVATE_SLOT(d, void update());
+
+private Q_SLOTS:
+    virtual void onSingleTap(const QPointF &location);
+    virtual void onDoubleTap ( const QPointF& location );
+    virtual void onLongTap ( const QPointF& location );
 };
 
 #endif // CALLIGRAMOBILE_STAGECANVAS_H

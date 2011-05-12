@@ -9,6 +9,7 @@
 #include "calligramobile_export.h"
 #include <QVector2D>
 
+class CMCanvasInputProxy;
 class KoZoomHandler;
 class KoZoomController;
 
@@ -116,18 +117,18 @@ protected:
     KoZoomController* zoomController(KoViewConverter* viewConverter = 0, bool recreate = false);
 
     // reimplement to execute an app-specific action on shortTap gesture
-    virtual void handleShortTap(QPointF pos) = 0;
+    //virtual void handleShortTap(QPointF pos) = 0;
 
-private Q_SLOTS:
-    void onHeightChanged();
-    void onWidthChanged();
-    void documentOffsetMoved(const QPoint& point);
-    void timerUpdate();
-    void onTapAndHoldGesture();
+    CMCanvasInputProxy *inputProxy();
 
 private:
     class Private;
     Private * const d;
+
+    Q_PRIVATE_SLOT(d, void updateCanvasSize());
+    Q_PRIVATE_SLOT(d, void documentOffsetMoved(const QPoint& point));
+    Q_PRIVATE_SLOT(d, void timerUpdate());
+    Q_PRIVATE_SLOT(d, void onTapAndHoldGesture());
 };
 
 #endif // CALLIGRAMOBILE_CANVASCONTROLLERDECLARATIVE_H

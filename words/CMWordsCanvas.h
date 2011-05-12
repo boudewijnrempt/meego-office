@@ -3,8 +3,9 @@
 
 #include "CMCanvasControllerDeclarative.h"
 #include "CMSearchingInterface.h"
+#include "CMProcessInputInterface.h"
 
-class CMWordsCanvas : public CMCanvasControllerDeclarative, public CMSearchingInterface
+class CMWordsCanvas : public CMCanvasControllerDeclarative, public CMSearchingInterface, private CMProcessInputInterface
 {
     Q_OBJECT
     Q_PROPERTY(QObject* document READ doc)
@@ -38,14 +39,19 @@ public Q_SLOTS:
 Q_SIGNALS:
     void pageChanged(int newPage);
     void findMatchFound(int match);
-protected:
-    void handleShortTap(QPointF pos);
+    void enterFullScreen();
+
 private:
     class Private;
     Private * const d;
 
     Q_PRIVATE_SLOT(d, void matchFound(KoFindMatch));
     Q_PRIVATE_SLOT(d, void update());
+
+private Q_SLOTS:
+    virtual void onSingleTap(const QPointF &location);
+    virtual void onDoubleTap ( const QPointF& location );
+    virtual void onLongTap ( const QPointF& location );
 };
 
 #endif // CALLIGRAMOBILE_WORDSCANVAS_H

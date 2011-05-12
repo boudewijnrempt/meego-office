@@ -10,6 +10,7 @@
 #include <KoCanvasBase.h>
 #include <KoZoomHandler.h>
 #include <QtGui/QGraphicsWidget>
+#include <QtCore/QTimer>
 #include <KDebug>
 
 class CMCanvasInputProxy::Private
@@ -37,6 +38,10 @@ public:
 
     QPointF centerPoint;
     qreal touchPinchScale;
+
+    GestureType currentGesture;
+
+    QTimer longTapTimer;
 };
 
 CMCanvasInputProxy::CMCanvasInputProxy(CMCanvasControllerDeclarative* canvas, QObject* parent)
@@ -47,6 +52,9 @@ CMCanvasInputProxy::CMCanvasInputProxy(CMCanvasControllerDeclarative* canvas, QO
     
     d->scaleProxy = new QGraphicsPixmapItem(QPixmap(), canvas);
     d->scaleProxy->setVisible(false);
+
+    d->longTapTimer.setInterval(2000);
+    d->longTapTimer.setSingleShot(true);
 }
 
 CMCanvasInputProxy::~CMCanvasInputProxy()
@@ -64,24 +72,123 @@ void CMCanvasInputProxy::setCanvasController(CMCanvasControllerDeclarative* newC
     d->canvasController = newController;
 }
 
+CMCanvasInputProxy::GestureType CMCanvasInputProxy::currentGesture()
+{
+    return d->currentGesture;
+}
+
+bool CMCanvasInputProxy::handleEvent ( QEvent* event )
+{
+    switch(event->type()) {
+        case QEvent::GraphicsSceneMousePress: {
+            QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(event);
+            //d->velocity = QVector2D();
+            //d->timer->stop();
+            
+            d->currentGesture = UnknownGesture;
+            d->longTapTimer.start();
+            return true;
+        }
+        case QEvent::GraphicsSceneMouseMove: {
+            handleMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
+            return true;
+        }
+        case QEvent::GraphicsSceneMouseRelease: {
+            QGraphicsSceneMouseEvent *evt = static_cast<QGraphicsSceneMouseEvent*>(event);
+            if(d->currentGesture == PanGesture) {
+                emit endPanGesture();
+            } else if(d->longTapTimer.isActive()) {
+                //Timer is still running, so we have not exceeded the long tap interval yet
+                d->longTapTimer.stop();
+                d->currentGesture = SingleTapGesture;
+                emit singleTapGesture(evt->pos());
+            } else {
+                d->currentGesture = LongTapGesture;
+                emit longTapGesture(evt->pos());
+            }
+
+            /*if(d->selection.textCursor.isNull()) {
+                QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(event);
+                qDebug() << "no selection - tap at" << me->pos();
+                handleShortTap(me->pos());
+            }*/
+            // There's a selection
+            /*else {
+                d->tapAndHoldTimer.stop();
+                if (d->currentGesture == Private::NoGesture)
+                    d->updateSelection(Private::UpdateClipboardAndClearSelection);
+            }*/
+            return true;
+        }
+        case QEvent::GraphicsSceneMouseDoubleClick: {
+            d->currentGesture = DoubleTapGesture;
+            QGraphicsSceneMouseEvent *evt = static_cast<QGraphicsSceneMouseEvent*>(event);
+            emit doubleTapGesture(evt->pos());
+            event->accept();
+            return true;
+        }
+        case QEvent::TouchBegin: {
+            handleTouchBegin(static_cast<QTouchEvent*>(event));
+            return true;
+        }
+        case QEvent::TouchUpdate: {
+            handleTouchUpdate(static_cast<QTouchEvent*>(event));
+            return true;
+        }
+        case QEvent::TouchEnd: {
+            handleTouchEnd(static_cast<QTouchEvent*>(event));
+            return true;
+        }
+        case QEvent::Gesture: {
+            handleGesture(static_cast<QGestureEvent*>(event));
+            return true;
+        }
+        default:
+            break;
+    }
+    return false;
+}
+
 void CMCanvasInputProxy::handleMouseMoveEvent(QGraphicsSceneMouseEvent* event)
 {
-    QPointF prev = event->lastPos();
-    QPointF cur = event->pos();
-    
-    QVector2D force = d->canvasController->force();
-    
-    force.setX(prev.x() - cur.x());
-    force.setY(prev.y() - cur.y());
+    if((event->pos() - event->buttonDownPos(Qt::LeftButton)).manhattanLength() >= QApplication::startDragDistance()) {
+        if(d->currentGesture == UnknownGesture) {
+            d->currentGesture = PanGesture;
+            emit beginPanGesture();
+        }
 
-    if(qAbs(force.x()) < QApplication::startDragDistance())
-        force.setX(0.0);
- 
-    if(qAbs(force.y()) < QApplication::startDragDistance())
-        force.setY(0.0);
-    
-    d->canvasController->setForce(force);
-    d->canvasController->scrollContentsBy(force.x(), force.y());
+        QPointF prev = event->lastPos();
+        QPointF cur = event->pos();
+
+        QVector2D force = d->canvasController->force();
+
+        force.setX(prev.x() - cur.x());
+        force.setY(prev.y() - cur.y());
+
+        if(qAbs(force.x()) < QApplication::startDragDistance())
+            force.setX(0.0);
+
+        if(qAbs(force.y()) < QApplication::startDragDistance())
+            force.setY(0.0);
+
+        d->canvasController->setForce(force);
+        d->canvasController->scrollContentsBy(force.x(), force.y());
+    } else {
+    }
+//     QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(event);
+//             d->currentMousePos = me->pos();
+//             if (d->currentGesture == Private::NoGesture
+//                     &&  {
+//                 d->currentGesture = Private::PanGesture;
+//                 d->tapAndHoldTimer.stop();
+//             } else if (d->currentGesture == Private::TapAndHoldGesture) {
+//                 d->updateSelection(Private::MovePosition);
+//             }
+// 
+//             if (d->currentGesture == Private::PanGesture) {
+//                 if(d->inputProxy->updateCanvas())
+//                     d->inputProxy->handleMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
+//             }
 }
 
 void CMCanvasInputProxy::handleGesture(QGestureEvent* event)
@@ -107,6 +214,7 @@ void CMCanvasInputProxy::handleGesture(QGestureEvent* event)
 void CMCanvasInputProxy::handleTouchBegin(QTouchEvent* event)
 {
     if(event->touchPoints().count() > 1) {
+        d->currentGesture = PinchGesture;
         event->accept();
         d->touchPinchScale = 1.0;
         d->beginPinch();
@@ -146,7 +254,8 @@ void CMCanvasInputProxy::Private::handlePinchGesture(QPinchGesture* pinch)
 {
     if(!pinch)
         return;
-    
+
+    currentGesture = CMCanvasInputProxy::PinchGesture;
     switch(pinch->state())
     {
         case Qt::GestureStarted:

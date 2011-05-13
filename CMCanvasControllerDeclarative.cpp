@@ -477,6 +477,10 @@ KoZoomHandler* CMCanvasControllerDeclarative::zoomHandler() const
 bool CMCanvasControllerDeclarative::eventFilter(QObject* target , QEvent* event )
 {
     if(target == this || target == d->canvas->canvasItem()) {
+	if(event->type() == QEvent::GraphicsSceneMousePress) {
+	    d->velocity = QVector2D();
+	    d->timer->stop();
+	}
         return d->inputProxy->handleEvent(event);
     }
     return QDeclarativeItem::eventFilter(target, event);

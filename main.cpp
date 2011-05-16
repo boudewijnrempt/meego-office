@@ -20,16 +20,16 @@ int main(int argc, char *argv[])
     //QApplication::setGraphicsSystem("raster");
     
     KAboutData aboutData(
-        "calligramobile",
+        "intel-office-suite",
         0,
-        ki18n("Calligra Mobile"),
+        ki18n("Intel Office Suite"),
         "0.1",
-        ki18n("Mobile version of Calligra"),
+        ki18n("Office Suite for Intel"),
         KAboutData::License_Unknown,
         ki18n("(c) 2010"),
         ki18n("Some text..."),
-        "http://www.calligra-suite.com/",
-        "calligra@bugs.kde.org");
+        "http://www.kogmbh.com/",
+        "team-intel@kogmbh.com");
 
     KCmdLineArgs::init( argc, argv, &aboutData );
     KCmdLineOptions options;

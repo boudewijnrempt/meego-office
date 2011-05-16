@@ -294,12 +294,6 @@ void CMCanvasControllerDeclarative::resetZoom()
     d->updateSelectionMarkerPositions();
 }
 
-void CMCanvasControllerDeclarative::tapTriggered(QPoint pos)
-{
-    qDebug() << "Triggered tap at position" << pos;
-    //handleShortTap(pos);
-}
-
 void CMCanvasControllerDeclarative::ensureVisible(KoShape* shape)
 {
     Q_UNUSED(shape)

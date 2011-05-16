@@ -40,6 +40,7 @@ Q_SIGNALS:
     void pageChanged(int newPage);
     void findMatchFound(int match);
     void enterFullScreen();
+    void selected(const QPointF &origin);
 
 private:
     class Private;

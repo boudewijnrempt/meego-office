@@ -1,29 +1,31 @@
 #include "CMWordsCanvas.h"
 
-#include "CMCanvasInputProxy.h"
+#include <QtCore/QTimer>
+#include <QtGui/QTextLine>
+#include <QtGui/QTextBlock>
+#include <QtGui/QTextCursor>
 
 #include <KDE/KDebug>
 
 #include <KoZoomHandler.h>
 #include <KoZoomController.h>
-
-#include <part/KWDocument.h>
-#include <part/KWCanvasItem.h>
-#include <part/KWViewModeNormal.h>
-#include <part/KWCanvasBase.h>
 #include <KoProgressUpdater.h>
-#include <CMProgressProxy.h>
-#include <QTimer>
 #include <KoFindText.h>
-#include <QTextCursor>
 #include <KoShapeManager.h>
 #include <KoShape.h>
 #include <KoTextShapeData.h>
 #include <KoSelection.h>
 #include <KoToolProxy.h>
+#include <KoTextLayoutRootArea.h>
+#include <KoTextEditor.h>
 
-#include <QTextLine>
-#include <QTextBlock>
+#include <part/KWDocument.h>
+#include <part/KWCanvasItem.h>
+#include <part/KWViewModeNormal.h>
+#include <part/KWCanvasBase.h>
+
+#include "CMProgressProxy.h"
+#include "CMCanvasInputProxy.h"
 
 class CMWordsCanvas::Private
 {
@@ -248,6 +250,8 @@ void CMWordsCanvas::onSingleTap( const QPointF& location )
     if (!selection) return;
     selection->select(shape);
 
+    qDebug() << "Found shape, processing click.";
+
     // The text tool is responsible for handling clicks...
     KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
 
@@ -278,6 +282,32 @@ void CMWordsCanvas::onDoubleTap ( const QPointF& location )
 void CMWordsCanvas::onLongTap ( const QPointF& location )
 {
     //Do selection stuff
+    KWViewMode *mode = d->canvas->viewMode();
+
+    QPointF canvasMousePos = location + documentOffset();
+    QPointF docMousePos = canvas()->viewConverter()->viewToDocument(canvasMousePos);
+    KoShape *shapeUnderCursor = canvas()->shapeManager()->shapeAt(docMousePos);
+    KoTextShapeData *shapeData = qobject_cast<KoTextShapeData *>(shapeUnderCursor->userData());
+    if (!shapeData)
+        return;
+
+    canvas()->shapeManager()->selection()->select(shapeUnderCursor);
+    KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
+
+    KoTextLayoutRootArea *root = shapeData->rootArea();
+    QTextDocument *doc = shapeData->document();
+    KoTextEditor *editor = KoTextDocument(doc).textEditor();
+    QPointF shapeMousePos = shapeUnderCursor->absoluteTransformation(0).inverted().map(docMousePos);
+    QPointF textDocMousePos = shapeMousePos + QPointF(0.0, shapeData->documentOffset());
+
+    int cursorPos = root->hitTest(textDocMousePos, Qt::FuzzyHit);
+    editor->setPosition(cursorPos);
+    editor->select(QTextCursor::WordUnderCursor);
+    canvas()->updateCanvas(shapeUnderCursor->boundingRect());
+
+    emit selected(location);
+    //selection.textCursor = *editor->cursor();
+    //updateSelectionMarkerPositions();
 }
 
 #include "CMWordsCanvas.moc"

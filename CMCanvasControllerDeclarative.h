@@ -88,8 +88,6 @@ public Q_SLOTS:
     virtual void zoomBy(const QPoint& center, qreal zoom);
     virtual void resetZoom();
     
-    void tapTriggered(QPoint point);
-
 Q_SIGNALS:
     void docMoved();
 

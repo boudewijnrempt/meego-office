@@ -54,6 +54,8 @@ Q_SIGNALS:
 private:
     class Private;
     Private * const d;
+
+    Q_PRIVATE_SLOT(d, void onLongTapTimerElapsed());
 };
 
 #endif // CMCANVASINPUTPROXY_H

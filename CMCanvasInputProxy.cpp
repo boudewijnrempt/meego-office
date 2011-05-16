@@ -31,6 +31,8 @@ public:
     void updatePinch(qreal scale);
     void endPinch();
 
+    void onLongTapTimerElapsed();
+
     CMCanvasControllerDeclarative* canvasController;
     QGraphicsPixmapItem* scaleProxy;
 
@@ -41,7 +43,8 @@ public:
 
     GestureType currentGesture;
 
-    QTimer longTapTimer;
+    QTimer *longTapTimer;
+    QPointF currentMousePosition;
 };
 
 CMCanvasInputProxy::CMCanvasInputProxy(CMCanvasControllerDeclarative* canvas, QObject* parent)
@@ -53,8 +56,10 @@ CMCanvasInputProxy::CMCanvasInputProxy(CMCanvasControllerDeclarative* canvas, QO
     d->scaleProxy = new QGraphicsPixmapItem(QPixmap(), canvas);
     d->scaleProxy->setVisible(false);
 
-    d->longTapTimer.setInterval(2000);
-    d->longTapTimer.setSingleShot(true);
+    d->longTapTimer = new QTimer(this);
+    d->longTapTimer->setInterval(1000);
+    d->longTapTimer->setSingleShot(true);
+    connect(d->longTapTimer, SIGNAL(timeout()), SLOT(onLongTapTimerElapsed()));
 }
 
 CMCanvasInputProxy::~CMCanvasInputProxy()
@@ -86,7 +91,8 @@ bool CMCanvasInputProxy::handleEvent ( QEvent* event )
             //d->timer->stop();
             
             d->currentGesture = UnknownGesture;
-            d->longTapTimer.start();
+            d->longTapTimer->start();
+            d->currentMousePosition = me->pos();
             return true;
         }
         case QEvent::GraphicsSceneMouseMove: {
@@ -95,16 +101,13 @@ bool CMCanvasInputProxy::handleEvent ( QEvent* event )
         }
         case QEvent::GraphicsSceneMouseRelease: {
             QGraphicsSceneMouseEvent *evt = static_cast<QGraphicsSceneMouseEvent*>(event);
+            d->longTapTimer->stop();
             if(d->currentGesture == PanGesture) {
                 emit endPanGesture();
-            } else if(d->longTapTimer.isActive()) {
-                //Timer is still running, so we have not exceeded the long tap interval yet
-                d->longTapTimer.stop();
+            } else if(d->currentGesture == UnknownGesture) {
                 d->currentGesture = SingleTapGesture;
+                qDebug() << "single tap";
                 emit singleTapGesture(evt->pos());
-            } else {
-                d->currentGesture = LongTapGesture;
-                emit longTapGesture(evt->pos());
             }
 
             /*if(d->selection.textCursor.isNull()) {
@@ -124,6 +127,7 @@ bool CMCanvasInputProxy::handleEvent ( QEvent* event )
             d->currentGesture = DoubleTapGesture;
             QGraphicsSceneMouseEvent *evt = static_cast<QGraphicsSceneMouseEvent*>(event);
             emit doubleTapGesture(evt->pos());
+            qDebug() << "double tap";
             event->accept();
             return true;
         }
@@ -195,7 +199,7 @@ void CMCanvasInputProxy::handleGesture(QGestureEvent* event)
 {
     QPinchGesture* pinch = qobject_cast<QPinchGesture*>(event->gesture(Qt::PinchGesture));
     QSwipeGesture* swipe = qobject_cast<QSwipeGesture*>(event->gesture(Qt::SwipeGesture));
-    QTapGesture* tap = qobject_cast<QTapGesture*>(event->gesture(Qt::TapGesture));
+    //QTapGesture* tap = qobject_cast<QTapGesture*>(event->gesture(Qt::TapGesture));
     
     if(pinch) {
         qDebug() << "Pinched!";
@@ -205,10 +209,10 @@ void CMCanvasInputProxy::handleGesture(QGestureEvent* event)
         qDebug() << "Swiped!";
         d->handleSwipeGesture(swipe);
     }
-    else if(tap) {
-        qDebug() << "Tapped!";
-        d->handleTapGesture(tap);
-    }
+//     else if(tap) {
+//         qDebug() << "Tapped!";
+//         d->handleTapGesture(tap);
+//     }
 }
 
 void CMCanvasInputProxy::handleTouchBegin(QTouchEvent* event)
@@ -365,3 +369,12 @@ void CMCanvasInputProxy::Private::endPinch()
     canvasController->zoomBy(centerPoint.toPoint(), scaleProxy->scale());
     updateCanvas = true;
 }
+
+void CMCanvasInputProxy::Private::onLongTapTimerElapsed()
+{
+    currentGesture = LongTapGesture;
+    qDebug() << "long tap";
+    emit q->longTapGesture(currentMousePosition);
+}
+
+#include "CMCanvasInputProxy.moc"

@@ -46,7 +46,7 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
     d->view = new QDeclarativeView(this);
     d->engine = d->view->engine();
 
-    QStringList dataPaths = KGlobal::dirs()->findDirs("data", "calligramobile");
+    QStringList dataPaths = KGlobal::dirs()->findDirs("data", "intel-office-suite");
     foreach(const QString& path, dataPaths) {
         d->engine->addImportPath(path);
     }

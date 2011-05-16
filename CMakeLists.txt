@@ -125,3 +125,4 @@ install(FILES ${intel-office-suite_ui_components_SRCS} DESTINATION ${DATA_INSTAL
 install(FILES ${intel-office-suite_headers} DESTINATION ${INCLUDE_INSTALL_DIR})
 install(PROGRAMS intel-office-suite.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
 
+add_subdirectory(pdfserver)

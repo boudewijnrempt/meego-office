@@ -19,6 +19,9 @@ include(FindPkgConfig)
 # Find Calligra
 find_package(CalligraLibs REQUIRED)
 
+# Find Poppler
+find_package(PopplerQt4 REQUIRED)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package(QtMobility COMPONENTS SystemInfo)
 

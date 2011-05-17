@@ -55,6 +55,9 @@ CMTablesCanvas::CMTablesCanvas(QDeclarativeItem* parent)
 {
     connect(this, SIGNAL(nextPage()), SLOT(nextSheet()));
     connect(this, SIGNAL(previousPage()), SLOT(previousSheet()));
+
+    KoZoomMode::setMinimumZoom(0.5);
+    KoZoomMode::setMaximumZoom(2.0);
 }
 
 CMTablesCanvas::~CMTablesCanvas()
@@ -130,7 +133,7 @@ void CMTablesCanvas::loadDocument()
     emit progress(1);
 
     setCanvasMode(KoCanvasController::Infinite);
-    
+
     Calligra::Tables::ToolRegistry::instance()->loadTools();
     Calligra::Tables::Doc* doc = new Calligra::Tables::Doc();
     d->doc = doc;
@@ -210,7 +213,7 @@ void CMTablesCanvas::Private::matchFound ( KoFindMatch match )
 {
     matchNumber = finder->matches().indexOf(match) + 1;
     emit q->findMatchFound(matchNumber);
-    
+
     Calligra::Tables::Sheet* sheet = match.container().value<Calligra::Tables::Sheet*>();
     Calligra::Tables::Cell cell = match.location().value<Calligra::Tables::Cell>();
     canvas->selection()->initialize(cell.cellPosition());

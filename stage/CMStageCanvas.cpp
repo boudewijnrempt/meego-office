@@ -48,6 +48,9 @@ CMStageCanvas::CMStageCanvas(QDeclarativeItem* parent)
     : CMCanvasControllerDeclarative(parent), d(new Private(this))
 {
     CMProcessInputInterface::setupConnections(inputProxy(), this);
+
+    KoZoomMode::setMinimumZoom(0.5);
+    KoZoomMode::setMaximumZoom(2.0);
 }
 
 CMStageCanvas::~CMStageCanvas()

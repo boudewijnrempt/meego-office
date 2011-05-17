@@ -233,14 +233,9 @@ void CMWordsCanvas::Private::update()
 
 void CMWordsCanvas::onSingleTap( const QPointF& location )
 {
-    KWCanvasBase *kwcanvasitem = dynamic_cast<KWCanvasBase *>(canvas()->canvasItem());
-    KoShapeManager *shapeManager = kwcanvasitem->shapeManager();
+    KoShapeManager *shapeManager = d->canvas->shapeManager();
 
-    // select the shape under the current position and then activate the text tool, send mouse events
-    QPointF pos = canvas()->canvasItem()->mapFromScene(location);
-
-    // get the current location in document coordinates
-    QPointF docPos = d->canvas->viewConverter()->viewToDocument(pos + scrollBarValue() - canvas()->canvasItem()->pos());
+    QPointF docPos = d->canvas->viewMode()->viewToDocument(location + documentOffset(), canvas()->viewConverter());
 
     // find text shape at current position
     KoShape *shape = shapeManager->shapeAt(docPos);
@@ -258,20 +253,20 @@ void CMWordsCanvas::onSingleTap( const QPointF& location )
 
     // Click...
     QMouseEvent press(QEvent::MouseButtonPress,
-                      pos.toPoint(),
+                      location.toPoint(),
                       Qt::LeftButton,
                       Qt::LeftButton,
                       Qt::NoModifier);
-    canvas()->toolProxy()->mousePressEvent(&press, canvas()->viewConverter()->viewToDocument(pos + documentOffset()));
+    canvas()->toolProxy()->mousePressEvent(&press, docPos);
 
 
     // And release...
     QMouseEvent release(QEvent::MouseButtonRelease,
-                        pos.toPoint(),
+                        location.toPoint(),
                         Qt::LeftButton,
                         Qt::LeftButton,
                         Qt::NoModifier);
-    canvas()->toolProxy()->mousePressEvent(&release, canvas()->viewConverter()->viewToDocument(pos + documentOffset()));
+    canvas()->toolProxy()->mouseReleaseEvent(&release, docPos);
 }
 
 void CMWordsCanvas::onDoubleTap ( const QPointF& location )

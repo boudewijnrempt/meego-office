@@ -21,12 +21,12 @@ class CALLIGRAMOBILE_EXPORT CMCanvasControllerDeclarative : public QDeclarativeI
     Q_PROPERTY(int visibleHeight READ visibleHeight)
 
     Q_PROPERTY(QSize documentSize READ documentSize NOTIFY documentSizeChanged)
-    // These provide the bottom right positions
-    Q_PROPERTY(QPointF cursorPos READ cursorPos NOTIFY cursorPosChanged)
-    Q_PROPERTY(QPointF anchorPos READ anchorPos NOTIFY anchorPosChanged)
 
     Q_PROPERTY(QDeclarativeItem* verticalScrollHandle READ verticalScrollHandle WRITE setVerticalScrollHandle)
     Q_PROPERTY(QDeclarativeItem* horizontalScrollHandle READ horizontalScrollHandle WRITE setHorizontalScrollHandle)
+
+    Q_PROPERTY(QDeclarativeItem* selectionCursorHandle READ selectionCursorHandle WRITE setSelectionCursorHandle)
+    Q_PROPERTY(QDeclarativeItem* selectionAnchorHandle READ selectionAnchorHandle WRITE setSelectionAnchorHandle)
 
 public:
     CMCanvasControllerDeclarative(QDeclarativeItem* parent = 0);
@@ -71,23 +71,24 @@ public:
     Q_SLOT void setForce(const QVector2D& newForce);
     QVector2D force() const;
 
-    QPointF cursorPos() const;
-    QPointF anchorPos() const;
-
-    Q_INVOKABLE void moveMarker(int which, qreal x, qreal y);
-
     QDeclarativeItem *verticalScrollHandle();
     QDeclarativeItem *horizontalScrollHandle();
+
+    QDeclarativeItem *selectionCursorHandle();
+    QDeclarativeItem *selectionAnchorHandle();
 
 public Q_SLOTS:
     virtual void setVerticalScrollHandle(QDeclarativeItem *handle);
     virtual void setHorizontalScrollHandle(QDeclarativeItem *handle);
 
+    virtual void setSelectionCursorHandle(QDeclarativeItem *handle);
+    virtual void setSelectionAnchorHandle(QDeclarativeItem *handle);
+
     virtual void zoomOut(const QPoint& center = QPoint());
     virtual void zoomIn(const QPoint& center = QPoint());
     virtual void zoomBy(const QPoint& center, qreal zoom);
     virtual void resetZoom();
-    
+
 Q_SIGNALS:
     void docMoved();
 
@@ -96,9 +97,6 @@ Q_SIGNALS:
 
     void progress(int progress);
     void completed();
-
-    void cursorPosChanged();
-    void anchorPosChanged();
 
     void linkActivated(const QString &url);
     void textCopiedToClipboard();
@@ -114,9 +112,6 @@ protected:
     virtual bool eventFilter(QObject* target, QEvent* event );
     KoZoomController* zoomController(KoViewConverter* viewConverter = 0, bool recreate = false);
 
-    // reimplement to execute an app-specific action on shortTap gesture
-    //virtual void handleShortTap(QPointF pos) = 0;
-
     CMCanvasInputProxy *inputProxy();
 
 private:
@@ -126,7 +121,6 @@ private:
     Q_PRIVATE_SLOT(d, void updateCanvasSize());
     Q_PRIVATE_SLOT(d, void documentOffsetMoved(const QPoint& point));
     Q_PRIVATE_SLOT(d, void timerUpdate());
-    Q_PRIVATE_SLOT(d, void onTapAndHoldGesture());
 };
 
 #endif // CALLIGRAMOBILE_CANVASCONTROLLERDECLARATIVE_H

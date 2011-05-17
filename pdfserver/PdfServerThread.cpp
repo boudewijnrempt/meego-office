@@ -14,6 +14,6 @@ void PdfServerThread::run()
 {
     QTcpSocket socket;
     if (!socket.setSocketDescriptor(m_socketDescriptor)) {
-        emit error(socket.error());
+        emit sigError(socket.error());
     }
 }

@@ -15,13 +15,16 @@ public:
     explicit PdfServerThread(PdfDocumentCache *documentCache, int socketDescriptor, QObject *parent = 0);
     virtual void run();
 
+    QString url() { return m_url; }
+
 signals:
 
-    void error(QTcpSocket::SocketError error);
+    void sigError(QTcpSocket::SocketError error);
 
 private:
     int m_socketDescriptor;
     PdfDocumentCache *m_documentCache;
+    QString m_url;
 };
 
 #endif // PDFSERVERTHREAD_H

@@ -12,3 +12,11 @@ void PdfServer::incomingConnection(int socketDescriptor)
     connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
     thread->start();
 }
+
+void PdfServer::serverThreadError(QTcpSocket::SocketError error)
+{
+    PdfServerThread *thread = qobject_cast<PdfServerThread*>(sender());
+    if (thread) {
+        qDebug() << "Error" << error << "when executing thread on url" << thread->url();
+    }
+}

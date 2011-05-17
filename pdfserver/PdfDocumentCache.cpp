@@ -17,13 +17,15 @@ PdfDocumentCache::~PdfDocumentCache()
 PdfDocument *PdfDocumentCache::document(const QString &url)
 {
     QMutexLocker locker(&m_documentMutex);
-    PdfDocument *document;
+    PdfDocument *document = 0;
     if (m_documents.contains(url)) {
         document = m_documents[url];
     }
     else {
         document = new PdfDocument(url);
-        m_documents.insert(url, document);
+        if (document) {
+            m_documents.insert(url, document);
+        }
     }
     locker.unlock();
     return document;

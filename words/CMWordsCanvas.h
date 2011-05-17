@@ -39,7 +39,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void pageChanged(int newPage);
     void findMatchFound(int match);
-    void enterFullScreen();
+    void doubleTapped();
     void selected(const QPointF &origin);
 
 private:

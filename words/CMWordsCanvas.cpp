@@ -229,7 +229,6 @@ void CMWordsCanvas::Private::update()
     canvas->updateCanvas(QRectF(QPointF(0.f, 0.f), canvas->canvasItem()->size()));
 }
 
-
 void CMWordsCanvas::onSingleTap( const QPointF& location )
 {
     KWCanvasBase *kwcanvasitem = dynamic_cast<KWCanvasBase *>(canvas()->canvasItem());
@@ -276,7 +275,7 @@ void CMWordsCanvas::onSingleTap( const QPointF& location )
 void CMWordsCanvas::onDoubleTap ( const QPointF& location )
 {
     Q_UNUSED(location);
-    emit enterFullScreen();
+    emit doubleTapped();
 }
 
 void CMWordsCanvas::onLongTap ( const QPointF& location )
@@ -284,12 +283,15 @@ void CMWordsCanvas::onLongTap ( const QPointF& location )
     //Do selection stuff
     KWViewMode *mode = d->canvas->viewMode();
 
-    QPointF canvasMousePos = location + documentOffset();
-    QPointF docMousePos = canvas()->viewConverter()->viewToDocument(canvasMousePos);
+    QPointF docMousePos = mode->viewToDocument(location + documentOffset(), canvas()->viewConverter());
     KoShape *shapeUnderCursor = canvas()->shapeManager()->shapeAt(docMousePos);
-    KoTextShapeData *shapeData = qobject_cast<KoTextShapeData *>(shapeUnderCursor->userData());
-    if (!shapeData)
+    if(!shapeUnderCursor) {
         return;
+    }
+    KoTextShapeData *shapeData = qobject_cast<KoTextShapeData *>(shapeUnderCursor->userData());
+    if (!shapeData) {
+        return;
+    }
 
     canvas()->shapeManager()->selection()->select(shapeUnderCursor);
     KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");

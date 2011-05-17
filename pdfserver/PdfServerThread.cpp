@@ -7,9 +7,9 @@
 #include <QByteArray>
 
 PdfServerThread::PdfServerThread(PdfDocumentCache *documentCache, int socketDescriptor, QObject *parent)
-   : QThread(parent)
-   , m_socketDescriptor(socketDescriptor)
-   , m_documentCache(documentCache)
+    : QThread(parent)
+    , m_socketDescriptor(socketDescriptor)
+    , m_documentCache(documentCache)
 {
 }
 
@@ -25,23 +25,117 @@ void PdfServerThread::run()
     while(!socket.waitForReadyRead(-1)) {
         sleep(10);
     }
+
+    QByteArray answer;
+    QString socketError;
+
     // first line is GET
     if (socket.canReadLine()) {
         QString line = socket.readLine();
         QStringList tokens = line.split(QRegExp("[ \r\n][ \r\n]*"));
-        qDebug() << tokens;
+        if (tokens.length() < 2 || tokens[0] != "GET") {
+            socketError = "Not a GET request" + line;
+        }
+        QStringList uri = tokens[1].split("?");
         if (tokens.length() < 2) {
-            qDebug() << "Not a GET request";
-            return;
+            socketError = "No Command" + line;
+        }
+
+        if (socketError.isEmpty()) {
+
+            QString command = uri[0];
+            if (command == "/open") {
+                answer = open(uri);
+                if (answer.length() == 0) {
+                    socketError = "Could not open document: " + line;
+                }
+            }
+            else if (command == "/getpage") {
+                answer = getpage(uri);
+                if (answer.length() == 0) {
+                    socketError = "Could not get page: " + line;
+                }
+            }
+            else if (command == "/thumbnail") {
+                answer = thumbnail(uri);
+                if (answer.length() == 0) {
+                    socketError = "Could not get thumbnail: " + line;
+                }
+            }
+            else if (command == "/search") {
+                answer = search(uri);
+                if (answer.length() == 0) {
+                    socketError = "Could not execute search: " + line;
+                }
+            }
+            else if (command == "/text") {
+                answer = text(uri);
+                if (answer.length() == 0) {
+                    socketError = "Could not get text: " + line;
+                }
+            }
+            else if (command == "/links") {
+                answer = links(uri);
+                if (answer.length() == 0) {
+                    socketError = "Could not get links: " + line;
+                }
+            }
+            else {
+                socketError = "Illegal command" + line;
+            }
         }
     }
-
-    QString reply("HTTP/1.1 200 Ok\r\n"
-            "Content-Type: text/html; charset=\"ascii\"\r\n"
-            "\r\n"
-            "<h1>Nothing to see here</h1>\r\n");
-
-    socket.write(reply.toAscii());
+    else {
+        socketError = "Could not read line";
+    }
+    if (socketError.isEmpty()) {
+        QString reply("HTTP/1.1 200 Ok\r\n"
+                      "Content-Type: text/html; charset=\"ascii\"\r\n"
+                      "\r\n");
+        socket.write(reply.toAscii());
+        socket.write(answer);
+    }
+    else {
+        qDebug() << socketError;
+        QString reply("HTTP/1.1 400 Bad Request\r\n");
+        socket.write(reply.toAscii());
+    }
     socket.flush();
-    socket.close();
+}
+
+
+QByteArray PdfServerThread::open(const QStringList &uri)
+{
+    QByteArray answer;
+    return answer;
+}
+
+QByteArray PdfServerThread::getpage(const QStringList &uri)
+{
+    QByteArray answer;
+    return answer;
+}
+
+QByteArray PdfServerThread::thumbnail(const QStringList &uri)
+{
+    QByteArray answer;
+    return answer;
+}
+
+QByteArray PdfServerThread::search(const QStringList &uri)
+{
+    QByteArray answer;
+    return answer;
+}
+
+QByteArray PdfServerThread::text(const QStringList &uri)
+{
+    QByteArray answer;
+    return answer;
+}
+
+QByteArray PdfServerThread::links(const QStringList &uri)
+{
+    QByteArray answer;
+    return answer;
 }

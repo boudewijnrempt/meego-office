@@ -22,6 +22,14 @@ signals:
     void sigError(QTcpSocket::SocketError error);
 
 private:
+
+    QByteArray open(const QStringList &uri);
+    QByteArray getpage(const QStringList &uri);
+    QByteArray thumbnail(const QStringList &uri);
+    QByteArray search(const QStringList &uri);
+    QByteArray text(const QStringList &uri);
+    QByteArray links(const QStringList &uri);
+
     int m_socketDescriptor;
     PdfDocumentCache *m_documentCache;
     QString m_url;

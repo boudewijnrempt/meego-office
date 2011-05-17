@@ -31,12 +31,18 @@ class CMWordsCanvas::Private
 {
 public:
     Private(CMWordsCanvas* qq)
-        : q(qq), doc(0), canvas(0), currentPage(0)
+        : q(qq), doc(0), canvas(0), currentPage(0), updateHandles(true)
     { }
     ~Private() { }
 
     void matchFound(KoFindMatch match);
     void update();
+    void updateCanvas();
+    void updatePanGesture(const QPointF &location);
+    KoTextShapeData *textDataUnderCursor(const QPointF &location);
+    void updateSelectionPosition(const QPointF &location, bool updateAnchor = false);
+    void updateSelectionFromHandles();
+    void updateSelectionHandlePositions(const QTextCursor& cursor);
 
     CMWordsCanvas* q;
 
@@ -47,13 +53,14 @@ public:
     KoFindText* find;
     int matchNumber;
 
-    void updateCanvas();
+    bool updateHandles;
 };
 
 CMWordsCanvas::CMWordsCanvas(QDeclarativeItem* parent)
     : CMCanvasControllerDeclarative(parent), d(new Private(this))
 {
     CMProcessInputInterface::setupConnections(inputProxy(), this);
+    connect(inputProxy(), SIGNAL(updatePanGesture(QPointF)), SLOT(updatePanGesture(QPointF)));
     KoZoomMode::setMinimumZoom(0.5);
     KoZoomMode::setMaximumZoom(2.0);
 }
@@ -147,6 +154,8 @@ void CMWordsCanvas::loadDocument()
 
     d->updateCanvas();
 
+    //KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
+
     QList<QTextDocument*> texts;
     KoFindText::findTextInShapes(d->canvas->shapeManager()->shapes(), texts);
 
@@ -188,6 +197,20 @@ void CMWordsCanvas::findNext()
 void CMWordsCanvas::findFinished()
 {
     d->find->finished();
+}
+
+void CMWordsCanvas::setSelectionAnchorHandle(QDeclarativeItem* handle)
+{
+    CMCanvasControllerDeclarative::setSelectionAnchorHandle(handle);
+    connect(handle, SIGNAL(xChanged()), this, SLOT(updateSelectionFromHandles()));
+    connect(handle, SIGNAL(yChanged()), this, SLOT(updateSelectionFromHandles()));
+}
+
+void CMWordsCanvas::setSelectionCursorHandle(QDeclarativeItem* handle)
+{
+    CMCanvasControllerDeclarative::setSelectionCursorHandle(handle);
+    connect(handle, SIGNAL(xChanged()), this, SLOT(updateSelectionFromHandles()));
+    connect(handle, SIGNAL(yChanged()), this, SLOT(updateSelectionFromHandles()));
 }
 
 void CMWordsCanvas::Private::updateCanvas()
@@ -250,8 +273,8 @@ void CMWordsCanvas::onSingleTap( const QPointF& location )
     KoSelection *selection = shapeManager->selection();
     if (!selection) return;
     selection->select(shape);
-
-    qDebug() << "Found shape, processing click.";
+    selectionAnchorHandle()->setVisible(false);
+    selectionCursorHandle()->setVisible(false);
 
     // The text tool is responsible for handling clicks...
     KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
@@ -282,36 +305,129 @@ void CMWordsCanvas::onDoubleTap ( const QPointF& location )
 
 void CMWordsCanvas::onLongTap ( const QPointF& location )
 {
-    //Do selection stuff
-    KWViewMode *mode = d->canvas->viewMode();
+    KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
 
-    QPointF docMousePos = mode->viewToDocument(location + documentOffset(), canvas()->viewConverter());
-    KoShape *shapeUnderCursor = canvas()->shapeManager()->shapeAt(docMousePos);
-    if(!shapeUnderCursor) {
+    d->updateSelectionPosition(location);
+    KoTextShapeData * shapeData = d->textDataUnderCursor(location);
+    if(!shapeData) {
         return;
+    }
+
+    KoTextEditor *editor = KoTextDocument(shapeData->document()).textEditor();
+    editor->select(QTextCursor::WordUnderCursor);
+    d->canvas->updateCanvas(shapeData->rootArea()->associatedShape()->boundingRect());
+    d->updateSelectionHandlePositions(*(editor->cursor()));
+}
+
+void CMWordsCanvas::onLongTapEnd(const QPointF &location)
+{
+    emit selected(location);
+}
+
+void CMWordsCanvas::Private::updatePanGesture(const QPointF& location)
+{
+    updateSelectionPosition(location);
+}
+
+KoTextShapeData* CMWordsCanvas::Private::textDataUnderCursor(const QPointF& location)
+{
+    KWViewMode *mode = canvas->viewMode();
+    if(!mode) {
+        return 0;
+    }
+
+    QPointF docMousePos = mode->viewToDocument(location, canvas->viewConverter());
+    KoShape *shapeUnderCursor = canvas->shapeManager()->shapeAt(docMousePos);
+    if(!shapeUnderCursor) {
+        return 0;
     }
     KoTextShapeData *shapeData = qobject_cast<KoTextShapeData *>(shapeUnderCursor->userData());
     if (!shapeData) {
+        return 0;
+    }
+    canvas->shapeManager()->selection()->select(shapeUnderCursor);
+
+    return shapeData;
+}
+
+void CMWordsCanvas::Private::updateSelectionPosition(const QPointF& location, bool updateAnchor)
+{
+    KoTextShapeData * shapeData = textDataUnderCursor(location + q->documentOffset());
+    if(!shapeData) {
+        qDebug() << "No shape data found";
         return;
     }
 
-    canvas()->shapeManager()->selection()->select(shapeUnderCursor);
-    KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
-
-    KoTextLayoutRootArea *root = shapeData->rootArea();
-    QTextDocument *doc = shapeData->document();
-    KoTextEditor *editor = KoTextDocument(doc).textEditor();
-    QPointF shapeMousePos = shapeUnderCursor->absoluteTransformation(0).inverted().map(docMousePos);
+    QPointF docPos = canvas->viewMode()->viewToDocument(location + q->documentOffset(), canvas->viewConverter());
+    QPointF shapeMousePos = shapeData->rootArea()->associatedShape()->absoluteTransformation(0).inverted().map(docPos);
     QPointF textDocMousePos = shapeMousePos + QPointF(0.0, shapeData->documentOffset());
 
-    int cursorPos = root->hitTest(textDocMousePos, Qt::FuzzyHit);
-    editor->setPosition(cursorPos);
-    editor->select(QTextCursor::WordUnderCursor);
-    canvas()->updateCanvas(shapeUnderCursor->boundingRect());
+    int cursorPos = shapeData->rootArea()->hitTest(textDocMousePos, Qt::FuzzyHit);
+    KoTextEditor *editor = KoTextDocument(shapeData->document()).textEditor();
+    if(!updateAnchor) {
+        editor->setPosition(cursorPos, QTextCursor::KeepAnchor);
+    } else {
+        editor->setPosition(cursorPos, QTextCursor::MoveAnchor);
+    }
+    canvas->updateCanvas(shapeData->rootArea()->associatedShape()->boundingRect());
+    if(updateHandles) {
+        updateSelectionHandlePositions(*(editor->cursor()));
+    }
+}
 
-    emit selected(location);
-    //selection.textCursor = *editor->cursor();
-    //updateSelectionMarkerPositions();
+void CMWordsCanvas::Private::updateSelectionFromHandles()
+{
+    if(q->selectionAnchorHandle()->isVisible() && q->selectionCursorHandle()->isVisible()) {
+        updateHandles = false;
+        updateSelectionPosition(QPointF(q->selectionAnchorHandle()->x(), q->selectionAnchorHandle()->y()), true);
+        updateSelectionPosition(QPointF(q->selectionCursorHandle()->x(), q->selectionCursorHandle()->y()));
+        updateHandles = true;
+    }
+}
+
+void CMWordsCanvas::Private::updateSelectionHandlePositions(const QTextCursor &cursor)
+{
+    if(!q->selectionAnchorHandle() || !q->selectionCursorHandle()) {
+        return;
+    }
+
+    KoTextDocumentLayout * layout = qobject_cast<KoTextDocumentLayout*>(cursor.document()->documentLayout());
+
+    QTextLine line = cursor.block().layout()->lineForTextPosition(cursor.positionInBlock());
+    if(line.isValid()) {
+        QRectF textRect(line.cursorToX(cursor.positionInBlock()) , line.y(), 1, line.height());
+
+        KoShape *shape = layout->rootAreaForPosition(cursor.position())->associatedShape();
+        KoTextShapeData *shapeData = qobject_cast<KoTextShapeData *>(shape->userData());
+
+        QPointF pos = shape->absoluteTransformation(0).map(textRect.center()) - QPointF(0, shapeData->documentOffset());
+        pos = canvas->viewMode()->documentToView(pos, canvas->viewConverter()) - q->documentOffset();
+
+        QDeclarativeItem *positionHandle = q->selectionCursorHandle();
+        positionHandle->blockSignals(true);
+        positionHandle->setPos(pos);
+        positionHandle->blockSignals(false);
+        positionHandle->setVisible(true);
+    }
+
+    QTextCursor anchorCursor = QTextCursor(cursor.document());
+    anchorCursor.setPosition(cursor.anchor());
+    line = anchorCursor.block().layout()->lineForTextPosition(anchorCursor.positionInBlock());
+    if(line.isValid()) {
+        QRectF textRect(line.cursorToX(anchorCursor.positionInBlock()) , line.y(), 1, line.height());
+
+        KoShape *shape = layout->rootAreaForPosition(anchorCursor.position())->associatedShape();
+        KoTextShapeData *shapeData = qobject_cast<KoTextShapeData *>(shape->userData());
+
+        QPointF pos = shape->absoluteTransformation(0).map(textRect.center()) - QPointF(0, shapeData->documentOffset());
+        pos = canvas->viewMode()->documentToView(pos, canvas->viewConverter()) - q->documentOffset();
+
+        QDeclarativeItem *anchorHandle = q->selectionAnchorHandle();
+        anchorHandle->blockSignals(true);
+        anchorHandle->setPos(pos);
+        anchorHandle->blockSignals(false);
+        anchorHandle->setVisible(true);
+    }
 }
 
 #include "CMWordsCanvas.moc"

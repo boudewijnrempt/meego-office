@@ -36,6 +36,9 @@ public Q_SLOTS:
     void findNext();
     void findFinished();
 
+    virtual void setSelectionAnchorHandle(QDeclarativeItem* handle);
+    virtual void setSelectionCursorHandle(QDeclarativeItem* handle);
+
 Q_SIGNALS:
     void pageChanged(int newPage);
     void findMatchFound(int match);
@@ -48,11 +51,14 @@ private:
 
     Q_PRIVATE_SLOT(d, void matchFound(KoFindMatch));
     Q_PRIVATE_SLOT(d, void update());
+    Q_PRIVATE_SLOT(d, void updatePanGesture(const QPointF &location));
+    Q_PRIVATE_SLOT(d, void updateSelectionFromHandles());
 
 private Q_SLOTS:
     virtual void onSingleTap(const QPointF &location);
     virtual void onDoubleTap ( const QPointF& location );
     virtual void onLongTap ( const QPointF& location );
+    virtual void onLongTapEnd( const QPointF &location );
 };
 
 #endif // CALLIGRAMOBILE_WORDSCANVAS_H

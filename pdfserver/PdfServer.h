@@ -2,6 +2,7 @@
 #define PDFSERVER_H
 
 #include <QTcpServer>
+#include "PdfDocumentCache.h"
 
 class PdfServer : public QTcpServer
 {
@@ -9,6 +10,8 @@ class PdfServer : public QTcpServer
 public:
     explicit PdfServer(QObject *parent = 0);
     void incomingConnection(int socketDescriptor);
+private:
+    PdfDocumentCache m_documentCache;
 
 };
 

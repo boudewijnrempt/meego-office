@@ -30,3 +30,4 @@ target_link_libraries(pdfserver
 set_target_properties(pdfserver PROPERTIES VERSION ${GENERIC_KOFFICE_LIB_VERSION} SOVERSION ${GENERIC_KOFFICE_LIB_SOVERSION})
 
 install(TARGETS pdfserver ${INSTALL_TARGETS_DEFAULT_ARGS})
+add_subdirectory(tests)

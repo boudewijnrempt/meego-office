@@ -8,7 +8,7 @@ PdfServer::PdfServer(QObject *parent) :
 
 void PdfServer::incomingConnection(int socketDescriptor)
 {
-    PdfServerThread *thread = new PdfServerThread(socketDescriptor, this);
+    PdfServerThread *thread = new PdfServerThread(&m_documentCache, socketDescriptor, this);
     connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
     thread->start();
 }

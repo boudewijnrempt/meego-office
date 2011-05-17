@@ -13,6 +13,11 @@ int main(int argc, char **argv)
      if (app.isRunning())
          return 0;
 
+     QStringList arguments = app.arguments();
+     if (arguments.length() != 2) {
+         return 1; // no port argument
+     }
+
      // get the port number
      bool result;
      int port = app.arguments().at(1).toInt(&result);
@@ -20,12 +25,10 @@ int main(int argc, char **argv)
          return 1; // did not get a port argument
 
      // create the server, using the first localhost address
-     PdfServer psdServer;
-     if (!psdServer.listen(QHostAddress::LocalHost, port)) {
+     PdfServer pdfServer;
+     if (!pdfServer.listen(QHostAddress::LocalHost, port)) {
          return 2; // could not start to listen
      }
-
-
 
      return app.exec();
  }

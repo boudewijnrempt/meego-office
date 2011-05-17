@@ -4,12 +4,20 @@ set(pdfserver_SRCS
     qtlocalpeer.cpp
     qtlockedfile.cpp
     qtsinglecoreapplication.cpp
+    PdfServer.cpp
+    PdfServerThread.cpp
+    PdfDocument.cpp
+    PdfDocumentCache.cpp
 )
 
 set(pdfserver_headers
     qtlocalpeer.h
     qtlockedfile.h
     qtsinglecoreapplication.h
+    PdfServer.h
+    PdfServerThread.h
+    PdfDocument.h
+    PdfDocumentCache.h
 )
 
 kde4_add_executable(pdfserver ${pdfserver_SRCS})

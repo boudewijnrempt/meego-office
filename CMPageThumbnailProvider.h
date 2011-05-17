@@ -13,6 +13,7 @@ public:
     virtual ~CMPageThumbnailProvider();
     virtual QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize);
     void addThumbnail(QString id, QImage thumb);
+    bool hasThumbnail(QString id);
 private:
     class Private;
     Private* d;

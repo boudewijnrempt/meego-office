@@ -19,7 +19,7 @@
 
 
 QDebug operator<<(QDebug dbg, const CMDocumentListModel::DocumentInfo& d) { 
-    dbg.nospace() << d.filePath << "," << d.fileName << "," << d.docType << "," << d.fileSize << "," << d.authorName << "," << d.accessedTime << "," << d.modifiedTime;
+    dbg.nospace() << d.filePath << "," << d.fileName << "," << d.docType << "," << d.fileSize << "," << d.authorName << "," << d.accessedTime << "," << d.modifiedTime << "," << d.uuid;
     return dbg.space();
 };
 
@@ -44,7 +44,7 @@ void SearchThread::run()
         "PREFIX nfo: <http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#> "
         "PREFIX nie: <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#> "
         "PREFIX nco: <http://www.semanticdesktop.org/ontologies/2007/03/22/nco#> "
-        "SELECT ?name ?path ?size ?lastAccessed ?lastModified ?type "
+        "SELECT ?name ?path ?size ?lastAccessed ?lastModified ?type ?uuid "
         "WHERE { "
 		"?u nfo:fileName ?name . "
 		"?u nie:url ?path . "
@@ -52,6 +52,7 @@ void SearchThread::run()
 		"?u nfo:fileLastAccessed ?lastAccessed . "
 		"?u nfo:fileLastModified ?lastModified . "
 		"?u rdf:type ?type . "
+        "?u nie:isStoredAs ?uuid . "
  		"{ ?u a nfo:PaginatedTextDocument } UNION { ?u a nfo:Presentation } UNION { ?u a nfo:Spreadsheet }"
 	" }");
     QSparqlResult* result = connection.exec(query);
@@ -59,7 +60,7 @@ void SearchThread::run()
     if(!result->hasError())
     {
         while (result->next() && !m_abort) {
-            qDebug() << "result";
+            //qDebug() << result;
             CMDocumentListModel::DocumentInfo info;
             info.fileName = result->binding(0).value().toString();
             info.filePath = result->binding(1).value().toString();
@@ -68,7 +69,7 @@ void SearchThread::run()
             info.authorName = "-";
             info.accessedTime = result->binding(3).value().toDateTime();
             info.modifiedTime = result->binding(4).value().toDateTime();
-            
+            info.uuid = result->binding(6).value().toString();
             /*QString type = result->binding(5).value().toString();
 	    qDebug() << type;
 		//.split(',').last();
@@ -148,6 +149,7 @@ void SearchThread::run()
         info.accessedTime = it.fileInfo().lastRead();
         info.fileSize = QString("%1").arg(it.fileInfo().size());
         info.docType = m_docTypes.value(info.filePath.split('.').last());
+        info.uuid = "not known...";
         emit documentFound(info);
     }
 
@@ -168,6 +170,7 @@ CMDocumentListModel::CMDocumentListModel(QObject *parent)
     roleNames[AuthorNameRole] = "authorName";
     roleNames[AccessedTimeRole] = "accessedTime";
     roleNames[ModifiedTimeRole] = "modifiedTime";
+    roleNames[UUIDRole] = "uuid";
     setRoleNames(roleNames);
 
     m_docTypes["odt"] = TextDocumentType;
@@ -257,6 +260,7 @@ QVariant CMDocumentListModel::data(const QModelIndex &index, int role) const
     case AuthorNameRole: return info.authorName;
     case AccessedTimeRole: return prettyTime(info.accessedTime);
     case ModifiedTimeRole: return prettyTime(info.modifiedTime);
+    case UUIDRole: return info.uuid;
     case SectionCategoryRole: 
         return m_groupBy == GroupByName ? info.fileName[0].toUpper() : info.docType;
     default: return QVariant();

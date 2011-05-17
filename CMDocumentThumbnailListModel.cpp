@@ -42,6 +42,7 @@ public:
     
     CMDocumentThumbnailListModel::DocType docType;
     KoDocument* document;
+    QString uuid;
     QDeclarativeEngine* engine;
     QWeakPointer<CMCanvasControllerDeclarative> controller;
 };
@@ -86,10 +87,12 @@ QVariant CMDocumentThumbnailListModel::data(const QModelIndex& index, int role) 
             break;
         case PageThumbnailRole:
             // This is the thumbnail
+
             // THIS IS HACKERY FOR NOW! Just doing this to have a nice unique one for the time being
             // THIS WILL NOT BE STAYING IN!
-            QString someIDWhichDefinesTheDocumentUniquely = QString::number(reinterpret_cast<int64_t>(d->document));
-            var = QVariant::fromValue<QString>( QString("image://pagethumbnails/%1/%2").arg(someIDWhichDefinesTheDocumentUniquely).arg(index.row() + 1) );
+            //QString someIDWhichDefinesTheDocumentUniquely = QString::number(reinterpret_cast<int64_t>(d->document));
+
+            var = QVariant::fromValue<QString>( QString("image://pagethumbnails/%1/%2").arg(d->uuid).arg(index.row() + 1) );
             break;
     }
     return var;
@@ -136,24 +139,30 @@ void CMDocumentThumbnailListModel::setCanvasController(QObject* newCanvasControl
 
 void CMDocumentThumbnailListModel::setDocument(QObject* doc)
 {
+    setDocument(doc, "SET YOUR UUID");
+}
+
+void CMDocumentThumbnailListModel::setDocument(QObject* doc, QString uuid)
+{
     if(qobject_cast<KoDocument*>(doc))
     {
         d->document = qobject_cast<KoDocument*>(doc);
+        d->uuid = uuid;
         CMPageThumbnailProvider* provider = dynamic_cast<CMPageThumbnailProvider*>(d->engine->imageProvider(QLatin1String("pagethumbnails")));
         
         KoPADocument *stageDocument = qobject_cast<KoPADocument*>(d->document);
         Calligra::Tables::DocBase *tablesDocument = qobject_cast<Calligra::Tables::DocBase*>(d->document);
         KWDocument *wordsDocument = qobject_cast<KWDocument*>(d->document);
 
-        //QString pageNumber = id.section('/', 1);
         if(stageDocument) {
             d->docType = CMDocumentThumbnailListModel::StageDocType;
             emit docTypeChanged();
             QSize thumbSize(156, 130);
-            QString someIDWhichDefinesTheDocumentUniquely = QString::number(reinterpret_cast<int64_t>(d->document));
             int i = 0;
             foreach(KoPAPageBase *page, stageDocument->pages(false)) {
-                QString id = QString("%1/%2").arg(someIDWhichDefinesTheDocumentUniquely).arg(++i);
+                QString id = QString("%1/%2").arg(d->uuid).arg(++i);
+                if(provider->hasThumbnail(id))
+                    continue;
                 provider->addThumbnail(id, page->thumbnail(thumbSize).toImage());
             }
         }
@@ -161,10 +170,12 @@ void CMDocumentThumbnailListModel::setDocument(QObject* doc)
             d->docType = CMDocumentThumbnailListModel::TablesDocType;
             emit docTypeChanged();
             QSize thumbSize(130, 130);
-            QString someIDWhichDefinesTheDocumentUniquely = QString::number(reinterpret_cast<int64_t>(d->document));
             if(tablesDocument->map()) {
                 int i = 0;
                 foreach(Calligra::Tables::Sheet* sheet, tablesDocument->map()->sheetList()) {
+                    QString id = QString("%1/%2").arg(d->uuid).arg(++i);
+                    if(provider->hasThumbnail(id))
+                        continue;
                     QPixmap pix(thumbSize);
                     pix.fill(Qt::white);
                     QRect rect(0, 0, pix.width(), pix.height());
@@ -185,7 +196,6 @@ void CMDocumentThumbnailListModel::setDocument(QObject* doc)
                     QRect range = sheet->documentToCellCoordinates(area).adjusted(0, 0, 2, 2);
                     sheetView.setPaintCellRange(range);
                     sheetView.paintCells(p, area, QPointF(0,0));
-                    QString id = QString("%1/%2").arg(someIDWhichDefinesTheDocumentUniquely).arg(++i);
                     provider->addThumbnail(id, pix.toImage());
                 }
             }
@@ -197,11 +207,12 @@ void CMDocumentThumbnailListModel::setDocument(QObject* doc)
             CMWordsCanvas* canvas = qobject_cast<CMWordsCanvas*>(d->controller.data());
             KoShapeManager* shapeManager = canvas->canvas()->shapeManager();
             QList<KWPage> pages = wordsDocument->pageManager()->pages();
-            QString someIDWhichDefinesTheDocumentUniquely = QString::number(reinterpret_cast<int64_t>(d->document));
             int i = 0;
             foreach(KWPage page, pages) {
+                QString id = QString("%1/%2").arg(d->uuid).arg(++i);
+                if(provider->hasThumbnail(id))
+                    continue;
                 QImage thumb = page.thumbnail(thumbSize, shapeManager);
-                QString id = QString("%1/%2").arg(someIDWhichDefinesTheDocumentUniquely).arg(++i);
                 provider->addThumbnail(id, thumb);
             }
         }

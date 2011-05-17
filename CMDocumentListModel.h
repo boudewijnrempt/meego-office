@@ -30,6 +30,7 @@ public:
         AuthorNameRole,
         AccessedTimeRole,
         ModifiedTimeRole,
+        UUIDRole,
     };
 
     enum GroupBy { GroupByName, GroupByDocType };
@@ -51,6 +52,7 @@ public:
         QString authorName;
         QDateTime accessedTime;
         QDateTime modifiedTime;
+        QString uuid;
     };
 
     // reimp from QAbstractListModel

@@ -9,7 +9,7 @@ Item {
     property alias showHeader: header.visible;
     property bool showType: false;
     
-    signal selected(int index, string filePath, string fileType)
+    signal selected(int index, string filePath, string fileType, string uuid)
 
     property int textPixelSize: theme.fontPixelSizeLarge;
     property variant columnWidth:       [ 0.05, 0.3, 0.25, 0.15, 0.15, 0.1 ];
@@ -215,7 +215,7 @@ Item {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: root.selected(index, filePath, docType)
+                onClicked: root.selected(index, filePath, docType, model.uuid)
             }
         }
     }

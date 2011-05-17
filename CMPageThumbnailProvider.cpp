@@ -42,6 +42,11 @@ void CMPageThumbnailProvider::addThumbnail(QString id, QImage thumb)
     d->thumbnails[id] = thumb;
 }
 
+bool CMPageThumbnailProvider::hasThumbnail(QString id)
+{
+    return d->thumbnails.contains(id);
+}
+
 void doThatDebugThang(int level, QObject* object)
 {
     if (object) {

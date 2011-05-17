@@ -18,7 +18,7 @@ AppPage {
         showHeader: true;
 
         onSelected: {
-	    openFile(filePath, fileType);
+	    openFile(filePath, fileType, uuid);
         }
     }
 
@@ -31,8 +31,9 @@ AppPage {
         console.log("ActionMenuTriggered: " + selectedItem);
     }*/
 
-    function openFile(file, type) {
+    function openFile(file, type, uuid) {
         settings.currentFile = file;
+        settings.currentUuid = uuid;
         settings.currentName = file.substr(file.lastIndexOf("/") + 1);
         settings.currentType = type;
         window.actionMenuActive = false;

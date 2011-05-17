@@ -42,9 +42,10 @@ Item {
         anchors.fill: parent;
 
         function onCompleted() {
-            loadingScreen.hide();
             thumbnailList.model.setCanvasController(loader.item);
             thumbnailList.currentIndex = 0
+            thumbnailList.model.setDocument(loader.item.document, settings.currentUuid);
+            loadingScreen.hide();
         }
 
         function onProgress(progress) {
@@ -187,7 +188,6 @@ Item {
                 hasBackground: false;
 
                 onClicked: {
-                    thumbnailList.model.setDocument(loader.item.document);
                     thumbnailMenu.setPosition(0, mapToItem( window, window.width, showThumbnailsButton.y).y);
                     thumbnailMenu.show();
                 }

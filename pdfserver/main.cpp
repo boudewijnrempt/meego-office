@@ -10,19 +10,26 @@ int main(int argc, char **argv)
 {
      QtSingleCoreApplication app(argc, argv);
 
-     if (app.isRunning())
+     if (app.isRunning()) {
          return 0;
+     }
 
      QStringList arguments = app.arguments();
+     qDebug() << arguments << arguments.length();
      if (arguments.length() != 2) {
+         qDebug() << "not enough arguments";
          return 1; // no port argument
      }
 
      // get the port number
      bool result;
      int port = app.arguments().at(1).toInt(&result);
-     if (!result)
+     if (!result) {
+         qDebug() << "invalid port";
          return 1; // did not get a port argument
+     }
+
+     qDebug() << "Going to listen on port" << port;
 
      // create the server, using the first localhost address
      PdfServer pdfServer;
@@ -31,4 +38,6 @@ int main(int argc, char **argv)
      }
 
      return app.exec();
+
+     qDebug() << "Quitting";
  }

@@ -47,6 +47,9 @@ void PdfServerThread::run()
     out << reply.toAscii();
 
     socket.write(block);
+    qDebug() << "1";
     socket.disconnectFromHost();
+    qDebug() << "2";
     socket.waitForDisconnected();
+    qDebug() << "3";
 }

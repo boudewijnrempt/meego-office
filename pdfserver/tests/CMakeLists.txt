@@ -5,5 +5,5 @@ add_definitions(-DPDF_SERVER_EXECUTABLE="\\"${CMAKE_CURRENT_BINARY_DIR}/../pdfse
 
 set(pdfservertest_SRCS PdfServerTest.cpp)
 kde4_add_unit_test(PdfServerTest TESTNAME intel-mobile-pdfserver-PdfServerText ${pdfservertest_SRCS})
-target_link_libraries(PdfServerTest  ${QT_QTCORE_LIBRARY} ${QT_QTTEST_LIBRARY})
+target_link_libraries(PdfServerTest  ${QT_QTCORE_LIBRARY} ${QT_QTTEST_LIBRARY} ${QT_QTNETWORK_LIBRARY})
 

@@ -1,4 +1,5 @@
 #include "PdfServerThread.h"
+#include "PdfDocument.h"
 #include "PdfDocumentCache.h"
 #include <QDebug>
 #include <QRegExp>
@@ -111,8 +112,10 @@ QByteArray PdfServerThread::open(const QStringList &uri)
     if (uri.length() != 2) return answer;
 
     PdfDocument *doc = m_documentCache->document(uri[1]);
-    if (!doc) return answer;
-
+    if (!doc || !doc->isValid()) {
+        delete doc;
+        return answer;
+    }
     return answer;
 }
 
@@ -123,7 +126,10 @@ QByteArray PdfServerThread::getpage(const QStringList &uri)
     if (uri.length() != 4) return answer;
 
     PdfDocument *doc = m_documentCache->document(uri[1]);
-    if (!doc) return answer;
+    if (!doc || !doc->isValid()) {
+        delete doc;
+        return answer;
+    }
 
     return answer;
 }
@@ -135,7 +141,10 @@ QByteArray PdfServerThread::thumbnail(const QStringList &uri)
     if (uri.length() != 4) return answer;
 
     PdfDocument *doc = m_documentCache->document(uri[1]);
-    if (!doc) return answer;
+    if (!doc || !doc->isValid()) {
+        delete doc;
+        return answer;
+    }
 
     return answer;
 }
@@ -147,7 +156,10 @@ QByteArray PdfServerThread::search(const QStringList &uri)
     if (uri.length() != 4) return answer;
 
     PdfDocument *doc = m_documentCache->document(uri[1]);
-    if (!doc) return answer;
+    if (!doc || !doc->isValid()) {
+        delete doc;
+        return answer;
+    }
 
     return answer;
 }
@@ -159,7 +171,10 @@ QByteArray PdfServerThread::text(const QStringList &uri)
     if (uri.length() != 4) return answer;
 
     PdfDocument *doc = m_documentCache->document(uri[1]);
-    if (!doc) return answer;
+    if (!doc || !doc->isValid()) {
+        delete doc;
+        return answer;
+    }
 
     return answer;
 }
@@ -171,7 +186,10 @@ QByteArray PdfServerThread::links(const QStringList &uri)
     if (uri.length() != 3) return answer;
 
     PdfDocument *doc = m_documentCache->document(uri[1]);
-    if (!doc) return answer;
+    if (!doc || !doc->isValid()) {
+        delete doc;
+        return answer;
+    }
 
     return answer;
 }

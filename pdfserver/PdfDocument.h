@@ -3,6 +3,8 @@
 
 #include <QTimer>
 
+#include <poppler/qt4/poppler-qt4.h>
+
 /**
  * Wrapper around a pdf document. Removes itself after a certain period of time
  */
@@ -11,6 +13,9 @@ class PdfDocument : public QObject
     Q_OBJECT
 public:
     PdfDocument(const QString &url);
+    virtual ~PdfDocument();
+
+    bool isValid();
 
 private slots:
 
@@ -25,6 +30,7 @@ signals:
 private:
     QString m_url;
     QTimer m_timeout;
+    Poppler::Document *m_pdf;
 };
 
 #endif // PDFDOCUMENT_H

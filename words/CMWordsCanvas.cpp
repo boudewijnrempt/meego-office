@@ -109,12 +109,16 @@ void CMWordsCanvas::goToNextPage()
 {
     if(hasNextPage())
         changePage(d->currentPage + 1);
+    else
+        changePage(0);
 }
 
 void CMWordsCanvas::goToPreviousPage()
 {
     if(hasPreviousPage())
         changePage(d->currentPage - 1);
+    else
+        changePage(pageCount() - 1);
 }
 
 int CMWordsCanvas::page() const

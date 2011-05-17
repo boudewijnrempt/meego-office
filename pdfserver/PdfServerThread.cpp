@@ -91,9 +91,9 @@ void PdfServerThread::run()
     }
     if (socketError.isEmpty()) {
         QString reply("HTTP/1.1 200 Ok\r\n"
-                      "Content-Type: text/html; charset=\"ascii\"\r\n"
+                      "Content-Type: text/html; charset=\"utf-8\"\r\n"
                       "\r\n");
-        socket.write(reply.toAscii());
+        socket.write(reply.toUtf8());
         socket.write(answer);
     }
     else {

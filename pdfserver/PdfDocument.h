@@ -22,6 +22,8 @@ public:
     int pageLayout();
     QMap<QString, QString> infoMap();
 
+    Poppler::Page *page(int pageNumber);
+
 private slots:
 
     // not accesses for a certain period, let's ask the cache to delete us
@@ -36,6 +38,7 @@ private:
     QString m_url;
     QTimer m_timeout;
     Poppler::Document *m_pdf;
+    QMap<int, Poppler::Page*> m_pageCache;
 };
 
 #endif // PDFDOCUMENT_H

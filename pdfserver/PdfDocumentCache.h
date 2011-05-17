@@ -20,7 +20,7 @@ public:
     // creates or returns the requested document
     PdfDocument *document(const QString &url);
 
-private slots:
+public slots:
 
     void deleteDocument(const QString &url);
 

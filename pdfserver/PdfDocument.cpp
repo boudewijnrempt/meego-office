@@ -15,6 +15,7 @@ PdfDocument::PdfDocument(const QString &url)
 
 PdfDocument::~PdfDocument()
 {
+    qDeleteAll(m_pageCache);
     delete m_pdf;
 }
 
@@ -54,4 +55,21 @@ QMap<QString, QString> PdfDocument::infoMap()
         }
     }
     return infos;
+}
+
+Poppler::Page *PdfDocument::page(int pageNumber)
+{
+    Poppler::Page *page = 0;
+    if (isValid()) {
+        if (m_pageCache.contains(pageNumber)) {
+            page = m_pageCache[pageNumber];
+        }
+        else {
+            Poppler::Page *page = m_pdf->page(pageNumber);
+            if (page) {
+                m_pageCache.insert(pageNumber, page);
+            }
+        }
+    }
+    return page;
 }

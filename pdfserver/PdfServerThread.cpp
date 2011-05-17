@@ -113,7 +113,6 @@ QByteArray PdfServerThread::open(const QStringList &uri)
 
     PdfDocument *doc = m_documentCache->document(uri[1]);
     if (!doc || !doc->isValid()) {
-        delete doc;
         return answer;
     }
 
@@ -138,9 +137,21 @@ QByteArray PdfServerThread::getpage(const QStringList &uri)
 
     PdfDocument *doc = m_documentCache->document(uri[1]);
     if (!doc || !doc->isValid()) {
-        delete doc;
         return answer;
     }
+
+    int pageNumber = uri[2].toInt();
+
+    Poppler::Page *page = doc->page(pageNumber);
+    if (!page) {
+        return answer;
+    }
+
+    qreal zoomlevel = uri[2].toFloat();
+
+
+
+
 
     return answer;
 }
@@ -168,7 +179,6 @@ QByteArray PdfServerThread::search(const QStringList &uri)
 
     PdfDocument *doc = m_documentCache->document(uri[1]);
     if (!doc || !doc->isValid()) {
-        delete doc;
         return answer;
     }
 
@@ -183,7 +193,6 @@ QByteArray PdfServerThread::text(const QStringList &uri)
 
     PdfDocument *doc = m_documentCache->document(uri[1]);
     if (!doc || !doc->isValid()) {
-        delete doc;
         return answer;
     }
 
@@ -198,7 +207,6 @@ QByteArray PdfServerThread::links(const QStringList &uri)
 
     PdfDocument *doc = m_documentCache->document(uri[1]);
     if (!doc || !doc->isValid()) {
-        delete doc;
         return answer;
     }
 

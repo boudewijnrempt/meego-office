@@ -6,6 +6,14 @@
 #include <QStringList>
 #include <QTextStream>
 #include <QByteArray>
+#include <QImage>
+#ifdef Q_WS_X11
+#include <QtGui/QX11Info>
+#else
+#include <QDesktopWidget>
+#endif
+
+
 
 PdfServerThread::PdfServerThread(PdfDocumentCache *documentCache, int socketDescriptor, QObject *parent)
     : QThread(parent)
@@ -135,6 +143,8 @@ QByteArray PdfServerThread::getpage(const QStringList &uri)
 
     if (uri.length() != 4) return answer;
 
+    qDebug() << 1;
+
     PdfDocument *doc = m_documentCache->document(uri[1]);
     if (!doc || !doc->isValid()) {
         return answer;
@@ -142,16 +152,42 @@ QByteArray PdfServerThread::getpage(const QStringList &uri)
 
     int pageNumber = uri[2].toInt();
 
+    qDebug() << "pagenumber" << pageNumber;
+
     Poppler::Page *page = doc->page(pageNumber);
     if (!page) {
         return answer;
     }
 
-    qreal zoomlevel = uri[2].toFloat();
+    qDebug() << "page" << page << page->pageSize();
 
+    int dpiX = 72;
+    int dpiY = 72;
+#ifdef Q_WS_X11
+    dpiX = QX11Info::appDpiX();
+    dpiY = QX11Info::appDpiY();
+#else
+    QDesktopWidget *w = QApplication::desktop();
+    if (w) {
+        dpiX = w->logicalDpiX();
+        dpiY = w->logicalDpiY();
+    }
+#endif
 
+    qDebug() << "zoomlevel" << uri[3];
+    qreal zoomlevel = uri[3].toFloat();
 
+    qDebug() << "zoomlevel" << zoomlevel;
 
+    qreal fakeXRes = dpiX * zoomlevel;
+    qreal fakeYRes = dpiY * zoomlevel;
+
+    qDebug() << "dpi" << fakeXRes << fakeYRes;
+
+    QImage img = page->renderToImage(fakeXRes, fakeYRes);
+    img.save("bla.png");
+
+    qDebug() << "rendered image";
 
     return answer;
 }

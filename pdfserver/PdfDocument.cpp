@@ -65,7 +65,7 @@ Poppler::Page *PdfDocument::page(int pageNumber)
             page = m_pageCache[pageNumber];
         }
         else {
-            Poppler::Page *page = m_pdf->page(pageNumber);
+            page = m_pdf->page(pageNumber);
             if (page) {
                 m_pageCache.insert(pageNumber, page);
             }

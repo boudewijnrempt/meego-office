@@ -7,7 +7,7 @@ Item {
     signal viewingFinished()
     property alias thumbnailListModel: thumbnailList.model
     property alias controller: loader.item
-    
+
     function setFile(file) {
         if(settings.currentType == DocumentListModel.TextDocumentType) {
             loader.sourceComponent = wordsComponent;
@@ -88,7 +88,17 @@ Item {
                 onHideVerticalScrollHandle: vertScrollHandle.opacity = 0.0;
                 onShowHorizontalScrollHandle: horizScrollHandle.opacity = 0.75;
                 onHideHorizontalScrollHandle: horizScrollHandle.opacity = 0.0;
-                onEnterFullScreen: { mainToolBar.hide(); window.fullContent = true; }
+                onDoubleTap: {
+                    if(!window.fullsCreen) {
+                        mainToolBar.hide();
+                        window.fullScreen = true;
+                        window.fullContent = true;
+                    } else {
+                        window.fullScreen = false;
+                        window.fullContent = false;
+                        mainToolBar.show();
+                    }
+                }
             }
 
             TextCopiedToClipboardMessage {
@@ -103,7 +113,7 @@ Item {
                 image: "image://themedimage/images/text-selection-marker-start";
                 imageWidth: 19;
                 imageHeight: 41;
-                
+
                 z: 10
                 x: loader.item ? loader.item.cursorPos.x : -100
                 y: loader.item ? loader.item.cursorPos.y : -100
@@ -115,7 +125,7 @@ Item {
                 image: "image://themedimage/images/text-selection-marker-end";
                 imageWidth: 19;
                 imageHeight: 41;
-                
+
                 z: 10
                 x: loader.item ? loader.item.anchorPos.x : -100
                 y: loader.item ? loader.item.anchorPos.y : -100
@@ -126,11 +136,11 @@ Item {
                 id: horizScrollHandle;
 
                 anchors.bottom: parent.bottom;
-                
+
                 color: "#000000";
                 opacity: 0;
                 Behavior on opacity { NumberAnimation { duration: 500 } }
-                
+
                 height: 5;
                 z: 10;
             }
@@ -138,11 +148,11 @@ Item {
                 id: vertScrollHandle;
 
                 anchors.right: parent.right;
-                
+
                 color: "#000000";
                 opacity: 0;
                 Behavior on opacity { NumberAnimation { duration: 500 } }
-                
+
                 width: 5;
                 z: 10;
             }
@@ -168,14 +178,14 @@ Item {
         content: BottomToolBarRow {
             IconButton {
                 id: showThumbnailsButton;
-                
+
                 anchors.left: parent.left;
                 anchors.leftMargin: 10;
                 anchors.verticalCenter: parent.verticalCenter;
-                
+
                 icon: "image://themedimage/icons/actionbar/mail-message-previous";
                 hasBackground: false;
-                
+
                 onClicked: {
                     thumbnailList.model.setDocument(loader.item.document);
                     thumbnailMenu.setPosition(0, mapToItem( window, window.width, showThumbnailsButton.y).y);
@@ -202,10 +212,10 @@ Item {
                 anchors.left: pageDescriptionText.right;
                 anchors.leftMargin: 10;
                 anchors.verticalCenter: parent.verticalCenter;
-                
+
                 icon: "image://themedimage/icons/actionbar/media-backward";
                 iconDown: "image://themedimage/icons/actionbar/media-backward-active";
-                
+
                 hasBackground: false;
                 visible: settings.currentType != "Spreadsheet";
 
@@ -217,14 +227,14 @@ Item {
                     }
                 }
             }
-            
+
             IconButton {
                 id: nextPageButton;
 
                 anchors.left: prevPageButton.right;
                 anchors.leftMargin: 10;
                 anchors.verticalCenter: parent.verticalCenter;
-                
+
                 icon: "image://themedimage/icons/actionbar/media-forward";
                 iconDown: "image://themedimage/icons/actionbar/media-forward-active";
 
@@ -257,7 +267,7 @@ Item {
                 anchors.centerIn: parent;
                 icon: "image://icon/zoom-out";
                 hasBackground: false;
-                
+
                 onClicked: {
                     loader.item.zoomOut();
                 }
@@ -273,19 +283,19 @@ Item {
                     loader.item.resetZoom();
                 }
             }
-            
-            
+
+
             IconButton {
                 id: viewFullScreenButton;
-                
+
                 anchors.verticalCenter: parent.verticalCenter;
                 anchors.right: parent.right;
                 anchors.rightMargin: 10;
-                
+
                 icon: "image://themedimage/icons/actionbar/view-fullscreen";
                 iconDown: "image://themedimage/icons/actionbar/view-fullscreen-active";
                 hasBackground: false;
-                
+
                 onClicked: { mainToolBar.hide(); window.fullScreen = true; window.fullContent = true; }
             }
         }
@@ -296,20 +306,20 @@ Item {
         content: BottomToolBarRow {
             IconButton {
                 id: findPreviousButton;
-                
+
                 anchors.right: findMatchesText.left;
                 anchors.verticalCenter: parent.verticalCenter;
                 anchors.leftMargin: 5;
                 anchors.rightMargin: 5;
-                
+
                 icon: "image://themedimage/icons/actionbar/mail-message-previous";
                 hasBackground: false;
-                
+
                 onClicked: loader.item.findPrevious();
             }
             Text {
                 id: findMatchesText;
-                
+
                 anchors.horizontalCenter: parent.horizontalCenter;
                 anchors.leftMargin: 5;
                 anchors.rightMargin: 5;
@@ -320,25 +330,25 @@ Item {
             }
             IconButton {
                 id: findNextButton;
-                
+
                 anchors.left: findMatchesText.right;
                 anchors.leftMargin: 5;
                 anchors.rightMargin: 5;
                 anchors.verticalCenter: parent.verticalCenter;
-                
+
                 icon: "image://themedimage/icons/actionbar/mail-message-next";
                 hasBackground: false;
-                
+
                 onClicked: loader.item.findNext();
             }
             IconButton {
                 id: findCloseButton;
-                
+
                 anchors.right: parent.right;
                 anchors.leftMargin: 5;
                 anchors.rightMargin: 5;
                 anchors.verticalCenter: parent.verticalCenter;
-                
+
                 icon: "image://themedimage/images/contacts/icn_cross_up";
                 iconDown: "image://themedimage/images/contacts/icn_cross_dn";
                 hasBackground: false;
@@ -400,7 +410,7 @@ Item {
         anchors.fill: parent
         onPressed: {
             mouse.accepted = false
-            restoreButton.opacity = 1 
+            restoreButton.opacity = 1
             autoHideTimer.restart()
         }
 
@@ -410,12 +420,12 @@ Item {
 
             icon: "image://themedimage/icons/actionbar/view-smallscreen"
             iconDown: "image://themedimage/icons/actionbar/view-smallscreen-active"
-            
+
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 10;
             anchors.right: parent.right
             anchors.rightMargin: 10;
-            
+
             Behavior on opacity { NumberAnimation { duration: 200 } }
             onClicked: { opacity = 0; autoHideTimer.stop(); window.fullScreen = false; window.fullContent = false; mainToolBar.show(); }
 

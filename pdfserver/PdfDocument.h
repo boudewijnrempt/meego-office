@@ -2,6 +2,7 @@
 #define PDFDOCUMENT_H
 
 #include <QTimer>
+#include <QMap>
 
 #include <poppler/qt4/poppler-qt4.h>
 
@@ -16,6 +17,10 @@ public:
     virtual ~PdfDocument();
 
     bool isValid();
+
+    int numberOfPages();
+    int PageLayout();
+    QMap<QString, QString> infoMap();
 
 private slots:
 

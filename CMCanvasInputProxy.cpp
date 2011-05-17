@@ -20,9 +20,9 @@ public:
         : q(qq), updateCanvas(true)
     { }
     ~Private() {}
-    
+
     CMCanvasInputProxy* q;
-    
+
     void handlePinchGesture(QPinchGesture* pinch);
     void handleSwipeGesture(QSwipeGesture* swipe);
     void handleTapGesture(QTapGesture* tap);
@@ -52,7 +52,7 @@ CMCanvasInputProxy::CMCanvasInputProxy(CMCanvasControllerDeclarative* canvas, QO
     , d(new Private(this))
 {
     d->canvasController = canvas;
-    
+
     d->scaleProxy = new QGraphicsPixmapItem(QPixmap(), canvas);
     d->scaleProxy->setVisible(false);
 
@@ -89,7 +89,7 @@ bool CMCanvasInputProxy::handleEvent ( QEvent* event )
             QGraphicsSceneMouseEvent *me = static_cast<QGraphicsSceneMouseEvent *>(event);
             //d->velocity = QVector2D();
             //d->timer->stop();
-            
+
             d->currentGesture = UnknownGesture;
             d->longTapTimer->start();
             d->currentMousePosition = me->pos();
@@ -188,7 +188,7 @@ void CMCanvasInputProxy::handleMouseMoveEvent(QGraphicsSceneMouseEvent* event)
 //             } else if (d->currentGesture == Private::TapAndHoldGesture) {
 //                 d->updateSelection(Private::MovePosition);
 //             }
-// 
+//
 //             if (d->currentGesture == Private::PanGesture) {
 //                 if(d->inputProxy->updateCanvas())
 //                     d->inputProxy->handleMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent*>(event));
@@ -200,7 +200,7 @@ void CMCanvasInputProxy::handleGesture(QGestureEvent* event)
     QPinchGesture* pinch = qobject_cast<QPinchGesture*>(event->gesture(Qt::PinchGesture));
     QSwipeGesture* swipe = qobject_cast<QSwipeGesture*>(event->gesture(Qt::SwipeGesture));
     //QTapGesture* tap = qobject_cast<QTapGesture*>(event->gesture(Qt::TapGesture));
-    
+
     if(pinch) {
         qDebug() << "Pinched!";
         d->handlePinchGesture(pinch);
@@ -245,12 +245,12 @@ void CMCanvasInputProxy::handleTouchUpdate(QTouchEvent* event)
         qreal currentScaleFactor =
                 QLineF(touchPoint0.pos(), touchPoint1.pos()).length()
                 / QLineF(touchPoint0.startPos(), touchPoint1.startPos()).length();
-        
+
         d->touchPinchScale *= currentScaleFactor;
 
         d->centerPoint = (touchPoint0.pos() - touchPoint1.pos() * 0.5) + touchPoint1.pos();
     }
-    
+
     d->updatePinch(d->touchPinchScale);
 }
 
@@ -334,7 +334,7 @@ void CMCanvasInputProxy::setUpdateCanvas(bool newUpdate)
 void CMCanvasInputProxy::Private::beginPinch()
 {
     updateCanvas = false;
-    
+
     qreal zoomX, zoomY;
     canvasController->zoomHandler()->zoom(&zoomX, &zoomY);
 
@@ -372,6 +372,10 @@ void CMCanvasInputProxy::Private::endPinch()
 
 void CMCanvasInputProxy::Private::onLongTapTimerElapsed()
 {
+    if(currentGesture != UnknownGesture) {
+        return;
+    }
+
     currentGesture = LongTapGesture;
     qDebug() << "long tap";
     emit q->longTapGesture(currentMousePosition);

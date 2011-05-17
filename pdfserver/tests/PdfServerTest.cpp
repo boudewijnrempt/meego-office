@@ -25,28 +25,14 @@ void PdfServerTest::testInstantiation()
 
 void PdfServerTest::getFinished(QNetworkReply *reply)
 {
-    qDebug() << "getFinished";
     m_gotReply = true;
     m_replyOk = (reply->error() == QNetworkReply::NoError);
-}
-
-void PdfServerTest::output()
-{
-    QProcess *process = qobject_cast<QProcess*>(sender());
-    if (process) {
-        QString s = process->readAllStandardError();
-        if (!s.isEmpty()) qDebug() << "err" << s;
-        s = process->readAllStandardOutput();
-        if (!s.isEmpty()) qDebug() << "out" << s;
-    }
 }
 
 void PdfServerTest::testGet()
 {
     // Start the server process
     QProcess process;
-    connect(&process, SIGNAL(readyReadStandardError()), this, SLOT(output()));
-    connect(&process, SIGNAL(readyReadStandardOutput()), this, SLOT(output()));
     QStringList arguments;
     arguments << "24098";
     process.start(PDF_SERVER_EXECUTABLE, arguments);
@@ -54,20 +40,28 @@ void PdfServerTest::testGet()
 
     // Get a 200 OK back
     QNetworkAccessManager accessManager;
+    connect(&accessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getFinished(QNetworkReply*)));
 
-    QNetworkRequest req(QUrl("http://localhost:4242/bla"));
+    QNetworkRequest req(QUrl("http://localhost:24098/bla"));
     accessManager.get(req);
 
     while (!m_gotReply) {
-        qDebug() << ".";
         QTest::qWait(10);
     }
-
-    Q_ASSERT(m_replyOk);
 
     process.close();
     Q_ASSERT(process.exitCode() == 0);
 
+    Q_ASSERT(m_replyOk);
+
 }
+
+void PdfServerTest::init()
+{
+    QProcess process;
+    process.execute("killall -9 pdfserver");
+}
+
+
 
 QTEST_MAIN(PdfServerTest)

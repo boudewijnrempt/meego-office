@@ -36,20 +36,12 @@ void PdfServerThread::run()
         }
     }
 
-    QString reply =  "HTTP/1.0 200 Ok\r\n"
+    QString reply("HTTP/1.1 200 Ok\r\n"
             "Content-Type: text/html; charset=\"ascii\"\r\n"
             "\r\n"
-            "<h1>Nothing to see here</h1>\n";
+            "<h1>Nothing to see here</h1>\r\n");
 
-    QByteArray block;
-    QDataStream out(&block, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_4_0);
-    out << reply.toAscii();
-
-    socket.write(block);
-    qDebug() << "1";
-    socket.disconnectFromHost();
-    qDebug() << "2";
-    socket.waitForDisconnected();
-    qDebug() << "3";
+    socket.write(reply.toAscii());
+    socket.flush();
+    socket.close();
 }

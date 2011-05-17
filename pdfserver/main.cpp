@@ -15,7 +15,6 @@ int main(int argc, char **argv)
      }
 
      QStringList arguments = app.arguments();
-     qDebug() << arguments << arguments.length();
      if (arguments.length() != 2) {
          qDebug() << "not enough arguments";
          return 1; // no port argument
@@ -29,8 +28,6 @@ int main(int argc, char **argv)
          return 1; // did not get a port argument
      }
 
-     qDebug() << "Going to listen on port" << port;
-
      // create the server, using the first localhost address
      PdfServer pdfServer;
      if (!pdfServer.listen(QHostAddress::Any, port)) {
@@ -39,5 +36,4 @@ int main(int argc, char **argv)
 
      return app.exec();
 
-     qDebug() << "Quitting";
- }
+}

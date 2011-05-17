@@ -11,11 +11,12 @@ class PdfServerTest : public QObject {
 
 private slots:
 
-    void getFinished(QNetworkReply*);
-    void output();
 
     void testInstantiation();
+
+    void getFinished(QNetworkReply*);
     void testGet();
+    void init();
 
 private:
 

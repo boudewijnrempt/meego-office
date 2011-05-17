@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 
      // create the server, using the first localhost address
      PdfServer pdfServer;
-     if (!pdfServer.listen(QHostAddress::LocalHost, port)) {
+     if (!pdfServer.listen(QHostAddress::Any, port)) {
          return 2; // could not start to listen
      }
 

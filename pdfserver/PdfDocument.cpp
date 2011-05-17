@@ -1,4 +1,5 @@
 #include "PdfDocument.h"
+#include <QDebug>
 
 PdfDocument::PdfDocument(const QString &url)
     : m_url(url)
@@ -35,7 +36,7 @@ int PdfDocument::numberOfPages()
     return 0;
 }
 
-int PdfDocument::PageLayout()
+int PdfDocument::pageLayout()
 {
     if (isValid()) {
         return m_pdf->pageLayout();
@@ -47,7 +48,8 @@ QMap<QString, QString> PdfDocument::infoMap()
 {
     QMap<QString, QString> infos;
     if (isValid()) {
-        foreach(QString key, m_pdf->infoKeys()) {
+        QStringList keys = m_pdf->infoKeys();
+        foreach(const QString &key, keys) {
             infos.insert(key, m_pdf->info(key));
         }
     }

@@ -19,7 +19,7 @@ public:
     bool isValid();
 
     int numberOfPages();
-    int PageLayout();
+    int pageLayout();
     QMap<QString, QString> infoMap();
 
 private slots:

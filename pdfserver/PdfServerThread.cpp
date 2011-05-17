@@ -116,6 +116,17 @@ QByteArray PdfServerThread::open(const QStringList &uri)
         delete doc;
         return answer;
     }
+
+    QString s("numPages=%1\n"
+              "PageLayout=%2\n");
+
+    s = s.arg(doc->numberOfPages()).arg(doc->pageLayout());
+    QMap<QString, QString> infomap = doc->infoMap();
+    foreach(const QString key, infomap.keys()) {
+        s.append(QString("%1=%2\n").arg(key).arg(infomap[key]));
+    }
+
+    answer = s.toUtf8();
     return answer;
 }
 

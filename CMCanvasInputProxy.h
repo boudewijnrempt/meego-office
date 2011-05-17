@@ -14,19 +14,20 @@ class CMCanvasInputProxy : public QObject
 public:
 
     enum GestureType {
-        UnknownGesture,
-        SingleTapGesture,
-        DoubleTapGesture,
-        LongTapGesture,
-        PanGesture,
-        PinchGesture,
+        UnknownGesture = 0x1,
+        SingleTapGesture = 0x2,
+        DoubleTapGesture = 0x4,
+        LongTapGesture = 0x8,
+        PanGesture = 0x10,
+        PinchGesture = 0x20,
     };
+    Q_DECLARE_FLAGS(Gestures, GestureType);
 
     CMCanvasInputProxy(CMCanvasControllerDeclarative* controller, QObject* parent = 0);
     virtual ~CMCanvasInputProxy();
 
     bool handleEvent(QEvent* event);
-    
+
     void handleMouseMoveEvent(QGraphicsSceneMouseEvent* event);
     void handleGesture(QGestureEvent* event);
     void handleTouchBegin(QTouchEvent *event);
@@ -39,7 +40,7 @@ public:
     bool updateCanvas() const;
     void setUpdateCanvas(bool newUpdate);
 
-    GestureType currentGesture();
+    Gestures currentGesture();
 
 Q_SIGNALS:
     void nextPage();
@@ -49,6 +50,7 @@ Q_SIGNALS:
     void longTapGesture(const QPointF &location);
     void doubleTapGesture(const QPointF &location);
     void beginPanGesture();
+    void updatePanGesture(const QPointF &location);
     void endPanGesture();
 
 private:
@@ -57,5 +59,7 @@ private:
 
     Q_PRIVATE_SLOT(d, void onLongTapTimerElapsed());
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(CMCanvasInputProxy::Gestures);
 
 #endif // CMCANVASINPUTPROXY_H

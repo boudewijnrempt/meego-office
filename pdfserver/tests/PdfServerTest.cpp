@@ -15,7 +15,7 @@ void PdfServerTest::testInstantiation()
     // Start the server process
     QProcess process;
     QStringList arguments;
-    arguments << "4242";
+    arguments << "24098";
     process.start(PDF_SERVER_EXECUTABLE, arguments);
     process.waitForStarted();
     process.close();
@@ -48,7 +48,7 @@ void PdfServerTest::testGet()
     connect(&process, SIGNAL(readyReadStandardError()), this, SLOT(output()));
     connect(&process, SIGNAL(readyReadStandardOutput()), this, SLOT(output()));
     QStringList arguments;
-    arguments << "4242";
+    arguments << "24098";
     process.start(PDF_SERVER_EXECUTABLE, arguments);
     process.waitForStarted();
 

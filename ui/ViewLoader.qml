@@ -217,10 +217,10 @@ Item {
                 iconDown: "image://themedimage/icons/actionbar/media-backward-active";
 
                 hasBackground: false;
-                visible: settings.currentType != "Spreadsheet";
+                visible: settings.currentType != DocumentListModel.SpreadsheetType;
 
                 onClicked: {
-                    if(settings.currentType == "Presentation") {
+                    if(settings.currentType == DocumentListModel.PresentationType) {
                         loader.item.changeSlide(loader.item.slide - 1);
                     } else {
                         loader.item.goToPreviousPage();
@@ -239,10 +239,10 @@ Item {
                 iconDown: "image://themedimage/icons/actionbar/media-forward-active";
 
                 hasBackground: false;
-                visible: settings.currentType != "Spreadsheet";
+                visible: settings.currentType != DocumentListModel.SpreadsheetType;
 
                 onClicked: {
-                    if(settings.currentType == "Presentation") {
+                    if(settings.currentType == DocumentListModel.PresentationType) {
                         loader.item.changeSlide(loader.item.slide + 1);
                     } else {
                         loader.item.goToNextPage();

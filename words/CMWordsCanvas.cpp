@@ -195,6 +195,7 @@ void CMWordsCanvas::Private::updateCanvas()
 
     if (!canvas && doc != 0) {
         canvas = static_cast<KWCanvasItem*>(doc->canvasItem());
+	canvas->setCacheEnabled(true);
         q->setCanvas(canvas);
         connect(q->proxyObject, SIGNAL(moveDocumentOffset(const QPoint&)), canvas, SLOT(setDocumentOffset(QPoint)));
         connect(canvas, SIGNAL(documentSize(QSizeF)), q->zoomController(), SLOT(setDocumentSize(QSizeF)));

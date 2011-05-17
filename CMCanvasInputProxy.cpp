@@ -11,7 +11,6 @@
 #include <KoZoomHandler.h>
 #include <QtGui/QGraphicsWidget>
 #include <QtCore/QTimer>
-#include <KDebug>
 
 class CMCanvasInputProxy::Private
 {
@@ -99,7 +98,11 @@ bool CMCanvasInputProxy::handleEvent ( QEvent* event )
             d->longTapTimer->stop();
             if(d->currentGestures & PanGesture) {
                 emit endPanGesture();
-            } else if(d->currentGestures == 0) {
+            }
+            if(d->currentGestures & LongTapGesture) {
+                emit longTapEnded(evt->pos());
+            }
+            if(d->currentGestures == 0) {
                 d->currentGestures |= SingleTapGesture;
                 emit singleTapGesture(evt->pos());
             }

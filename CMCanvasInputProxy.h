@@ -48,6 +48,7 @@ Q_SIGNALS:
 
     void singleTapGesture(const QPointF &location);
     void longTapGesture(const QPointF &location);
+    void longTapEnded(const QPointF &location);
     void doubleTapGesture(const QPointF &location);
     void beginPanGesture();
     void updatePanGesture(const QPointF &location);

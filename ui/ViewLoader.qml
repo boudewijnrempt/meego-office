@@ -249,6 +249,22 @@ Item {
                     }
                 }
             }
+            
+            IconButton {
+                id: showZoomControlButton;
+
+                anchors.right: zoomInButton.left
+                anchors.rightMargin: 10;
+                anchors.verticalCenter: parent.verticalCenter;
+
+                icon: "image://themedimage/icons/actionbar/mail-message-previous";
+                hasBackground: false;
+
+                onClicked: {
+                    zoomMenu.setPosition(showZoomControlButton.x + (showZoomControlButton.width / 2), mapToItem( window, window.width, showZoomControlButton.y).y);
+                    zoomMenu.show();
+                }
+            }
 
             IconButton {
                 id: zoomInButton;
@@ -368,6 +384,18 @@ Item {
             height: 130;
             width: window.width - (window.width * 0.02);
             onSelected: loader.item.setPage(index);
+        }
+    }
+    
+    ModalContextMenu {
+        id: zoomMenu;
+        forceFingerMode: 3;
+        
+        content: ZoomControl {
+            id: zoomControlTool
+            height: 250
+            width: 180
+            onZoomLevelChanged: loader.item.setZoomLevel(newZoomLevel)
         }
     }
 

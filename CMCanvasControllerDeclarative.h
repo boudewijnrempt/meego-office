@@ -84,6 +84,12 @@ public Q_SLOTS:
     virtual void setSelectionCursorHandle(QDeclarativeItem *handle);
     virtual void setSelectionAnchorHandle(QDeclarativeItem *handle);
 
+    /**
+     * This will cap the passed zoomPercentage to 50 to 200, and is used
+     * by the zoom control dialogue to set to a specific value
+     * @param zoomPercentage The new value to zoom to - should be between 50 and 200 inclusive
+     */ 
+    virtual void setZoomLevel(int zoomPercentage);
     virtual void zoomOut(const QPoint& center = QPoint());
     virtual void zoomIn(const QPoint& center = QPoint());
     virtual void zoomBy(const QPoint& center, qreal zoom);

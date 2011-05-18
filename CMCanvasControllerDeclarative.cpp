@@ -256,6 +256,25 @@ void CMCanvasControllerDeclarative::zoomBy(const QPoint& center, qreal zoom)
     }
 }
 
+void CMCanvasControllerDeclarative::setZoomLevel(int zoomPercentage)
+{
+    float newZoomLevel = ((float)qBound((int)KoZoomMode::minimumZoom()*100, zoomPercentage, (int)KoZoomMode::maximumZoom()*100))/100.0;
+    d->zoomHandler->setZoom(newZoomLevel);
+
+    QPoint center(width()/ 2, height() / 2);
+    QPointF offset = documentOffset();
+    QPointF position;
+    position.rx() = (newZoomLevel * -offset.x()) + (1 - newZoomLevel) * center.x();
+    position.ry() = (newZoomLevel * -offset.y()) + (1 - newZoomLevel) * center.y();
+
+    QPoint oNew = (-position).toPoint();
+    
+    d->updateMinMax();
+    d->updateCanvasSize();
+    resetDocumentOffset(oNew);
+    d->timer->start();
+}
+
 void CMCanvasControllerDeclarative::zoomOut(const QPoint& center)
 {
     if(center.isNull()) {

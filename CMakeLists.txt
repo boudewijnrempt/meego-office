@@ -59,6 +59,7 @@ set(intel-office-suite_SRCS
 set(intel-office-suite_ui_components_SRCS
     components/qmldir
     components/DocumentThumbnailList.qml
+    components/ZoomControl.qml
 )
 
 set(intel-office-suite_ui_SRCS

@@ -30,6 +30,8 @@ private:
     QByteArray text(const QStringList &uri);
     QByteArray links(const QStringList &uri);
 
+    void dpi(qreal &dpiX, qreal &dpiY, int zoomlevel);
+
     int m_socketDescriptor;
     PdfDocumentCache *m_documentCache;
     QString m_url;

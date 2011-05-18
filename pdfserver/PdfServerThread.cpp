@@ -7,6 +7,8 @@
 #include <QTextStream>
 #include <QByteArray>
 #include <QImage>
+#include <QBuffer>
+
 #ifdef Q_WS_X11
 #include <QtGui/QX11Info>
 #else
@@ -124,10 +126,11 @@ QByteArray PdfServerThread::open(const QStringList &uri)
         return answer;
     }
 
-    QString s("numPages=%1\n"
+    QString s("url=%1\n"
+              "numPages=%1\n"
               "PageLayout=%2\n");
 
-    s = s.arg(doc->numberOfPages()).arg(doc->pageLayout());
+    s = s.arg(uri[1]).arg(doc->numberOfPages()).arg(doc->pageLayout());
     QMap<QString, QString> infomap = doc->infoMap();
     foreach(const QString key, infomap.keys()) {
         s.append(QString("%1=%2\n").arg(key).arg(infomap[key]));
@@ -152,42 +155,31 @@ QByteArray PdfServerThread::getpage(const QStringList &uri)
 
     int pageNumber = uri[2].toInt();
 
-    qDebug() << "pagenumber" << pageNumber;
-
     Poppler::Page *page = doc->page(pageNumber);
     if (!page) {
         return answer;
     }
 
-    qDebug() << "page" << page << page->pageSize();
-
-    int dpiX = 72;
-    int dpiY = 72;
-#ifdef Q_WS_X11
-    dpiX = QX11Info::appDpiX();
-    dpiY = QX11Info::appDpiY();
-#else
-    QDesktopWidget *w = QApplication::desktop();
-    if (w) {
-        dpiX = w->logicalDpiX();
-        dpiY = w->logicalDpiY();
-    }
-#endif
-
-    qDebug() << "zoomlevel" << uri[3];
     qreal zoomlevel = uri[3].toFloat();
 
-    qDebug() << "zoomlevel" << zoomlevel;
+    qreal dpiX, dpiY;
+    dpi(dpiX, dpiY, zoomlevel);
 
-    qreal fakeXRes = dpiX * zoomlevel;
-    qreal fakeYRes = dpiY * zoomlevel;
+    // XXX: rendering quality isn't what it should be. Probably some error here
+    QImage img = page->renderToImage(dpiX, dpiY);
 
-    qDebug() << "dpi" << fakeXRes << fakeYRes;
+    QString s("url=%1\n"
+              "pagenumber=%2\n"
+              "zoomlevel=%3\n"
+              "orientation=%4\n"
+              "-----------\n");
+    s = s.arg(uri[1]).arg(pageNumber).arg(zoomlevel).arg(page->orientation());
 
-    QImage img = page->renderToImage(fakeXRes, fakeYRes);
-    img.save("bla.png");
+    answer = s.toUtf8();
 
-    qDebug() << "rendered image";
+    QBuffer buf(&answer);
+    buf.open(QIODevice::WriteOnly | QIODevice::Append);
+    img.save(&buf, "PNG");
 
     return answer;
 }
@@ -204,6 +196,43 @@ QByteArray PdfServerThread::thumbnail(const QStringList &uri)
         return answer;
     }
 
+    int pageNumber = uri[2].toInt();
+    Poppler::Page *page = doc->page(pageNumber);
+    if (!page) {
+        return answer;
+    }
+
+    QSize thumbsize(uri[3].toInt(), uri[4].toInt());
+
+    QImage thumb = page->thumbnail();
+    if (thumb.isNull()) {
+
+        qreal dpiX, dpiY;
+        dpi(dpiX, dpiY, 1.0);
+        QSizeF pageSize = page->pageSizeF();
+        qreal fakeDpiX = thumbsize.width() * dpiX / pageSize.width();
+        qreal fakeDpiY = thumbsize.height() * dpiY / pageSize.height();
+
+        thumb = page->renderToImage(fakeDpiX, fakeDpiY);
+    }
+
+    if (thumb.size() != thumbsize) {
+        thumb = thumb.scaled(thumbsize);
+    }
+
+    QString s("url=%1\n"
+              "pagenumber=%2\n"
+              "width=%3\n"
+              "height=%4\n"
+              b
+    s = s.arg(uri[1]).arg(pageNumber).arg(thumbsize.width()).arg(thumbsize.height());
+
+    answer = s.toUtf8();
+
+    QBuffer buf(&answer);
+    buf.open(QIODevice::WriteOnly | QIODevice::Append);
+    thumb.save(&buf, "PNG");
+
     return answer;
 }
 
@@ -218,6 +247,37 @@ QByteArray PdfServerThread::search(const QStringList &uri)
         return answer;
     }
 
+    int pageNumber = uri[2].toInt();
+    Poppler::Page *page = doc->page(pageNumber);
+    if (!page) {
+        return answer;
+    }
+
+    QString searchString = uri[3];
+    if (searchString.isEmpty()) {
+        return answer;
+    }
+
+    QString s("url=%1\n"
+              "pagenumber=%1\n"
+              "searchstring=%2\n"
+              "-----------\n");
+
+    s = s.arg(uri[1]).arg(pageNumber).arg(searchString);
+
+    bool found = true;
+    double top, bottom, left, right = 0.0;
+
+    while(found) {
+        found = page->search(searchString, left, top, right, bottom,
+                             Poppler::Page::NextResult, Poppler::Page::CaseInsensitive);
+        if (found) {
+            s.append("%1,%2,%3,%4\n");
+            s.arg(left).arg(top).arg(right).arg(bottom);
+        }
+    }
+
+    answer = s.toUtf8();
     return answer;
 }
 
@@ -247,4 +307,25 @@ QByteArray PdfServerThread::links(const QStringList &uri)
     }
 
     return answer;
+}
+
+
+void PdfServerThread::dpi(qreal &dpiX, qreal &dpiY, int zoomlevel)
+{
+    dpiX = 72;
+    dpiY = 72;
+#ifdef Q_WS_X11
+    dpiX = QX11Info::appDpiX();
+    dpiY = QX11Info::appDpiY();
+#else
+    QDesktopWidget *w = QApplication::desktop();
+    if (w) {
+        dpiX = w->logicalDpiX();
+        dpiY = w->logicalDpiY();
+    }
+#endif
+
+    dpiX = dpiX * zoomlevel;
+    dpiY = dpiY * zoomlevel;
+
 }

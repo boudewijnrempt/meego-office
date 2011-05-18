@@ -127,8 +127,8 @@ QByteArray PdfServerThread::open(const QStringList &uri)
     }
 
     QString s("url=%1\n"
-              "numPages=%1\n"
-              "PageLayout=%2\n");
+              "numberofpages=%2\n"
+              "pagelayout=%3\n");
 
     s = s.arg(uri[1]).arg(doc->numberOfPages()).arg(doc->pageLayout());
     QMap<QString, QString> infomap = doc->infoMap();
@@ -188,7 +188,7 @@ QByteArray PdfServerThread::thumbnail(const QStringList &uri)
 {
     QByteArray answer;
 
-    if (uri.length() != 4) return answer;
+    if (uri.length() != 5) return answer;
 
     PdfDocument *doc = m_documentCache->document(uri[1]);
     if (!doc || !doc->isValid()) {
@@ -224,7 +224,8 @@ QByteArray PdfServerThread::thumbnail(const QStringList &uri)
               "pagenumber=%2\n"
               "width=%3\n"
               "height=%4\n"
-              b
+              "-----------\n"
+              );
     s = s.arg(uri[1]).arg(pageNumber).arg(thumbsize.width()).arg(thumbsize.height());
 
     answer = s.toUtf8();
@@ -258,6 +259,7 @@ QByteArray PdfServerThread::search(const QStringList &uri)
         return answer;
     }
 
+
     QString s("url=%1\n"
               "pagenumber=%1\n"
               "searchstring=%2\n"
@@ -285,13 +287,42 @@ QByteArray PdfServerThread::text(const QStringList &uri)
 {
     QByteArray answer;
 
-    if (uri.length() != 4) return answer;
+    if (uri.length() != 7) return answer;
 
     PdfDocument *doc = m_documentCache->document(uri[1]);
     if (!doc || !doc->isValid()) {
         return answer;
     }
 
+    int pageNumber = uri[2].toInt();
+    Poppler::Page *page = doc->page(pageNumber);
+    if (!page) {
+        return answer;
+    }
+
+    int left = uri[3].toInt();
+    int top = uri[4].toInt();
+    int right = uri[5].toInt();
+    int bottom = uri[6].toInt();
+
+    QString text = page->text(QRectF(QPointF(left, top), QPointF(right, bottom)));
+
+    QString s("url=%1\n"
+              "pagenumber=%2\n"
+              "left=%3\n"
+              "top=%4\n"
+              "right=%5\n"
+              "bottom=%6\n"
+              "text=%7");
+    s = s.arg(uri[1])
+            .arg(pageNumber)
+            .arg(left)
+            .arg(top)
+            .arg(right)
+            .arg(bottom)
+            .arg(text);
+
+    answer = s.toUtf8();
     return answer;
 }
 
@@ -304,6 +335,38 @@ QByteArray PdfServerThread::links(const QStringList &uri)
     PdfDocument *doc = m_documentCache->document(uri[1]);
     if (!doc || !doc->isValid()) {
         return answer;
+    }
+
+    int pageNumber = uri[2].toInt();
+    Poppler::Page *page = doc->page(pageNumber);
+    if (!page) {
+        return answer;
+    }
+
+    QString s("url=%1\n"
+              "pagenumber=%2\n"
+              "-----------\n");
+    s = s.arg(uri[1])
+            .arg(pageNumber);
+
+    QList<Poppler::Link*> links = page->links();
+    foreach(Poppler::Link* link, links) {
+        QRectF linkarea = link->linkArea();
+        QString area = QString::number(linkarea.left())
+                + "," + QString::number(linkarea.top())
+                + "," + QString::number(linkarea.right())
+                + "," + QString::number(linkarea.bottom());
+
+        if (link->linkType() == Poppler::Link::Browse) {
+            // url
+            Poppler::LinkBrowse* browseLink = static_cast<Poppler::LinkBrowse*>(link);
+            s.append( area + ",url," + browseLink->url() + "\n");
+        }
+        else if (link->linkType() == Poppler::Link::Goto) {
+            // internal link
+            Poppler::LinkGoto* gotoLink = static_cast<Poppler::LinkGoto*>(link);
+            s.append(area + ",page," + gotoLink->destination().pageNumber() + "\n");
+        }
     }
 
     return answer;

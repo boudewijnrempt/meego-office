@@ -65,8 +65,9 @@ private:
      * 1: pagenumber=$pagenumber
      * 2: width=$actual_width
      * 3: height=$actual_height
-     * 4: -----------
-     * 5: byte array representing a PNG image of the thumbnail
+     * 4: imagesize=size of the png image
+     * 5: -----------
+     * 6: byte array representing a PNG image of the thumbnail
      */
     QByteArray thumbnail(const QStringList &uri);
 

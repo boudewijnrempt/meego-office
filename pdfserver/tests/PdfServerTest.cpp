@@ -127,16 +127,42 @@ void PdfServerTest::testGetPage()
 void PdfServerTest::testThumbnail()
 {
     QNetworkAccessManager accessManager;
-    QNetworkRequest req(QUrl("http://localhost:24098/bla"));
+    QNetworkRequest req(QUrl(QString("http://localhost:24098/thumbnail?") + PDF_TEST_FILE + "?1?100?100" ));
     QNetworkReply *reply = accessManager.get(req);
 
     while (!reply->isFinished()) {
         QTest::qWait(10);
     }
+    QByteArray ba = reply->readAll();
 
-//    qDebug() << reply->rawHeaderPairs();
-//    qDebug() << reply->readAll();
-//    qDebug() << reply->error() << reply->errorString();
+    QVERIFY(ba.contains("-----------"));
+    int sepPos = ba.indexOf("-----------");
+    QString s = QString::fromUtf8(ba.left(sepPos));
+    QStringList lines = s.split("\n");
+    QMap<QString,QString> infos;
+    foreach(QString line, lines) {
+        if (line.contains("=")) {
+            QStringList tokens = line.split("=");
+            infos.insert(tokens[0], tokens[1]);
+        }
+    }
+
+    QCOMPARE(infos["url"], QString(PDF_TEST_FILE));
+    QCOMPARE(infos["pagenumber"], QString("1"));
+    QCOMPARE(infos["width"], QString("100"));
+    QCOMPARE(infos["height"], QString("100"));
+
+    int imagesize = infos["imagesize"].toInt();
+    QByteArray png(ba.right(imagesize));
+    QCOMPARE(png.size(), imagesize);
+
+    QBuffer buf(&png);
+    buf.open(QIODevice::ReadOnly);
+    QImage page;
+    page.load(&buf, "PNG");
+    QVERIFY(!page.isNull());
+    QCOMPARE(page.width(), 100);
+    QCOMPARE(page.height(), 100);
     QCOMPARE(reply->error() , QNetworkReply::NoError);
 
 }

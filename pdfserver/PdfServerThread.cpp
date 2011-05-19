@@ -229,20 +229,23 @@ QByteArray PdfServerThread::thumbnail(const QStringList &uri)
     if (thumb.size() != thumbsize) {
         thumb = thumb.scaled(thumbsize);
     }
+    QByteArray imageBytes;
+    QBuffer buf(&imageBytes);
+    buf.open(QIODevice::WriteOnly | QIODevice::Append);
+    thumb.save(&buf, "PNG");
+
 
     QString s("url=%1\n"
               "pagenumber=%2\n"
               "width=%3\n"
               "height=%4\n"
+              "imagesize=%5"
               "-----------\n"
               );
-    s = s.arg(uri[1]).arg(pageNumber).arg(thumbsize.width()).arg(thumbsize.height());
+    s = s.arg(uri[1]).arg(pageNumber).arg(thumbsize.width()).arg(thumbsize.height()).arg(imageBytes.size());
 
     answer = s.toUtf8();
-
-    QBuffer buf(&answer);
-    buf.open(QIODevice::WriteOnly | QIODevice::Append);
-    thumb.save(&buf, "PNG");
+    answer += imageBytes;
 
     return answer;
 }

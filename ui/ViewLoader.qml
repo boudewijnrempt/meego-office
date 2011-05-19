@@ -166,7 +166,8 @@ Item {
 		    onTriggered: {
 		        switch(payload[index]) {
 			    case 0:
-				loader.item.copySelection();
+				loader.item.copyText();
+                                selectionMenu.hide();
 				break;
 			}
 		    }

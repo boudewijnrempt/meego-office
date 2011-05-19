@@ -1,5 +1,10 @@
 #include "CMTextSelection.h"
 
+#include <QtCore/QBuffer>
+#include <QtCore/QMimeData>
+#include <QtGui/QTextDocumentFragment>
+#include <QtGui/QTextDocumentWriter>
+#include <QtGui/QApplication>
 #include <QtDeclarative/QDeclarativeItem>
 
 #include <KoCanvasBase.h>
@@ -57,6 +62,23 @@ void CMTextSelection::setPositionHandle(QDeclarativeItem* position)
 bool CMTextSelection::hasSelection() const
 {
     return d->hasSelection;
+}
+
+void CMTextSelection::copyText()
+{
+    KoTextShapeData * data = textShapeDataForPosition(QPointF(d->anchorHandle->x(), d->anchorHandle->y()));
+    QTextCursor cursor = *(KoTextDocument(data->document()).textEditor()->cursor());
+
+    QMimeData *mimeData = new QMimeData;
+    QTextDocumentFragment fragment(cursor);
+    mimeData->setText(fragment.toPlainText());
+    mimeData->setHtml(fragment.toHtml("utf-8"));
+    QBuffer buffer;
+    QTextDocumentWriter writer(&buffer, "ODF");
+    writer.write(fragment);
+    buffer.close();
+    mimeData->setData("application/vnd.oasis.opendocument.text", buffer.data());
+    QApplication::clipboard()->setMimeData(mimeData);
 }
 
 void CMTextSelection::updateFromHandles()

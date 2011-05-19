@@ -195,7 +195,7 @@ QString CMStageCanvas::currentPageNotes() const
                 KoFindText::findTextInShapes(thePage->pageNotes()->shapes(), texts);
                 QString noteText;
                 foreach(QTextDocument* doc, texts) {
-                    noteText.append(doc->toHtml());
+                    noteText.append(doc->toPlainText());
                 }
                 return noteText;
             }

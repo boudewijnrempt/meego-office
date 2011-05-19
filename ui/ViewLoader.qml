@@ -208,14 +208,29 @@ Item {
                     text: loader.item.currentPageNotes
                 }
             }
+            
+            Text {
+                id: noNote
+                anchors.centerIn: parent
+                width: parent.width * 0.75
+                verticalAlignment: Text.AlignVCenter
+                font.pixelSize: 36
+                font.letterSpacing: 8
+                color: "#D0D0D0"
+                text: "no notes\nto show"
+                visible: ( slideNotes.text === "" )
+            }
         }
        
         IconButton {
             id: showSlideNotes
-            icon: "image://themedimage/icons/actionbar/view-smallscreen"
+            icon: "image://themedimage/icons/launchers/meego-app-notes"
             //hasBackground: false
+            width: 48
+            height: 48
+            iconFill: true
             anchors.right: slideNotes.left
-            anchors.verticalCenter: centralView.verticalCenter
+            anchors.verticalCenter: loader.verticalCenter
             z: 10
             onClicked: loader.state = (loader.state === "slideNotesShown" ? "" : "slideNotesShown")
             visible: loader.item.canHavePageNotes

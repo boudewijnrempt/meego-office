@@ -2,6 +2,7 @@
 #define PDFSERVERTEST
 
 #include <QObject>
+class QProcess;
 
 class QNetworkReply;
 
@@ -11,18 +12,27 @@ class PdfServerTest : public QObject {
 
 private slots:
 
+    // to kill -9 any and all running pdfservers and then start one
+    void initTestCase();
+    // close the process
+    void cleanupTestCase();
 
-    void testInstantiation();
-
-    void getFinished(QNetworkReply*);
     void testGet();
-    void init();
 
+    void testOpen();
+
+    void testGetPage();
+
+    void testThumbnail();
+
+    void testSearch();
+
+    void testText();
+
+    void testLinks();
 private:
 
-    bool m_gotReply;
-    bool m_replyOk;
-
+    QProcess *m_process;
 };
 
 #endif

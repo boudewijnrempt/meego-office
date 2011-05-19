@@ -45,6 +45,7 @@ Item {
             thumbnailList.model.setCanvasController(loader.item);
             thumbnailList.currentIndex = 0
             thumbnailList.model.setDocument(loader.item.document, settings.currentUuid);
+            slideNotes.text = loader.item.currentPageNotes;
             loadingScreen.hide();
 	    loader.item.selectionAnchorHandle = anchorMarker;
 	    loader.item.selectionCursorHandle = cursorMarker;
@@ -70,7 +71,7 @@ Item {
             id: loader
             anchors.top: parent.top;
             anchors.left: parent.left;
-            anchors.right: parent.right;
+            width: centralView.width;
             clip: true;
 
             height: parent.height - (mainToolBar.visible || searchToolBar.visible ? mainToolBar.height : 0);
@@ -174,6 +175,48 @@ Item {
 		    }
 		}
 	    }
+            
+            states: [
+                State {
+                    name: "slideNotesShown"
+                    PropertyChanges { target: loader; width: centralView.width * 0.75 }
+                }
+            ]
+            Behavior on width { NumberAnimation { duration: 150; easing.type: Easing.InOutQuad } }
+        }
+
+        Item {
+            id: slideNotes
+            anchors.top: loader.top
+            anchors.bottom: loader.bottom
+            anchors.left: loader.right
+            width: root.width * 0.25
+            property alias text: noteText.text
+            z: 10
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: 5
+                color: "#DDDDDD"
+                radius: 10
+                Text {
+                    anchors.fill: parent;
+                    anchors.margins: 5
+                    id: noteText
+                    font.pixelSize: 20;
+                    text: loader.item.currentPageNotes
+                }
+            }
+        }
+       
+        IconButton {
+            id: showSlideNotes
+            icon: "image://themedimage/icons/actionbar/view-smallscreen"
+            //hasBackground: false
+            anchors.right: slideNotes.left
+            anchors.verticalCenter: centralView.verticalCenter
+            z: 10
+            onClicked: loader.state = (loader.state === "slideNotesShown" ? "" : "slideNotesShown")
+            visible: loader.item.canHavePageNotes
         }
 
         ModalFog {
@@ -399,7 +442,10 @@ Item {
         content: DocumentThumbnailList {
             id: thumbnailList;
             height: 130;
-            width: window.width - (window.width * 0.02);
+            anchors.left: loader.left
+            anchors.leftMargin: 5
+            anchors.right: loader.right
+            anchors.rightMargin: 5
             onSelected: loader.item.setPage(index);
         }
     }

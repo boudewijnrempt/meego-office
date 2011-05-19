@@ -17,6 +17,7 @@ class CMStageCanvas : public CMCanvasControllerDeclarative,
     Q_PROPERTY(QObject* view READ view)
     Q_PROPERTY(int slide READ slide WRITE changeSlide NOTIFY slideChanged)
     Q_PROPERTY(int slideCount READ slideCount)
+    Q_PROPERTY(QString currentPageNotes READ currentPageNotes NOTIFY currentPageNotesChanged)
 
 public:
     CMStageCanvas(QDeclarativeItem* parent = 0);
@@ -38,6 +39,9 @@ public Q_SLOTS:
     virtual void findFinished();
     virtual void findNext();
     virtual void findPrevious();
+    
+    virtual bool canHavePageNotes() const { return true; }
+    virtual QString currentPageNotes() const;
 
     virtual void setSelectionAnchorHandle(QDeclarativeItem* handle);
     virtual void setSelectionCursorHandle(QDeclarativeItem* handle);
@@ -46,6 +50,7 @@ Q_SIGNALS:
     void slideChanged(int newSlide);
     virtual void findMatchFound ( int match );
     void selected(const QPointF &origin);
+    virtual void currentPageNotesChanged();
 
 private:
     class Private;

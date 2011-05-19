@@ -5,6 +5,8 @@
 #include <KoPACanvasItem.h>
 #include <KoCanvasBase.h>
 #include <part/KPrDocument.h>
+#include <part/KPrPage.h>
+#include <part/KPrNotes.h>
 #include <part/KPrView.h>
 #include "CMStageDeclarativeView.h"
 #include "CMProgressProxy.h"
@@ -101,6 +103,7 @@ void CMStageCanvas::changeSlide(int newSlide)
 
     d->view->setPage(newSlide);
     emit slideChanged(newSlide);
+    emit currentPageNotesChanged();
 }
 
 void CMStageCanvas::loadDocument()
@@ -171,6 +174,29 @@ void CMStageCanvas::setSelectionCursorHandle(QDeclarativeItem* handle)
     setPositionHandle(handle);
     connect(handle, SIGNAL(xChanged()), this, SLOT(updateFromHandles()));
     connect(handle, SIGNAL(yChanged()), this, SLOT(updateFromHandles()));
+}
+
+QString CMStageCanvas::currentPageNotes() const
+{
+    if(d->doc)
+    {
+        QList<KoPAPageBase*> pages = d->doc->pages();
+        if(d->view->page() < pages.count())
+        {
+            KPrPage* thePage = dynamic_cast<KPrPage*>( pages.at(slide()) );
+            if(thePage)
+            {
+                QList<QTextDocument*> texts;
+                KoFindText::findTextInShapes(thePage->pageNotes()->shapes(), texts);
+                QString noteText;
+                foreach(QTextDocument* doc, texts) {
+                    noteText.append(doc->toHtml());
+                }
+                return noteText;
+            }
+        }
+    }
+    return QLatin1String("page 1");
 }
 
 void CMStageCanvas::Private::updateCanvas()

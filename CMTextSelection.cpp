@@ -18,7 +18,7 @@ public:
         : q(qq),
           anchorHandle(0),
           positionHandle(0),
-          updateHandles(false),
+          updateHandles(true),
           hasSelection(false)
     { }
 
@@ -137,7 +137,7 @@ void CMTextSelection::updatePosition(CMTextSelection::UpdateWhat update, const Q
     }
 
     if(editor->hasSelection()) {
-        d->controller->canvas()->updateCanvas(shapeData->rootArea()->associatedShape()->boundingRect());\
+        d->controller->canvas()->updateCanvas(shapeData->rootArea()->associatedShape()->boundingRect());
         d->hasSelection = true;
         if(d->updateHandles) {
             updateHandlePositions(*(editor->cursor()));

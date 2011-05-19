@@ -4,9 +4,13 @@
 #include "CMCanvasControllerDeclarative.h"
 #include "CMSearchingInterface.h"
 #include "CMProcessInputInterface.h"
+#include "CMTextSelection.h"
 
 class KoFindMatch;
-class CMStageCanvas : public CMCanvasControllerDeclarative, public CMSearchingInterface, private CMProcessInputInterface
+class CMStageCanvas : public CMCanvasControllerDeclarative,
+                      public CMSearchingInterface,
+                      private CMProcessInputInterface,
+                      private CMTextSelection
 {
     Q_OBJECT
     Q_PROPERTY(QObject* document READ doc)
@@ -35,9 +39,13 @@ public Q_SLOTS:
     virtual void findNext();
     virtual void findPrevious();
 
+    virtual void setSelectionAnchorHandle(QDeclarativeItem* handle);
+    virtual void setSelectionCursorHandle(QDeclarativeItem* handle);
+
 Q_SIGNALS:
     void slideChanged(int newSlide);
     virtual void findMatchFound ( int match );
+    void selected(const QPointF &origin);
 
 private:
     class Private;
@@ -46,11 +54,17 @@ private:
     Q_PRIVATE_SLOT(d, void setDocumentSize(const QSize& size));
     Q_PRIVATE_SLOT(d, void matchFound(KoFindMatch match));
     Q_PRIVATE_SLOT(d, void update());
+    Q_PRIVATE_SLOT(d, void updatePanGesture(const QPointF &location));
+
+    virtual QPointF documentToView(const QPointF& point);
+    virtual QPointF viewToDocument(const QPointF& point);
 
 private Q_SLOTS:
+    virtual void updateFromHandles();
     virtual void onSingleTap(const QPointF &location);
     virtual void onDoubleTap ( const QPointF& location );
     virtual void onLongTap ( const QPointF& location );
+    virtual void onLongTapEnd(const QPointF& location);
 };
 
 #endif // CALLIGRAMOBILE_STAGECANVAS_H

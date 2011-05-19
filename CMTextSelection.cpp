@@ -96,7 +96,7 @@ void CMTextSelection::updateFromHandles()
 
 void CMTextSelection::updateHandlePositions(const QTextCursor &cursor)
 {
-    if(!d->anchorHandle || !d->positionHandle) {
+    if(!d->anchorHandle || !d->positionHandle || d->selection.isNull()) {
         return;
     }
 

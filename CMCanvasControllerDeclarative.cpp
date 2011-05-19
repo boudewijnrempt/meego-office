@@ -268,7 +268,7 @@ void CMCanvasControllerDeclarative::setZoomLevel(int zoomPercentage)
     position.ry() = (newZoomLevel * -offset.y()) + (1 - newZoomLevel) * center.y();
 
     QPoint oNew = (-position).toPoint();
-    
+
     d->updateMinMax();
     d->updateCanvasSize();
     resetDocumentOffset(oNew);
@@ -298,6 +298,11 @@ void CMCanvasControllerDeclarative::resetZoom()
     d->zoomController->setZoom(KoZoomMode::ZOOM_CONSTANT, 1.0);
     d->updateMinMax();
     d->updateCanvasSize();
+}
+
+QPoint CMCanvasControllerDeclarative::getDocumentOffset()
+{
+    return documentOffset();
 }
 
 void CMCanvasControllerDeclarative::ensureVisible(KoShape* shape)

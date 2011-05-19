@@ -4,8 +4,12 @@
 #include "CMCanvasControllerDeclarative.h"
 #include "CMSearchingInterface.h"
 #include "CMProcessInputInterface.h"
+#include "CMTextSelection.h"
 
-class CMWordsCanvas : public CMCanvasControllerDeclarative, public CMSearchingInterface, private CMProcessInputInterface
+class CMWordsCanvas : public CMCanvasControllerDeclarative,
+                      public CMSearchingInterface,
+                      private CMProcessInputInterface,
+                      private CMTextSelection
 {
     Q_OBJECT
     Q_PROPERTY(QObject* document READ doc)
@@ -52,9 +56,12 @@ private:
     Q_PRIVATE_SLOT(d, void matchFound(KoFindMatch));
     Q_PRIVATE_SLOT(d, void update());
     Q_PRIVATE_SLOT(d, void updatePanGesture(const QPointF &location));
-    Q_PRIVATE_SLOT(d, void updateSelectionFromHandles());
+
+    QPointF documentToView(const QPointF &point);
+    QPointF viewToDocument(const QPointF &point);
 
 private Q_SLOTS:
+    virtual void updateFromHandles();
     virtual void onSingleTap(const QPointF &location);
     virtual void onDoubleTap ( const QPointF& location );
     virtual void onLongTap ( const QPointF& location );

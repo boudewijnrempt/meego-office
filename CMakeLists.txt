@@ -45,9 +45,10 @@ set(intel-office-suite_SRCS
     CMDocumentThumbnailListModel.cpp
     CMPageThumbnailProvider.cpp
     CMProgressProxy.cpp
+    CMTextSelection.cpp
 
     words/CMWordsCanvas.cpp
-    
+
     tables/CMTablesCanvas.cpp
 
     stage/CMStageCanvas.cpp
@@ -83,7 +84,7 @@ set(intel-office-suite_headers
     words/CMWordsCanvas.h
 
     tables/CMTablesCanvas.h
-    
+
     stage/CMStageCanvas.h
     stage/CMStageDeclarativeView.h
 )

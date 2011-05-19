@@ -21,6 +21,7 @@ class CALLIGRAMOBILE_EXPORT CMCanvasControllerDeclarative : public QDeclarativeI
     Q_PROPERTY(int visibleHeight READ visibleHeight)
 
     Q_PROPERTY(QSize documentSize READ documentSize NOTIFY documentSizeChanged)
+    Q_PROPERTY(QPoint documentOffset READ getDocumentOffset)
 
     Q_PROPERTY(QDeclarativeItem* verticalScrollHandle READ verticalScrollHandle WRITE setVerticalScrollHandle)
     Q_PROPERTY(QDeclarativeItem* horizontalScrollHandle READ horizontalScrollHandle WRITE setHorizontalScrollHandle)
@@ -68,6 +69,8 @@ public:
     void setZoomMin(qreal newZoomMin);
     qreal zoomMin() const;
 
+    QPoint getDocumentOffset();
+
     Q_SLOT void setForce(const QVector2D& newForce);
     QVector2D force() const;
 
@@ -88,7 +91,7 @@ public Q_SLOTS:
      * This will cap the passed zoomPercentage to 50 to 200, and is used
      * by the zoom control dialogue to set to a specific value
      * @param zoomPercentage The new value to zoom to - should be between 50 and 200 inclusive
-     */ 
+     */
     virtual void setZoomLevel(int zoomPercentage);
     virtual void zoomOut(const QPoint& center = QPoint());
     virtual void zoomIn(const QPoint& center = QPoint());

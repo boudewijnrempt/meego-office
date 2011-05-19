@@ -170,16 +170,45 @@ void PdfServerTest::testThumbnail()
 void PdfServerTest::testSearch()
 {
     QNetworkAccessManager accessManager;
-    QNetworkRequest req(QUrl("http://localhost:24098/bla"));
+    QNetworkRequest req(QUrl(QString("http://localhost:24098/search?") + PDF_TEST_FILE + "?1?lorem"));
     QNetworkReply *reply = accessManager.get(req);
 
     while (!reply->isFinished()) {
         QTest::qWait(10);
     }
 
-//    qDebug() << reply->rawHeaderPairs();
-//    qDebug() << reply->readAll();
-//    qDebug() << reply->error() << reply->errorString();
+    QByteArray ba = reply->readAll();
+
+    QVERIFY(ba.contains("-----------"));
+    int sepPos = ba.indexOf("-----------");
+    QString s = QString::fromUtf8(ba.left(sepPos));
+    QStringList lines = s.split("\n");
+    QMap<QString,QString> infos;
+    foreach(QString line, lines) {
+        if (line.contains("=")) {
+            QStringList tokens = line.split("=");
+            infos.insert(tokens[0], tokens[1]);
+        }
+    }
+
+    QCOMPARE(infos["url"], QString(PDF_TEST_FILE));
+    QCOMPARE(infos["pagenumber"], QString("1"));
+    QCOMPARE(infos["searchstring"], QString("lorem"));
+
+    QString results = QString::fromUtf8(ba.mid(sepPos + 13));
+    QStringList resultList = results.split("\n");
+    QList<QRectF> resultRects;
+    foreach (QString result, resultList) {
+        if (result.contains(",")) {
+            QStringList points = result.split(",");
+            QRectF rc(QPointF(points.at(0).toFloat(),
+                      points.at(1).toFloat()),
+                      QPointF(points.at(2).toFloat(),
+                      points.at(3).toFloat()));
+            resultRects << rc;
+        }
+    }
+    QCOMPARE(resultRects.length(), 5);
     QCOMPARE(reply->error() , QNetworkReply::NoError);
 
 }
@@ -187,16 +216,32 @@ void PdfServerTest::testSearch()
 void PdfServerTest::testText()
 {
     QNetworkAccessManager accessManager;
-    QNetworkRequest req(QUrl("http://localhost:24098/bla"));
+    QNetworkRequest req(QUrl(QString("http://localhost:24098/text?") + PDF_TEST_FILE + "?1?143?196.631?181.167?209.203"));
     QNetworkReply *reply = accessManager.get(req);
 
     while (!reply->isFinished()) {
         QTest::qWait(10);
     }
 
-//    qDebug() << reply->rawHeaderPairs();
-//    qDebug() << reply->readAll();
-//    qDebug() << reply->error() << reply->errorString();
+    QByteArray ba = reply->readAll();
+    QString s = QString::fromUtf8(ba);
+    QStringList lines = s.split("\n");
+    QMap<QString,QString> infos;
+    foreach(QString line, lines) {
+        if (line.contains("=")) {
+            QStringList tokens = line.split("=");
+            infos.insert(tokens[0], tokens[1]);
+        }
+    }
+
+    QCOMPARE(infos["url"], QString(PDF_TEST_FILE));
+    QCOMPARE(infos["pagenumber"], QString("1"));
+    QCOMPARE(infos["left"], QString("143"));
+    QCOMPARE(infos["top"], QString("196.631"));
+    QCOMPARE(infos["right"], QString("181.167"));
+    QCOMPARE(infos["bottom"], QString("209.203"));
+    QCOMPARE(infos["text"], QString("Lorem"));
+
     QCOMPARE(reply->error() , QNetworkReply::NoError);
 
 }

@@ -274,8 +274,8 @@ QByteArray PdfServerThread::search(const QStringList &uri)
 
 
     QString s("url=%1\n"
-              "pagenumber=%1\n"
-              "searchstring=%2\n"
+              "pagenumber=%2\n"
+              "searchstring=%3\n"
               "-----------\n");
 
     s = s.arg(uri[1]).arg(pageNumber).arg(searchString);
@@ -287,8 +287,8 @@ QByteArray PdfServerThread::search(const QStringList &uri)
         found = page->search(searchString, left, top, right, bottom,
                              Poppler::Page::NextResult, Poppler::Page::CaseInsensitive);
         if (found) {
-            s.append("%1,%2,%3,%4\n");
-            s.arg(left).arg(top).arg(right).arg(bottom);
+            QString result("%1,%2,%3,%4\n");
+            s.append(result.arg(left).arg(top).arg(right).arg(bottom));
         }
     }
 
@@ -313,10 +313,10 @@ QByteArray PdfServerThread::text(const QStringList &uri)
         return answer;
     }
 
-    int left = uri[3].toInt();
-    int top = uri[4].toInt();
-    int right = uri[5].toInt();
-    int bottom = uri[6].toInt();
+    qreal left = uri[3].toFloat();
+    qreal top = uri[4].toFloat();
+    qreal right = uri[5].toFloat();
+    qreal bottom = uri[6].toFloat();
 
     QString text = page->text(QRectF(QPointF(left, top), QPointF(right, bottom)));
 
@@ -329,10 +329,10 @@ QByteArray PdfServerThread::text(const QStringList &uri)
               "text=%7");
     s = s.arg(uri[1])
             .arg(pageNumber)
-            .arg(left)
-            .arg(top)
-            .arg(right)
-            .arg(bottom)
+            .arg(QString::number(left))
+            .arg(QString::number(top))
+            .arg(QString::number(right))
+            .arg(QString::number(bottom))
             .arg(text);
 
     answer = s.toUtf8();

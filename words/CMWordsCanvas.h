@@ -40,6 +40,8 @@ public Q_SLOTS:
     void findNext();
     void findFinished();
 
+    virtual void onLongTapEnd( const QPointF &location = QPointF() );
+
     virtual void setSelectionAnchorHandle(QDeclarativeItem* handle);
     virtual void setSelectionCursorHandle(QDeclarativeItem* handle);
 
@@ -65,7 +67,6 @@ private Q_SLOTS:
     virtual void onSingleTap(const QPointF &location);
     virtual void onDoubleTap ( const QPointF& location );
     virtual void onLongTap ( const QPointF& location );
-    virtual void onLongTapEnd( const QPointF &location );
 };
 
 #endif // CALLIGRAMOBILE_WORDSCANVAS_H

@@ -117,6 +117,8 @@ Item {
 
                 z: 10
 		visible: false;
+
+                onDragEnd: loader.item.onLongTapEnd();
             }
 
             Marker {
@@ -262,7 +264,7 @@ Item {
                     }
                 }
             }
-            
+
             IconButton {
                 id: showZoomControlButton;
 
@@ -399,11 +401,11 @@ Item {
             onSelected: loader.item.setPage(index);
         }
     }
-    
+
     ModalContextMenu {
         id: zoomMenu;
         forceFingerMode: 3;
-        
+
         content: ZoomControl {
             id: zoomControlTool
             height: 250

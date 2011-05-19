@@ -7,6 +7,8 @@ Item {
     property alias imageWidth: image.width;
     property alias imageHeight: image.height;
 
+    signal dragEnd()
+
     Image {
         id: image;
         width: 32
@@ -25,6 +27,8 @@ Item {
 	x: -(root.width / 2);
 	y: -(root.height / 2);
 	drag.target: root;
+
+        onRelease: root.dragEnd();
     }
 }
 

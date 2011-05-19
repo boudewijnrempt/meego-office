@@ -46,6 +46,8 @@ Item {
             thumbnailList.currentIndex = 0
             thumbnailList.model.setDocument(loader.item.document, settings.currentUuid);
             loadingScreen.hide();
+	    loader.item.selectionAnchorHandle = anchorMarker;
+	    loader.item.selectionCursorHandle = cursorMarker;
         }
 
         function onProgress(progress) {
@@ -100,13 +102,11 @@ Item {
                         mainToolBar.show();
                     }
                 }
-            }
-
-            TextCopiedToClipboardMessage {
-                id: textCopiedMessage
-                anchors.centerIn: parent
-                opacity: 0
-                z: 10
+		onSelected: {
+		    var winPos = mapToItem(window, origin.x, origin.y);
+		    selectionMenu.setPosition(winPos.x, winPos.y);
+		    selectionMenu.show();
+		}
             }
 
             Marker {
@@ -116,9 +116,7 @@ Item {
                 imageHeight: 41;
 
                 z: 10
-                x: loader.item ? loader.item.cursorPos.x : -100
-                y: loader.item ? loader.item.cursorPos.y : -100
-                onMoved: loader.item.moveMarker(1, newX, newY)
+		visible: false;
             }
 
             Marker {
@@ -128,9 +126,7 @@ Item {
                 imageHeight: 41;
 
                 z: 10
-                x: loader.item ? loader.item.anchorPos.x : -100
-                y: loader.item ? loader.item.anchorPos.y : -100
-                onMoved: loader.item.moveMarker(2, newX, newY)
+		visible: false;
             }
 
             Rectangle {
@@ -157,6 +153,23 @@ Item {
                 width: 5;
                 z: 10;
             }
+
+	    ModalContextMenu {
+		id: selectionMenu;
+
+		content: ActionMenu {
+		    model: [qsTr("Copy")];
+		    payload: [ 0, 1 ];
+
+		    onTriggered: {
+		        switch(payload[index]) {
+			    case 0:
+				loader.item.copySelection();
+				break;
+			}
+		    }
+		}
+	    }
         }
 
         ModalFog {

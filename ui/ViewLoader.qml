@@ -438,14 +438,10 @@ Item {
     ModalContextMenu {
         id: thumbnailMenu;
         forceFingerMode: 3;
-
         content: DocumentThumbnailList {
             id: thumbnailList;
             height: 130;
-            anchors.left: loader.left
-            anchors.leftMargin: 5
-            anchors.right: loader.right
-            anchors.rightMargin: 5
+            width: window.width * 0.98
             onSelected: loader.item.setPage(index);
         }
     }

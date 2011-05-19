@@ -34,6 +34,8 @@ public:
 
     CMCanvasControllerDeclarative *controller;
 
+    QTextCursor selection;
+
     bool updateHandles;
     bool hasSelection;
 };
@@ -66,11 +68,8 @@ bool CMTextSelection::hasSelection() const
 
 void CMTextSelection::copyText()
 {
-    KoTextShapeData * data = textShapeDataForPosition(QPointF(d->anchorHandle->x(), d->anchorHandle->y()));
-    QTextCursor cursor = *(KoTextDocument(data->document()).textEditor()->cursor());
-
     QMimeData *mimeData = new QMimeData;
-    QTextDocumentFragment fragment(cursor);
+    QTextDocumentFragment fragment(d->selection);
     mimeData->setText(fragment.toPlainText());
     mimeData->setHtml(fragment.toHtml("utf-8"));
     QBuffer buffer;
@@ -101,13 +100,17 @@ void CMTextSelection::updateHandlePositions(const QTextCursor &cursor)
         return;
     }
 
-    KoTextDocumentLayout * layout = qobject_cast<KoTextDocumentLayout*>(cursor.document()->documentLayout());
+    if(!cursor.isNull()) {
+        d->selection = cursor;
+    }
 
-    QTextLine line = cursor.block().layout()->lineForTextPosition(cursor.positionInBlock());
+    KoTextDocumentLayout * layout = qobject_cast<KoTextDocumentLayout*>(d->selection.document()->documentLayout());
+
+    QTextLine line = d->selection.block().layout()->lineForTextPosition(d->selection.positionInBlock());
     if(line.isValid()) {
-        QRectF textRect(line.cursorToX(cursor.positionInBlock()) , line.y(), 1, line.height());
+        QRectF textRect(line.cursorToX(d->selection.positionInBlock()) , line.y(), 1, line.height());
 
-        KoShape *shape = layout->rootAreaForPosition(cursor.position())->associatedShape();
+        KoShape *shape = layout->rootAreaForPosition(d->selection.position())->associatedShape();
         KoTextShapeData *shapeData = qobject_cast<KoTextShapeData *>(shape->userData());
 
         QPointF pos = shape->absoluteTransformation(0).map(textRect.center()) - QPointF(0, shapeData->documentOffset());
@@ -119,8 +122,8 @@ void CMTextSelection::updateHandlePositions(const QTextCursor &cursor)
         d->positionHandle->setVisible(true);
     }
 
-    QTextCursor anchorCursor = QTextCursor(cursor.document());
-    anchorCursor.setPosition(cursor.anchor());
+    QTextCursor anchorCursor = QTextCursor(d->selection.document());
+    anchorCursor.setPosition(d->selection.anchor());
     line = anchorCursor.block().layout()->lineForTextPosition(anchorCursor.positionInBlock());
     if(line.isValid()) {
         QRectF textRect(line.cursorToX(anchorCursor.positionInBlock()) , line.y(), 1, line.height());
@@ -158,11 +161,13 @@ void CMTextSelection::updatePosition(CMTextSelection::UpdateWhat update, const Q
         editor->setPosition(cursorPos, QTextCursor::MoveAnchor);
     }
 
+    d->selection = *(editor->cursor());
+
     if(editor->hasSelection()) {
         d->controller->canvas()->updateCanvas(shapeData->rootArea()->associatedShape()->boundingRect());
         d->hasSelection = true;
         if(d->updateHandles) {
-            updateHandlePositions(*(editor->cursor()));
+            updateHandlePositions();
         }
     } else {
         d->hasSelection = false;
@@ -187,5 +192,6 @@ KoTextShapeData* CMTextSelection::textShapeDataForPosition(const QPointF& positi
 void CMTextSelection::setHasSelection(bool selection)
 {
     d->hasSelection = selection;
+    d->selection.clearSelection();
 }
 

@@ -1,11 +1,12 @@
 #ifndef CMTEXTSELECTION_H
 #define CMTEXTSELECTION_H
 
+#include <QtGui/QTextCursor>
+
 class KoTextShapeData;
 class CMCanvasControllerDeclarative;
 class QPointF;
 class QDeclarativeItem;
-class QTextCursor;
 
 class CMTextSelection
 {
@@ -28,7 +29,7 @@ public:
     virtual void copyText();
 
     virtual void updateFromHandles();
-    virtual void updateHandlePositions(const QTextCursor& cursor);
+    virtual void updateHandlePositions(const QTextCursor &cursor = QTextCursor());
     virtual void updatePosition(UpdateWhat update, const QPointF &position);
 
     virtual QPointF documentToView(const QPointF& point) = 0;

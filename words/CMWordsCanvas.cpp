@@ -39,6 +39,7 @@ public:
     void update();
     void updateCanvas();
     void updatePanGesture(const QPointF &location);
+    void moveSelectionHandles();
 
     CMWordsCanvas* q;
 
@@ -57,6 +58,7 @@ CMWordsCanvas::CMWordsCanvas(QDeclarativeItem* parent)
     connect(inputProxy(), SIGNAL(updatePanGesture(QPointF)), SLOT(updatePanGesture(QPointF)));
     KoZoomMode::setMinimumZoom(0.5);
     KoZoomMode::setMaximumZoom(2.0);
+    connect(proxyObject, SIGNAL(moveDocumentOffset(QPoint)), this, SLOT(moveSelectionHandles()));
 }
 
 CMWordsCanvas::~CMWordsCanvas()
@@ -353,6 +355,11 @@ QPointF CMWordsCanvas::viewToDocument(const QPointF& point)
 void CMWordsCanvas::Private::updatePanGesture(const QPointF& location)
 {
     q->updatePosition(CMTextSelection::UpdatePosition, location);
+}
+
+void CMWordsCanvas::Private::moveSelectionHandles()
+{
+    q->updateHandlePositions();
 }
 
 #include "CMWordsCanvas.moc"

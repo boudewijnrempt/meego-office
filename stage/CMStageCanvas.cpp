@@ -37,6 +37,7 @@ public:
     void matchFound(KoFindMatch match);
     void update();
     void updatePanGesture(const QPointF &location);
+    void moveSelectionHandles();
 
     CMStageCanvas* q;
 
@@ -56,6 +57,8 @@ CMStageCanvas::CMStageCanvas(QDeclarativeItem* parent)
 
     KoZoomMode::setMinimumZoom(0.5);
     KoZoomMode::setMaximumZoom(2.0);
+
+    connect(proxyObject, SIGNAL(moveDocumentOffset(QPoint)), this, SLOT(moveSelectionHandles()));
 }
 
 CMStageCanvas::~CMStageCanvas()
@@ -245,7 +248,7 @@ void CMStageCanvas::onDoubleTap ( const QPointF& location )
 
 void CMStageCanvas::onLongTap ( const QPointF& location )
 {
-    KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
+   KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
 
     updatePosition(UpdatePosition, location);
     KoTextShapeData * shapeData = textShapeDataForPosition(location);
@@ -254,9 +257,11 @@ void CMStageCanvas::onLongTap ( const QPointF& location )
     }
 
     KoTextEditor *editor = KoTextDocument(shapeData->document()).textEditor();
-    editor->select(QTextCursor::WordUnderCursor);
-    d->canvas->updateCanvas(shapeData->rootArea()->associatedShape()->boundingRect());
-    updateHandlePositions(*(editor->cursor()));
+    if(editor->hasSelection()) {
+        editor->select(QTextCursor::WordUnderCursor);
+        d->canvas->updateCanvas(shapeData->rootArea()->associatedShape()->boundingRect());
+        updateHandlePositions(*(editor->cursor()));
+    }
 }
 
 void CMStageCanvas::onLongTapEnd(const QPointF& location)
@@ -300,6 +305,11 @@ void CMStageCanvas::Private::update()
 void CMStageCanvas::Private::updatePanGesture(const QPointF& location)
 {
     q->updatePosition(CMTextSelection::UpdatePosition, location);
+}
+
+void CMStageCanvas::Private::moveSelectionHandles()
+{
+    q->updateHandlePositions();
 }
 
 #include "CMStageCanvas.moc"

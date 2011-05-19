@@ -46,8 +46,9 @@ private:
      * 1: pagenumber=$pagenumber
      * 2: zoomlevel=$zoomlevel
      * 3: orientation=$orientation
-     * 4: -----------
-     * 5: byte array representing a PNG image
+     * 4: imagesize=size of the png image
+     * 5: -----------
+     * 6: byte array representing a PNG image
      */
     QByteArray getpage(const QStringList &uri);
 

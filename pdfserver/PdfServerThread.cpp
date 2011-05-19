@@ -58,41 +58,41 @@ void PdfServerThread::run()
             if (command == "/open") {
                 answer = open(uri);
                 if (answer.length() == 0) {
-                    socketError = "Could not open document: " + line;
+                    socketError = "Could not open document: " + uri.join("?");
                 }
             }
             else if (command == "/getpage") {
                 answer = getpage(uri);
                 if (answer.length() == 0) {
-                    socketError = "Could not get page: " + line;
+                    socketError = "Could not get page: " + uri.join("?");
                 }
             }
             else if (command == "/thumbnail") {
                 answer = thumbnail(uri);
                 if (answer.length() == 0) {
-                    socketError = "Could not get thumbnail: " + line;
+                    socketError = "Could not get thumbnail: " + uri.join("?");
                 }
             }
             else if (command == "/search") {
                 answer = search(uri);
                 if (answer.length() == 0) {
-                    socketError = "Could not execute search: " + line;
+                    socketError = "Could not execute search: " + uri.join("?");
                 }
             }
             else if (command == "/text") {
                 answer = text(uri);
                 if (answer.length() == 0) {
-                    socketError = "Could not get text: " + line;
+                    socketError = "Could not get text: " + uri.join("?");
                 }
             }
             else if (command == "/links") {
                 answer = links(uri);
                 if (answer.length() == 0) {
-                    socketError = "Could not get links: " + line;
+                    socketError = "Could not get links: " + uri.join("?");
                 }
             }
             else {
-                socketError = "Illegal command" + line;
+                socketError = "Illegal command " + uri.join("?");
             }
         }
     }
@@ -103,15 +103,23 @@ void PdfServerThread::run()
         QString reply("HTTP/1.1 200 Ok\r\n"
                       "Content-Type: text/html; charset=\"utf-8\"\r\n"
                       "\r\n");
+        qDebug() << reply;
         socket.write(reply.toUtf8());
+        qDebug() << answer;
         socket.write(answer);
     }
     else {
         qDebug() << socketError;
-        QString reply("HTTP/1.1 400 Bad Request\r\n");
-        socket.write(reply.toAscii());
+        QString reply("HTTP/1.1 400 Bad Request\r\n"
+                      "Content-Type: text/html; charset=\"utf-8\"\r\n"
+                      "\r\n");
+        socket.write(reply.toUtf8());
+        socket.write(QString("<h1>").toUtf8());
+        socket.write(socketError.toUtf8());
+        socket.write(QString("</h1>").toUtf8());
     }
     socket.flush();
+    socket.close();
 }
 
 
@@ -167,19 +175,21 @@ QByteArray PdfServerThread::getpage(const QStringList &uri)
 
     // XXX: rendering quality isn't what it should be. Probably some error here
     QImage img = page->renderToImage(dpiX, dpiY);
+    QByteArray imageBytes;
+    QBuffer buf(&imageBytes);
+    buf.open(QIODevice::WriteOnly | QIODevice::Append);
+    img.save(&buf, "PNG");
 
     QString s("url=%1\n"
               "pagenumber=%2\n"
               "zoomlevel=%3\n"
               "orientation=%4\n"
+              "imagesize=%5"
               "-----------\n");
-    s = s.arg(uri[1]).arg(pageNumber).arg(zoomlevel).arg(page->orientation());
+    s = s.arg(uri[1]).arg(pageNumber).arg(zoomlevel).arg(page->orientation()).arg(imageBytes.size());
 
     answer = s.toUtf8();
-
-    QBuffer buf(&answer);
-    buf.open(QIODevice::WriteOnly | QIODevice::Append);
-    img.save(&buf, "PNG");
+    answer += imageBytes;
 
     return answer;
 }

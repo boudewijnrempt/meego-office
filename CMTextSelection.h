@@ -25,7 +25,7 @@ public:
 
     bool hasSelection() const;
 
-    void copyText();
+    virtual void copyText();
 
     virtual void updateFromHandles();
     virtual void updateHandlePositions(const QTextCursor& cursor);

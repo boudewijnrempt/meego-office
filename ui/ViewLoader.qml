@@ -165,10 +165,11 @@ Item {
 
 		    onTriggered: {
 		        switch(payload[index]) {
-			    case 0:
-				loader.item.copyText();
+			    case 0: {
+			        loader.item.copyText();
                                 selectionMenu.hide();
 				break;
+                            }
 			}
 		    }
 		}

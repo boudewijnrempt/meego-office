@@ -127,8 +127,9 @@ private:
      * @return bytearray filled with
      * 0: url=$url
      * 1: pagenumber=$pagenumber
-     * 2: -----------
-     * 3: top,left,right,bottom,type,target
+     * 2: numberoflinks=number of discovered links
+     * 3: -----------
+     * 4: top,left,right,bottom,type,target
      * n: top,left,right,bottom,type,target
      */
     QByteArray links(const QStringList &uri);

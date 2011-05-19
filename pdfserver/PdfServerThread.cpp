@@ -356,13 +356,17 @@ QByteArray PdfServerThread::links(const QStringList &uri)
         return answer;
     }
 
-    QString s("url=%1\n"
-              "pagenumber=%2\n"
-              "-----------\n");
-    s = s.arg(uri[1])
-            .arg(pageNumber);
 
     QList<Poppler::Link*> links = page->links();
+
+    QString s("url=%1\n"
+              "pagenumber=%2\n"
+              "numberoflinks=%3\n"
+              "-----------\n");
+    s = s.arg(uri[1])
+            .arg(pageNumber)
+            .arg(links.size());
+
     foreach(Poppler::Link* link, links) {
         QRectF linkarea = link->linkArea();
         QString area = QString::number(linkarea.left())
@@ -373,12 +377,12 @@ QByteArray PdfServerThread::links(const QStringList &uri)
         if (link->linkType() == Poppler::Link::Browse) {
             // url
             Poppler::LinkBrowse* browseLink = static_cast<Poppler::LinkBrowse*>(link);
-            s.append( area + ",url," + browseLink->url() + "\n");
+            s = s.append( area + ",url," + browseLink->url() + "\n");
         }
         else if (link->linkType() == Poppler::Link::Goto) {
             // internal link
             Poppler::LinkGoto* gotoLink = static_cast<Poppler::LinkGoto*>(link);
-            s.append(area + ",page," + gotoLink->destination().pageNumber() + "\n");
+            s = s.append(area + ",page," + gotoLink->destination().pageNumber() + "\n");
         }
     }
 

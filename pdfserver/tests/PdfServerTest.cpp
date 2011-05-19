@@ -11,6 +11,7 @@
 #include <QTest>
 #include <QBuffer>
 #include <QByteArray>
+#include <QPair>
 #include <QImage>
 #include <QMap>
 
@@ -246,7 +247,7 @@ void PdfServerTest::testText()
 
 }
 
-void PdfServerTest::testLinks()
+void PdfServerTest::testNoLinks()
 {
     QNetworkAccessManager accessManager;
     QNetworkRequest req(QUrl(QString("http://localhost:24098/links?") + PDF_TEST_FILE + "?1"));
@@ -270,6 +271,61 @@ void PdfServerTest::testLinks()
     QCOMPARE(infos["url"], QString(PDF_TEST_FILE));
     QCOMPARE(infos["pagenumber"], QString("1"));
 
+    QCOMPARE(reply->error() , QNetworkReply::NoError);
+
+}
+
+void PdfServerTest::testLink()
+{
+    QNetworkAccessManager accessManager;
+    QNetworkRequest req(QUrl(QString("http://localhost:24098/links?") + PDF_TEST_FILE_LINK + "?0"));
+    QNetworkReply *reply = accessManager.get(req);
+
+    while (!reply->isFinished()) {
+        QTest::qWait(10);
+    }
+
+    QByteArray ba = reply->readAll();
+
+    QVERIFY(ba.contains("-----------"));
+    int sepPos = ba.indexOf("-----------");
+
+    QString s = QString::fromUtf8(ba.left(sepPos));
+
+    QStringList lines = s.split("\n");
+    QMap<QString,QString> infos;
+    foreach(QString line, lines) {
+        if (line.contains("=")) {
+            QStringList tokens = line.split("=");
+            infos.insert(tokens[0], tokens[1]);
+        }
+    }
+
+    QCOMPARE(infos["url"], QString(PDF_TEST_FILE_LINK));
+    QCOMPARE(infos["pagenumber"], QString("0"));
+    QCOMPARE(infos["numberoflinks"], QString("1"));
+
+    QString results = QString::fromUtf8(ba.mid(sepPos + 13));
+    QStringList resultList = results.split("\n");
+
+    QVector<QRectF> linkrects;
+    QVector<QPair<QString,QString> > links;
+
+    foreach (QString result, resultList) {
+        if (result.contains(",")) {
+            QStringList points = result.split(",");
+            QRectF rc(QPointF(points.at(0).toFloat(),
+                      points.at(1).toFloat()),
+                      QPointF(points.at(2).toFloat(),
+                      points.at(3).toFloat()));
+            linkrects << rc;
+            links << QPair<QString,QString>(points.at(4), points.at(5));
+        }
+    }
+    QCOMPARE(linkrects.size(), 1);
+    QCOMPARE(links.size(), 1);
+    QCOMPARE(links.first().first, QString("url"));
+    QCOMPARE(links.first().second, QString("http://www.valdyas.org/"));
     QCOMPARE(reply->error() , QNetworkReply::NoError);
 
 }

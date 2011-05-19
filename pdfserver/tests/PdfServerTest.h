@@ -29,7 +29,10 @@ private slots:
 
     void testText();
 
-    void testLinks();
+    void testNoLinks();
+
+    void testLink();
+
 private:
 
     QProcess *m_process;

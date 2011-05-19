@@ -382,6 +382,8 @@ QByteArray PdfServerThread::links(const QStringList &uri)
         }
     }
 
+    answer = s.toUtf8();
+
     return answer;
 }
 

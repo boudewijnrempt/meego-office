@@ -249,16 +249,27 @@ void PdfServerTest::testText()
 void PdfServerTest::testLinks()
 {
     QNetworkAccessManager accessManager;
-    QNetworkRequest req(QUrl("http://localhost:24098/bla"));
+    QNetworkRequest req(QUrl(QString("http://localhost:24098/links?") + PDF_TEST_FILE + "?1"));
     QNetworkReply *reply = accessManager.get(req);
 
     while (!reply->isFinished()) {
         QTest::qWait(10);
     }
 
-//    qDebug() << reply->rawHeaderPairs();
-//    qDebug() << reply->readAll();
-//    qDebug() << reply->error() << reply->errorString();
+    QByteArray ba = reply->readAll();
+    QString s = QString::fromUtf8(ba);
+
+    QStringList lines = s.split("\n");
+    QMap<QString,QString> infos;
+    foreach(QString line, lines) {
+        if (line.contains("=")) {
+            QStringList tokens = line.split("=");
+            infos.insert(tokens[0], tokens[1]);
+        }
+    }
+    QCOMPARE(infos["url"], QString(PDF_TEST_FILE));
+    QCOMPARE(infos["pagenumber"], QString("1"));
+
     QCOMPARE(reply->error() , QNetworkReply::NoError);
 
 }

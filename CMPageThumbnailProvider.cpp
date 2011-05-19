@@ -14,7 +14,7 @@ class CMPageThumbnailProvider::Private
 public:
     Private() { }
     ~Private() { }
-    
+
     QHash<QString,QImage> thumbnails;
 };
 
@@ -32,6 +32,8 @@ CMPageThumbnailProvider::~CMPageThumbnailProvider()
 
 QImage CMPageThumbnailProvider::requestImage(const QString& id, QSize* size, const QSize& requestedSize)
 {
+    Q_UNUSED(size)
+    Q_UNUSED(requestedSize)
     if(d->thumbnails.contains(id))
         return d->thumbnails[id];
     return QImage();
@@ -54,7 +56,7 @@ void doThatDebugThang(int level, QObject* object)
         buf.fill(' ', level / 2 * 8);
         if (level % 2)
             buf += "    ";
-        QString name = object->objectName();    
+        QString name = object->objectName();
         QString flags = QLatin1String("");
         qDebug("%s%s::%s %s", (const char*)buf, object->metaObject()->className(), name.toLocal8Bit().data(),
             flags.toLatin1().data());

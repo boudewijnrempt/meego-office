@@ -269,6 +269,7 @@ void CMWordsCanvas::onSingleTap( const QPointF& location )
     KoSelection *selection = shapeManager->selection();
     if (!selection) return;
     selection->select(shape);
+    setHasSelection(false);
     selectionAnchorHandle()->setVisible(false);
     selectionCursorHandle()->setVisible(false);
 
@@ -310,14 +311,18 @@ void CMWordsCanvas::onLongTap ( const QPointF& location )
     }
 
     KoTextEditor *editor = KoTextDocument(shapeData->document()).textEditor();
-    editor->select(QTextCursor::WordUnderCursor);
-    d->canvas->updateCanvas(shapeData->rootArea()->associatedShape()->boundingRect());
-    updateHandlePositions(*(editor->cursor()));
+    if(editor->hasSelection()) {
+        editor->select(QTextCursor::WordUnderCursor);
+        d->canvas->updateCanvas(shapeData->rootArea()->associatedShape()->boundingRect());
+        updateHandlePositions(*(editor->cursor()));
+    }
 }
 
 void CMWordsCanvas::onLongTapEnd(const QPointF &location)
 {
-    emit selected(location);
+    if(hasSelection()) {
+        emit selected(location);
+    }
 }
 
 void CMWordsCanvas::updateFromHandles()

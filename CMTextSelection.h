@@ -23,6 +23,8 @@ public:
     void setAnchorHandle(QDeclarativeItem *anchor);
     void setPositionHandle(QDeclarativeItem *position);
 
+    bool hasSelection() const;
+
     virtual void updateFromHandles();
     virtual void updateHandlePositions(const QTextCursor& cursor);
     virtual void updatePosition(UpdateWhat update, const QPointF &position);
@@ -31,6 +33,9 @@ public:
     virtual QPointF viewToDocument(const QPointF& point) = 0;
 
     virtual KoTextShapeData *textShapeDataForPosition(const QPointF &position);
+
+protected:
+    void setHasSelection(bool selection);
 
 private:
     class Private;

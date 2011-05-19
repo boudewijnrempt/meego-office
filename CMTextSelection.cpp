@@ -18,7 +18,8 @@ public:
         : q(qq),
           anchorHandle(0),
           positionHandle(0),
-          updateHandles(false)
+          updateHandles(false),
+          hasSelection(false)
     { }
 
     CMTextSelection *q;
@@ -29,6 +30,7 @@ public:
     CMCanvasControllerDeclarative *controller;
 
     bool updateHandles;
+    bool hasSelection;
 };
 
 CMTextSelection::CMTextSelection(CMCanvasControllerDeclarative* controller)
@@ -50,6 +52,11 @@ void CMTextSelection::setAnchorHandle(QDeclarativeItem* anchor)
 void CMTextSelection::setPositionHandle(QDeclarativeItem* position)
 {
     d->positionHandle = position;
+}
+
+bool CMTextSelection::hasSelection() const
+{
+    return d->hasSelection;
 }
 
 void CMTextSelection::updateFromHandles()
@@ -128,9 +135,15 @@ void CMTextSelection::updatePosition(CMTextSelection::UpdateWhat update, const Q
     } else {
         editor->setPosition(cursorPos, QTextCursor::MoveAnchor);
     }
-    d->controller->canvas()->updateCanvas(shapeData->rootArea()->associatedShape()->boundingRect());
-    if(d->updateHandles) {
-        updateHandlePositions(*(editor->cursor()));
+
+    if(editor->hasSelection()) {
+        d->controller->canvas()->updateCanvas(shapeData->rootArea()->associatedShape()->boundingRect());\
+        d->hasSelection = true;
+        if(d->updateHandles) {
+            updateHandlePositions(*(editor->cursor()));
+        }
+    } else {
+        d->hasSelection = false;
     }
 }
 
@@ -147,5 +160,10 @@ KoTextShapeData* CMTextSelection::textShapeDataForPosition(const QPointF& positi
     }
 
     return shapeData;
+}
+
+void CMTextSelection::setHasSelection(bool selection)
+{
+    d->hasSelection = selection;
 }
 

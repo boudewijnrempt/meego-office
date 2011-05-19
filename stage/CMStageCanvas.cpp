@@ -214,6 +214,9 @@ void CMStageCanvas::onSingleTap(const QPointF &location)
     KoSelection *selection = shapeManager->selection();
     if (!selection) return;
     selection->select(shape);
+    setHasSelection(false);
+    selectionAnchorHandle()->setVisible(false);
+    selectionCursorHandle()->setVisible(false);
 
     // The text tool is responsible for handling clicks...
     KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
@@ -226,14 +229,13 @@ void CMStageCanvas::onSingleTap(const QPointF &location)
                       Qt::NoModifier);
     canvas()->toolProxy()->mousePressEvent(&press, canvas()->viewConverter()->viewToDocument(pos + documentOffset()));
 
-
     // And release...
     QMouseEvent release(QEvent::MouseButtonRelease,
                         pos.toPoint(),
                         Qt::LeftButton,
                         Qt::LeftButton,
                         Qt::NoModifier);
-    canvas()->toolProxy()->mousePressEvent(&release, canvas()->viewConverter()->viewToDocument(pos + documentOffset()));
+    canvas()->toolProxy()->mouseReleaseEvent(&release, canvas()->viewConverter()->viewToDocument(pos + documentOffset()));
 }
 
 void CMStageCanvas::onDoubleTap ( const QPointF& location )
@@ -259,7 +261,9 @@ void CMStageCanvas::onLongTap ( const QPointF& location )
 
 void CMStageCanvas::onLongTapEnd(const QPointF& location)
 {
-    emit selected(location);
+    if(hasSelection()) {
+        emit selected(location);
+    }
 }
 
 QPointF CMStageCanvas::documentToView(const QPointF& point)

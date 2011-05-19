@@ -28,7 +28,7 @@ Item {
 	y: -(root.height / 2);
 	drag.target: root;
 
-        onRelease: root.dragEnd();
+        onReleased: root.dragEnd();
     }
 }
 

@@ -431,8 +431,12 @@ void CMCanvasControllerDeclarative::scrollContentsBy(int dx, int dy)
 
 
     QPoint offset = documentOffset();
-    offset.setX(offset.x() + dx);
-    offset.setY(offset.y() + dy);
+    if(!isnan(d->maxX)) {
+        offset.setX(offset.x() + dx);
+    }
+    if(!isnan(d->maxY)) {
+        offset.setY(offset.y() + dy);
+    }
 
     resetDocumentOffset(offset);
 }

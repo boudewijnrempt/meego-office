@@ -38,6 +38,7 @@
 #include <KoPACanvasBase.h>
 #include <QVector2D>
 #include "CMCanvasInputProxy.h"
+#include <limits>
 
 #define TextShape_SHAPEID "TextShapeID"
 
@@ -319,17 +320,27 @@ void CMCanvasControllerDeclarative::ensureVisible(const QRectF& rect, bool smoot
     target.rx() -= width() / 2;
     target.ry() -= height() / 2;
 
-    if(-target.x() < d->minX) {
+    if(!isnan(d->maxX)) {
+        if(-target.x() < d->minX) {
+            target.setX(-d->minX);
+        }
+        if(-target.x() > d->maxX) {
+            target.setX(-d->maxX);
+        }
+    } else {
         target.setX(-d->minX);
     }
-    if(-target.y() < d->minY) {
+
+    if(!isnan(d->maxY)) {
+        if(-target.y() < d->minY) {
+            target.setY(-d->minY);
+        }
+
+        if(-target.y() > d->maxY) {
+            target.setY(-d->maxY);
+        }
+    } else {
         target.setY(-d->minY);
-    }
-    if(-target.x() > d->maxX) {
-        target.setX(-d->maxX);
-    }
-    if(-target.y() > d->maxY) {
-        target.setY(-d->maxY);
     }
 
     if(!smooth) {
@@ -551,13 +562,21 @@ void CMCanvasControllerDeclarative::Private::updateMinMax()
         int margin = q->margin();
 
         minX = halfWindowWidth - (halfDocWidth + margin) + qMin(0, halfWindowWidth - halfDocWidth);
-        maxX = minX + ( qMax(0, -(halfWindowWidth - halfDocWidth)) + q->margin()) * 2;
+        if(q->width() < q->documentSize().width()) {
+            maxX = minX + ( qMax(0, -(halfWindowWidth - halfDocWidth)) + q->margin()) * 2;
+        } else {
+            maxX = std::numeric_limits<qreal>::quiet_NaN();
+        }
 
         int halfWindowHeight = q->height() / 2;
         int halfDocHeight = q->documentSize().height() / 2;
 
         minY = halfWindowHeight - (halfDocHeight + margin) + qMin(0, halfWindowHeight - halfDocHeight);
-        maxY = minY + ( qMax(0, -(halfWindowHeight - halfDocHeight)) + q->margin()) * 2;
+        if(q->height() < q->documentSize().height()) {
+            maxY = minY + ( qMax(0, -(halfWindowHeight - halfDocHeight)) + q->margin()) * 2;
+        } else {
+            maxY = std::numeric_limits<qreal>::quiet_NaN();
+        }
     } else {
         minX = 1 - q->documentSize().width();
         maxX = 1;
@@ -593,43 +612,51 @@ void CMCanvasControllerDeclarative::Private::timerUpdate()
     position += velocity;
 
     bool positionValid = true;
-    if(-position.x() < minX) {
-        float diff = (position.x() + minX) * springCoeff;
-        position.setX(-minX + diff);
-        if(qAbs(diff) > moveThreshold) {
-            positionValid = false;
-        } else {
-            position.setX(-minX);
+
+    if(!isnan(maxX)) {
+        if(-position.x() < minX) {
+            float diff = (position.x() + minX) * springCoeff;
+            position.setX(-minX + diff);
+            if(qAbs(diff) > moveThreshold) {
+                positionValid = false;
+            } else {
+                position.setX(-minX);
+            }
         }
-    }
-    if(-position.y() < minY) {
-        float diff = (position.y() + minY) * springCoeff;
-        position.setY(-minY + diff * springCoeff);
-        if(qAbs(diff) > moveThreshold) {
-            positionValid = false;
-        } else {
-            position.setY(-minY);
+        if(-position.x() > maxX) {
+            float diff = (position.x() + maxX) * springCoeff;
+            position.setX(-maxX + diff);
+            if(qAbs(diff) > moveThreshold) {
+                positionValid = false;
+            } else {
+                position.setX(-maxX);
+            }
         }
+    } else {
+        position.setX(-minX);
     }
 
-    if(-position.x() > maxX) {
-        float diff = (position.x() + maxX) * springCoeff;
-        position.setX(-maxX + diff);
-        if(qAbs(diff) > moveThreshold) {
-            positionValid = false;
-        } else {
-            position.setX(-maxX);
+    if(!isnan(maxY)) {
+        if(-position.y() < minY) {
+            float diff = (position.y() + minY) * springCoeff;
+            position.setY(-minY + diff * springCoeff);
+            if(qAbs(diff) > moveThreshold) {
+                positionValid = false;
+            } else {
+                position.setY(-minY);
+            }
         }
-    }
-
-    if(-position.y() > maxY) {
-        float diff = (position.y() + maxY) * springCoeff;
-        position.setY(-maxY + diff);
-        if(qAbs(diff) > moveThreshold) {
-            positionValid = false;
-        } else {
-            position.setY(-maxY);
+        if(-position.y() > maxY) {
+            float diff = (position.y() + maxY) * springCoeff;
+            position.setY(-maxY + diff);
+            if(qAbs(diff) > moveThreshold) {
+                positionValid = false;
+            } else {
+                position.setY(-maxY);
+            }
         }
+    } else {
+        position.setY(-minY);
     }
 
     velocity += accel * timeStep;

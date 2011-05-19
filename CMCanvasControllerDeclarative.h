@@ -132,7 +132,7 @@ Q_SIGNALS:
     void showHorizontalScrollHandle();
     void hideHorizontalScrollHandle();
     
-    virtual void currentPageNotesChanged();
+    void currentPageNotesChanged();
     void canHavePageNotesChanged();
 
 protected:

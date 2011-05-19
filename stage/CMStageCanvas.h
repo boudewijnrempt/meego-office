@@ -48,9 +48,9 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void slideChanged(int newSlide);
-    virtual void findMatchFound ( int match );
+    void findMatchFound ( int match );
     void selected(const QPointF &origin);
-    virtual void currentPageNotesChanged();
+    void currentPageNotesChanged();
 
 private:
     class Private;

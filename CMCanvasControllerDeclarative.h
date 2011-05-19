@@ -28,6 +28,9 @@ class CALLIGRAMOBILE_EXPORT CMCanvasControllerDeclarative : public QDeclarativeI
 
     Q_PROPERTY(QDeclarativeItem* selectionCursorHandle READ selectionCursorHandle WRITE setSelectionCursorHandle)
     Q_PROPERTY(QDeclarativeItem* selectionAnchorHandle READ selectionAnchorHandle WRITE setSelectionAnchorHandle)
+    
+    Q_PROPERTY(bool canHavePageNotes READ canHavePageNotes NOTIFY canHavePageNotesChanged)
+    Q_PROPERTY(QString currentPageNotes READ currentPageNotes NOTIFY currentPageNotesChanged)
 
 public:
     CMCanvasControllerDeclarative(QDeclarativeItem* parent = 0);
@@ -97,6 +100,18 @@ public Q_SLOTS:
     virtual void zoomIn(const QPoint& center = QPoint());
     virtual void zoomBy(const QPoint& center, qreal zoom);
     virtual void resetZoom();
+    
+    /**
+     * Reimplement this when you wish to provide notes for the current page
+     * This is particularly useful for slide notes in Stage, but might also be
+     * useful elsewhere (plus it reduces the need for checking inside QML)
+     */
+    virtual QString currentPageNotes() const { return QLatin1String(""); }
+    /**
+     * Whether or not the current document supports notes. This is normally false,
+     * and is only truthified by a particular type of document
+     */
+    virtual bool canHavePageNotes() const { return false; }
 
 Q_SIGNALS:
     void docMoved();
@@ -116,6 +131,9 @@ Q_SIGNALS:
     void hideVerticalScrollHandle();
     void showHorizontalScrollHandle();
     void hideHorizontalScrollHandle();
+    
+    virtual void currentPageNotesChanged();
+    void canHavePageNotesChanged();
 
 protected:
     virtual bool eventFilter(QObject* target, QEvent* event );

@@ -10,6 +10,9 @@ PdfDocument::PdfDocument(const QString &url)
     m_timeout.singleShot(30 * 1000 * 60, this, SLOT(timeout()));
 
     m_pdf = Poppler::Document::load(url);
+    m_pdf->setRenderHint(Poppler::Document::Antialiasing, true);
+    m_pdf->setRenderHint(Poppler::Document::TextAntialiasing, true);
+
 
 }
 

@@ -12,23 +12,23 @@ Item {
         anchors.fill: parent
         anchors.margins: 10
         
-        Text {
-            id: maxText
-            text: "200"
-            anchors.left: parent.left
-            anchors.top: parent.top
-            font.pixelSize: 25
-        }
-        Text {
-            id: minText
-            text: "50"
-            anchors.left: parent.left
-            anchors.bottom: parent.bottom
-            font.pixelSize: 25
-        }
+//         Text {
+//             id: maxText
+//             text: "200"
+//             anchors.left: parent.left
+//             anchors.top: parent.top
+//             font.pixelSize: 25
+//         }
+//         Text {
+//             id: minText
+//             text: "50"
+//             anchors.left: parent.left
+//             anchors.bottom: parent.bottom
+//             font.pixelSize: 25
+//         }
         
         Item {
-            anchors.left: maxText.right
+            anchors.left: parent.left
             anchors.leftMargin: 10
             anchors.top: parent.verticalCenter
             
@@ -36,6 +36,7 @@ Item {
                 id: zoomVal
                 min: 50
                 max: 200
+                textOverlayVisible: true
                 
                 anchors.centerIn: parent
                 
@@ -46,6 +47,7 @@ Item {
         IconButton {
             id: showMax
             icon: "image://icon/zoom-in"
+            
             
             anchors.right: parent.right
             anchors.top: parent.top

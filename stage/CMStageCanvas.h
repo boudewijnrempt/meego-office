@@ -31,6 +31,8 @@ public:
 
     Q_INVOKABLE virtual int matchCount();
 
+    Q_INVOKABLE void copySelection();
+
 public Q_SLOTS:
     void loadDocument();
     void changeSlide(int newSlide);

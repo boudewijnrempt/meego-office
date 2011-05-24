@@ -26,7 +26,7 @@ public:
 
     Q_INVOKABLE int matchCount();
 
-    Q_INVOKABLE void copyText();
+    Q_INVOKABLE void copySelection();
 
 public Q_SLOTS:
     void loadDocument();

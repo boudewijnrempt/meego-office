@@ -66,7 +66,7 @@ bool CMTextSelection::hasSelection() const
     return d->hasSelection;
 }
 
-void CMTextSelection::copyText()
+void CMTextSelection::copySelection()
 {
     QMimeData *mimeData = new QMimeData;
     QTextDocumentFragment fragment(d->selection);
@@ -153,7 +153,7 @@ void CMTextSelection::updatePosition(CMTextSelection::UpdateWhat update, const Q
     QPointF shapeMousePos = shapeData->rootArea()->associatedShape()->absoluteTransformation(0).inverted().map(docPos);
     QPointF textDocMousePos = shapeMousePos + QPointF(0.0, shapeData->documentOffset());
 
-    int cursorPos = shapeData->rootArea()->hitTest(textDocMousePos, Qt::FuzzyHit);
+    int cursorPos = shapeData->rootArea()->hitTest(textDocMousePos, Qt::FuzzyHit).position;
     KoTextEditor *editor = KoTextDocument(shapeData->document()).textEditor();
     if(update == UpdatePosition) {
         editor->setPosition(cursorPos, QTextCursor::KeepAnchor);

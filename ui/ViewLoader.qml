@@ -130,6 +130,8 @@ Item {
 
                 z: 10
 		visible: false;
+
+                onDragEnd: loader.item.onLongTapEnd();
             }
 
             Rectangle {
@@ -167,7 +169,7 @@ Item {
 		    onTriggered: {
 		        switch(payload[index]) {
 			    case 0: {
-			        loader.item.copyText();
+			        loader.item.copySelection();
                                 selectionMenu.hide();
 				break;
                             }

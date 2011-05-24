@@ -174,9 +174,9 @@ int CMWordsCanvas::matchCount()
     return d->find->matches().count();
 }
 
-void CMWordsCanvas::copyText()
+void CMWordsCanvas::copySelection()
 {
-    CMTextSelection::copyText();
+    CMTextSelection::copySelection();
 }
 
 void CMWordsCanvas::find(const QString& pattern)

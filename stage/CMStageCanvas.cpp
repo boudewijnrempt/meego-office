@@ -93,6 +93,11 @@ int CMStageCanvas::matchCount()
     return d->finder->matches().count();
 }
 
+void CMStageCanvas::copySelection()
+{
+    CMTextSelection::copySelection();
+}
+
 void CMStageCanvas::changeSlide(int newSlide)
 {
     if(newSlide < 0)

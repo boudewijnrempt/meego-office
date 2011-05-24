@@ -20,6 +20,7 @@
 #include "CMProgressProxy.h"
 #include <Sheet.h>
 #include <KoToolRegistry.h>
+#include <../../KDE/calligra-master/tables/CellStorage.h>
 
 class CMTablesCanvas::Private
 {
@@ -35,6 +36,9 @@ public:
     void updateCanvas();
     void updateDocumentSize(const QSize &size);
     void matchFound(KoFindMatch match);
+    void updatePanGesture(const QPointF &location);
+    void updateSelectionFromHandles();
+    void updateSelectionHandles();
 
     CMTablesCanvas* q;
 
@@ -48,13 +52,15 @@ public:
 
     const QString KSpreadCellToolId;
     int matchNumber;
+
+    QRect selection;
 };
 
 CMTablesCanvas::CMTablesCanvas(QDeclarativeItem* parent)
     : CMCanvasControllerDeclarative(parent), d(new Private(this))
 {
-    connect(this, SIGNAL(nextPage()), SLOT(nextSheet()));
-    connect(this, SIGNAL(previousPage()), SLOT(previousSheet()));
+    CMProcessInputInterface::setupConnections(inputProxy(), this);
+    connect(inputProxy(), SIGNAL(updatePanGesture(QPointF)), this, SLOT(updatePanGesture(QPointF)));
 
     KoZoomMode::setMinimumZoom(0.5);
     KoZoomMode::setMaximumZoom(2.0);
@@ -154,8 +160,6 @@ void CMTablesCanvas::loadDocument()
     d->activeSheetIndex = 0;
     d->updateCanvas();
 
-    KoToolManager::instance()->switchToolRequested(d->KSpreadCellToolId);
-
     emit progress(100);
     emit completed();
     emit sheetChanged(0);
@@ -180,6 +184,20 @@ void CMTablesCanvas::findNext()
 void CMTablesCanvas::findPrevious()
 {
     d->finder->findPrevious();
+}
+
+void CMTablesCanvas::setSelectionAnchorHandle ( QDeclarativeItem* handle )
+{
+    CMCanvasControllerDeclarative::setSelectionAnchorHandle(handle);
+    connect(handle, SIGNAL(xChanged()), SLOT(updateSelectionFromHandles()));
+    connect(handle, SIGNAL(yChanged()), SLOT(updateSelectionFromHandles()));
+}
+
+void CMTablesCanvas::setSelectionCursorHandle ( QDeclarativeItem* handle )
+{
+    CMCanvasControllerDeclarative::setSelectionCursorHandle(handle);
+    connect(handle, SIGNAL(xChanged()), SLOT(updateSelectionFromHandles()));
+    connect(handle, SIGNAL(yChanged()), SLOT(updateSelectionFromHandles()));
 }
 
 void CMTablesCanvas::Private::updateDocumentSize(const QSize& size)
@@ -211,6 +229,8 @@ void CMTablesCanvas::Private::updateCanvas()
 
 void CMTablesCanvas::Private::matchFound ( KoFindMatch match )
 {
+    KoToolManager::instance()->switchToolRequested(KSpreadCellToolId);
+
     matchNumber = finder->matches().indexOf(match) + 1;
     emit q->findMatchFound(matchNumber);
 
@@ -222,30 +242,105 @@ void CMTablesCanvas::Private::matchFound ( KoFindMatch match )
     q->ensureVisible(pos, false);
 }
 
-void CMTablesCanvas::handleShortTap(QPointF pos)
+void CMTablesCanvas::onSingleTap ( const QPointF& location )
+{
+    d->canvas->selection()->clear();
+    d->canvas->updateCanvas(QRectF(x(), y(), width(), height()));
+    selectionAnchorHandle()->hide();
+    selectionCursorHandle()->hide();
+//     KoToolManager::instance()->switchToolRequested(d->KSpreadCellToolId);
+// 
+//     // convert the position from qgraphicsscene to the canvas item
+//     QPointF docPos = canvas()->viewConverter()->viewToDocument(canvas()->canvasItem()->mapFromScene(location) + documentOffset());
+//     
+//     // Click...
+//     QMouseEvent press(QEvent::MouseButtonPress,
+//                       location.toPoint(),
+//                       Qt::LeftButton,
+//                       Qt::LeftButton,
+//                       Qt::NoModifier);
+//     canvas()->toolProxy()->mousePressEvent(&press, docPos);
+// 
+// 
+//     // And release...
+//     QMouseEvent release(QEvent::MouseButtonRelease,
+//                         location.toPoint(),
+//                         Qt::LeftButton,
+//                         Qt::LeftButton,
+//                         Qt::NoModifier);
+//     canvas()->toolProxy()->mouseReleaseEvent(&release, docPos);
+}
+
+void CMTablesCanvas::onDoubleTap ( const QPointF& location )
+{
+
+}
+
+void CMTablesCanvas::onLongTap ( const QPointF& location )
 {
     KoToolManager::instance()->switchToolRequested(d->KSpreadCellToolId);
+    
+    d->selection = d->canvas->activeSheet()->documentToCellCoordinates(QRectF(d->canvas->viewConverter()->viewToDocument(location), QSizeF(0, 0)));
+    d->canvas->selection()->initialize(d->selection, d->canvas->activeSheet());
+    d->canvas->updateCanvas(QRectF(x(), y(), width(), height()));
 
-    // convert the position from qgraphicsscene to the canvas item
-    pos = canvas()->canvasItem()->mapFromScene(pos);
+    d->updateSelectionHandles();
+}
 
-    // Click...
-    QMouseEvent press(QEvent::MouseButtonPress,
-                      pos.toPoint(),
-                      Qt::LeftButton,
-                      Qt::LeftButton,
-                      Qt::NoModifier);
-    canvas()->toolProxy()->mousePressEvent(&press, canvas()->viewConverter()->viewToDocument(pos + documentOffset()));
+void CMTablesCanvas::onLongTapEnd ( const QPointF& location )
+{
+    QPointF start(selectionAnchorHandle()->x(), selectionAnchorHandle()->y());
+    QPointF end(selectionCursorHandle()->x(), selectionCursorHandle()->y());
 
+    QPointF center = (start + end) / 2.0f;
 
-    // And release...
-    QMouseEvent release(QEvent::MouseButtonRelease,
-                        pos.toPoint(),
-                        Qt::LeftButton,
-                        Qt::LeftButton,
-                        Qt::NoModifier);
-    canvas()->toolProxy()->mousePressEvent(&release, canvas()->viewConverter()->viewToDocument(pos + documentOffset()));
+    emit selected(center);
+}
 
+void CMTablesCanvas::Private::updatePanGesture ( const QPointF& location )
+{
+    QPoint diff = canvas->activeSheet()->documentToCellCoordinates(QRectF(canvas->viewConverter()->viewToDocument(location), QSizeF(0, 0))).topLeft();
+    diff -= selection.topLeft();
+    
+    selection.setSize(QSize(diff.x(), diff.y()));
+
+    canvas->selection()->initialize(selection, canvas->activeSheet());
+    canvas->updateCanvas(QRectF(q->x(), q->y(), q->width(), q->height()));
+    
+    updateSelectionHandles();
+}
+
+void CMTablesCanvas::Private::updateSelectionFromHandles()
+{
+    if(!q->selectionAnchorHandle()->isVisible() || !q->selectionCursorHandle()->isVisible()) {
+        return;
+    }
+    
+    selection = canvas->activeSheet()->documentToCellCoordinates(QRectF(canvas->viewConverter()->viewToDocument(QPointF(q->selectionAnchorHandle()->x(), q->selectionAnchorHandle()->y())), canvas->viewConverter()->viewToDocument(QPointF(q->selectionCursorHandle()->x(), q->selectionCursorHandle()->y()))));
+
+    canvas->selection()->initialize(selection, canvas->activeSheet());
+    canvas->updateCanvas(QRectF(q->x(), q->y(), q->width(), q->height()));
+
+    updateSelectionHandles();
+}
+
+void CMTablesCanvas::Private::updateSelectionHandles()
+{
+    if(!q->selectionAnchorHandle() || !q->selectionCursorHandle()) {
+        return;
+    }
+
+    QRectF viewSelection = canvas->viewConverter()->documentToView(canvas->activeSheet()->cellCoordinatesToDocument(selection));
+    
+    q->selectionAnchorHandle()->blockSignals(true);
+    q->selectionAnchorHandle()->setPos(viewSelection.topLeft());
+    q->selectionAnchorHandle()->blockSignals(false);
+    q->selectionAnchorHandle()->setVisible(true);
+    
+    q->selectionCursorHandle()->blockSignals(true);
+    q->selectionCursorHandle()->setPos(viewSelection.bottomRight());
+    q->selectionCursorHandle()->blockSignals(false);
+    q->selectionCursorHandle()->setVisible(true);
 }
 
 #include "CMTablesCanvas.moc"

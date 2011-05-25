@@ -1,6 +1,8 @@
 #include "PdfServerThread.h"
 #include "PdfDocument.h"
 #include "PdfDocumentCache.h"
+#include "PdfReply.h"
+
 #include <QDebug>
 #include <QRegExp>
 #include <QStringList>
@@ -8,6 +10,7 @@
 #include <QByteArray>
 #include <QImage>
 #include <QBuffer>
+#include <QUrl>
 
 #ifdef Q_WS_X11
 #include <QtGui/QX11Info>
@@ -37,141 +40,130 @@ void PdfServerThread::run()
         sleep(10);
     }
 
-    QByteArray answer;
-    QString socketError;
+    PdfReply reply;
 
     // first line is GET
     if (socket.canReadLine()) {
         QString line = socket.readLine();
         QStringList tokens = line.split(QRegExp("[ \r\n][ \r\n]*"));
         if (tokens.length() < 2 || tokens[0] != "GET") {
-            socketError = "Not a GET request" + line;
+            reply.setStatus(PdfReply::Error_Status);
+            reply.setErrorString("Not a GET request");
         }
-        QStringList uri = tokens[1].split("?");
-        if (tokens.length() < 2) {
-            socketError = "No Command" + line;
+        
+        QUrl url(tokens[1]);
+        if (!url.isValid() || url.isEmpty() || !url.hasQuery()) {
+            reply.setStatus(PdfReply::Error_Status);
+            reply.setErrorString("Incomplete query");
         }
 
-        if (socketError.isEmpty()) {
+        QString file = url.queryItemValue("file");
+        if(file.isEmpty()) {
+            reply.setStatus(PdfReply::Error_Status);
+            reply.setErrorString("Incomplete query");
+        }
 
-            QString command = uri[0];
-            if (command == "/open") {
-                answer = open(uri);
-                if (answer.length() == 0) {
-                    socketError = "Could not open document: " + uri.join("?");
-                }
-            }
-            else if (command == "/getpage") {
-                answer = getpage(uri);
-                if (answer.length() == 0) {
-                    socketError = "Could not get page: " + uri.join("?");
-                }
-            }
-            else if (command == "/thumbnail") {
-                answer = thumbnail(uri);
-                if (answer.length() == 0) {
-                    socketError = "Could not get thumbnail: " + uri.join("?");
-                }
-            }
-            else if (command == "/search") {
-                answer = search(uri);
-                if (answer.length() == 0) {
-                    socketError = "Could not execute search: " + uri.join("?");
-                }
-            }
-            else if (command == "/text") {
-                answer = text(uri);
-                if (answer.length() == 0) {
-                    socketError = "Could not get text: " + uri.join("?");
-                }
-            }
-            else if (command == "/links") {
-                answer = links(uri);
-                if (answer.length() == 0) {
-                    socketError = "Could not get links: " + uri.join("?");
-                }
-            }
-            else {
-                socketError = "Illegal command " + uri.join("?");
+        if(reply.status() == PdfReply::Undefined_Status) {
+            QString command = url.path();
+            if(command == "/open") {
+                open(url, reply);
+            } else if(command == "/getpage") {
+                getpage(url, reply);
+            } else if(command == "/thumbnail") {
+                thumbnail(url, reply);
+            } else if(command == "/search") {
+                search(url, reply);
+            } else if(command == "/text") {
+                text(url, reply);
+            } else if(command == "/links") {
+                links(url, reply);
+            } else {
+                reply.setStatus(PdfReply::NotFound_Status);
+                reply.setErrorString("Unknown command");
             }
         }
     }
     else {
-        socketError = "Could not read line";
+        reply.setStatus(PdfReply::InternalError_Status);
+        reply.setErrorString("Read Error");
     }
-    if (socketError.isEmpty()) {
-        QString reply("HTTP/1.1 200 Ok\r\n"
-                      "Content-Type: text/html; charset=\"utf-8\"\r\n"
-                      "\r\n");
-        qDebug() << reply;
-        socket.write(reply.toUtf8());
-        qDebug() << answer;
-        socket.write(answer);
+
+    int data = reply.write(socket);
+    if(data == -1) {
+        qWarning("Unable to write data to socket!");
+        socket.close();
     }
-    else {
-        qDebug() << socketError;
-        QString reply("HTTP/1.1 400 Bad Request\r\n"
-                      "Content-Type: text/html; charset=\"utf-8\"\r\n"
-                      "\r\n");
-        socket.write(reply.toUtf8());
-        socket.write(QString("<h1>").toUtf8());
-        socket.write(socketError.toUtf8());
-        socket.write(QString("</h1>").toUtf8());
+
+    while(socket.bytesToWrite() > 0) {
+        socket.waitForBytesWritten();
     }
-    socket.flush();
     socket.close();
 }
 
 
-QByteArray PdfServerThread::open(const QStringList &uri)
+void PdfServerThread::open( const QUrl& url, PdfReply& reply)
 {
     QByteArray answer;
+    QString file = url.queryItemValue("file");
 
-    if (uri.length() != 2) return answer;
-
-    PdfDocument *doc = m_documentCache->document(uri[1]);
-    if (!doc || !doc->isValid()) {
-        return answer;
+    if(file.isEmpty()) {
+        reply.setStatus(PdfReply::NotFound_Status);
+        reply.setErrorString("Not found");
+        return;
     }
 
-    QString s("url=%1\n"
-              "numberofpages=%2\n"
-              "pagelayout=%3\n");
+    PdfDocument *doc = m_documentCache->document(file);
+    if (!doc || !doc->isValid()) {
+        reply.setStatus(PdfReply::InternalError_Status);
+        reply.setErrorString("Could not open file");
+        return;
+    }
 
-    s = s.arg(uri[1]).arg(doc->numberOfPages()).arg(doc->pageLayout());
+    reply.setProperty("File", file);
+    reply.setProperty("NumberOfPages", QString::number(doc->numberOfPages()));
+    reply.setProperty("PageLayout", QString::number(doc->pageLayout()));
+
     QMap<QString, QString> infomap = doc->infoMap();
     foreach(const QString key, infomap.keys()) {
-        s.append(QString("%1=%2\n").arg(key).arg(infomap[key]));
+        reply.setProperty(key, infomap.value(key));
     }
 
-    answer = s.toUtf8();
-    return answer;
+    reply.setStatus(PdfReply::OK_Status);
+    reply.setData("");
 }
 
-QByteArray PdfServerThread::getpage(const QStringList &uri)
+void PdfServerThread::getpage( const QUrl& url, PdfReply& reply)
 {
     QByteArray answer;
 
-    if (uri.length() != 4) return answer;
+    QString file = url.queryItemValue("file");
+    bool pageOk = false;
+    int pageNumber = url.queryItemValue("page").toInt(&pageOk);
+    bool zoomOk = false;
+    qreal zoom = url.queryItemValue("zoom").toDouble(&zoomOk);
 
-    qDebug() << 1;
-
-    PdfDocument *doc = m_documentCache->document(uri[1]);
-    if (!doc || !doc->isValid()) {
-        return answer;
+    if(file.isEmpty() || !pageOk || !zoomOk) {
+        reply.setStatus(PdfReply::NotFound_Status);
+        reply.setErrorString("Not found");
+        return;
     }
 
-    int pageNumber = uri[2].toInt();
+    PdfDocument *doc = m_documentCache->document(file);
+    if (!doc || !doc->isValid()) {
+        reply.setStatus(PdfReply::InternalError_Status);
+        reply.setErrorString("Could not open file");
+        return;
+    }
 
     Poppler::Page *page = doc->page(pageNumber);
     if (!page) {
-        return answer;
+        reply.setStatus(PdfReply::NotFound_Status);
+        reply.setErrorString("Page not found");
+        return;
     }
 
-    qreal zoomlevel = uri[3].toFloat();
-
     qreal dpiX, dpiY;
-    dpi(dpiX, dpiY, zoomlevel);
+    dpi(dpiX, dpiY, zoom);
 
     // XXX: rendering quality isn't what it should be. Probably some error here
     QImage img = page->renderToImage(dpiX, dpiY);
@@ -180,43 +172,51 @@ QByteArray PdfServerThread::getpage(const QStringList &uri)
     buf.open(QIODevice::WriteOnly | QIODevice::Append);
     img.save(&buf, "PNG");
 
-    QString s("url=%1\n"
-              "pagenumber=%2\n"
-              "zoomlevel=%3\n"
-              "orientation=%4\n"
-              "imagesize=%5"
-              "-----------\n");
-    s = s.arg(uri[1]).arg(pageNumber).arg(zoomlevel).arg(page->orientation()).arg(imageBytes.size());
+    reply.setProperty("File", file);
+    reply.setProperty("PageNumber", QString::number(pageNumber));
+    reply.setProperty("ZoomLevel", QString::number(zoom));
+    reply.setProperty("Orientation", QString::number(page->orientation()));
 
-    answer = s.toUtf8();
-    answer += imageBytes;
-
-    return answer;
+    reply.setData(imageBytes);
+    reply.setContentType(PdfReply::Image_ContentType);
+    reply.setStatus(PdfReply::OK_Status);
 }
 
-QByteArray PdfServerThread::thumbnail(const QStringList &uri)
+void PdfServerThread::thumbnail( const QUrl& url, PdfReply& reply)
 {
     QByteArray answer;
 
-    if (uri.length() != 5) return answer;
+    QString file = url.queryItemValue("file");
+    bool pageOk = false;
+    int pageNumber = url.queryItemValue("page").toInt(&pageOk);
+    bool widthOk = false;
+    int width = url.queryItemValue("width").toInt(&widthOk);
+    bool heightOk = false;
+    int height = url.queryItemValue("height").toInt(&heightOk);
 
-    PdfDocument *doc = m_documentCache->document(uri[1]);
-    if (!doc || !doc->isValid()) {
-        delete doc;
-        return answer;
+    if(file.isEmpty() || !pageOk || !widthOk || !heightOk) {
+        reply.setStatus(PdfReply::NotFound_Status);
+        reply.setErrorString("Not found");
+        return;
     }
 
-    int pageNumber = uri[2].toInt();
+    PdfDocument *doc = m_documentCache->document(file);
+    if (!doc || !doc->isValid()) {
+        reply.setStatus(PdfReply::InternalError_Status);
+        reply.setErrorString("Could not open file");
+        return;
+    }
+
     Poppler::Page *page = doc->page(pageNumber);
     if (!page) {
-        return answer;
+        reply.setStatus(PdfReply::NotFound_Status);
+        reply.setErrorString("Page not found");
+        return;
     }
 
-    QSize thumbsize(uri[3].toInt(), uri[4].toInt());
-
+    QSize thumbsize(width, height);
     QImage thumb = page->thumbnail();
     if (thumb.isNull()) {
-
         qreal dpiX, dpiY;
         dpi(dpiX, dpiY, 1.0);
         QSizeF pageSize = page->pageSizeF();
@@ -229,62 +229,61 @@ QByteArray PdfServerThread::thumbnail(const QStringList &uri)
     if (thumb.size() != thumbsize) {
         thumb = thumb.scaled(thumbsize);
     }
+    
     QByteArray imageBytes;
     QBuffer buf(&imageBytes);
     buf.open(QIODevice::WriteOnly | QIODevice::Append);
     thumb.save(&buf, "PNG");
 
+    reply.setProperty("File", file);
+    reply.setProperty("PageNumber", QString::number(pageNumber));
+    reply.setProperty("Width", QString::number(width));
+    reply.setProperty("Height", QString::number(height));
 
-    QString s("url=%1\n"
-              "pagenumber=%2\n"
-              "width=%3\n"
-              "height=%4\n"
-              "imagesize=%5"
-              "-----------\n"
-              );
-    s = s.arg(uri[1]).arg(pageNumber).arg(thumbsize.width()).arg(thumbsize.height()).arg(imageBytes.size());
-
-    answer = s.toUtf8();
-    answer += imageBytes;
-
-    return answer;
+    reply.setData(imageBytes);
+    reply.setContentType(PdfReply::Image_ContentType);
+    reply.setStatus(PdfReply::OK_Status);
 }
 
-QByteArray PdfServerThread::search(const QStringList &uri)
+void PdfServerThread::search( const QUrl& url, PdfReply& reply)
 {
     QByteArray answer;
 
-    if (uri.length() != 4) return answer;
+    QString file = url.queryItemValue("file");
+    bool pageOk = false;
+    int pageNumber = url.queryItemValue("page").toInt(&pageOk);
+    QString pattern = url.queryItemValue("pattern");
 
-    PdfDocument *doc = m_documentCache->document(uri[1]);
-    if (!doc || !doc->isValid()) {
-        return answer;
+    if(file.isEmpty() || !pageOk || pattern.isEmpty()) {
+        reply.setStatus(PdfReply::NotFound_Status);
+        reply.setErrorString("Not found");
+        return;
     }
 
-    int pageNumber = uri[2].toInt();
+    PdfDocument *doc = m_documentCache->document(file);
+    if (!doc || !doc->isValid()) {
+        reply.setStatus(PdfReply::InternalError_Status);
+        reply.setErrorString("Could not open file");
+        return;
+    }
+
     Poppler::Page *page = doc->page(pageNumber);
     if (!page) {
-        return answer;
+        reply.setStatus(PdfReply::NotFound_Status);
+        reply.setErrorString("Page not found");
+        return;
     }
 
-    QString searchString = uri[3];
-    if (searchString.isEmpty()) {
-        return answer;
-    }
-
-
-    QString s("url=%1\n"
-              "pagenumber=%2\n"
-              "searchstring=%3\n"
-              "-----------\n");
-
-    s = s.arg(uri[1]).arg(pageNumber).arg(searchString);
+    reply.setProperty("File", file);
+    reply.setProperty("PageNumber", QString::number(pageNumber));
+    reply.setProperty("SearchPattern", pattern);
 
     bool found = true;
     double top, bottom, left, right = 0.0;
 
+    QString s;
     while(found) {
-        found = page->search(searchString, left, top, right, bottom,
+        found = page->search(pattern, left, top, right, bottom,
                              Poppler::Page::NextResult, Poppler::Page::CaseInsensitive);
         if (found) {
             QString result("%1,%2,%3,%4\n");
@@ -292,81 +291,93 @@ QByteArray PdfServerThread::search(const QStringList &uri)
         }
     }
 
-    answer = s.toUtf8();
-    return answer;
+    reply.setData(s.toUtf8());
+    reply.setStatus(PdfReply::OK_Status);
 }
 
-QByteArray PdfServerThread::text(const QStringList &uri)
+void PdfServerThread::text( const QUrl& url, PdfReply& reply)
 {
     QByteArray answer;
 
-    if (uri.length() != 7) return answer;
+    QString file = url.queryItemValue("file");
+    bool pageOk = false;
+    int pageNumber = url.queryItemValue("page").toInt(&pageOk);
+    bool leftOk = false;
+    float left = url.queryItemValue("left").toFloat(&leftOk);
+    bool topOk = false;
+    float top = url.queryItemValue("top").toFloat(&topOk);
+    bool rightOk = false;
+    float right = url.queryItemValue("right").toFloat(&rightOk);
+    bool bottomOk = false;
+    float bottom = url.queryItemValue("bottom").toFloat(&bottomOk);
 
-    PdfDocument *doc = m_documentCache->document(uri[1]);
+    if(file.isEmpty() || !pageOk || !leftOk || !topOk || !rightOk || !bottomOk) {
+        reply.setStatus(PdfReply::NotFound_Status);
+        reply.setErrorString("Not found");
+        return;
+    }
+    
+    PdfDocument *doc = m_documentCache->document(file);
     if (!doc || !doc->isValid()) {
-        return answer;
+        reply.setStatus(PdfReply::InternalError_Status);
+        reply.setErrorString("Could not open file");
+        return;
     }
 
-    int pageNumber = uri[2].toInt();
     Poppler::Page *page = doc->page(pageNumber);
     if (!page) {
-        return answer;
+        reply.setStatus(PdfReply::NotFound_Status);
+        reply.setErrorString("Page not found");
+        return;
     }
 
-    qreal left = uri[3].toFloat();
-    qreal top = uri[4].toFloat();
-    qreal right = uri[5].toFloat();
-    qreal bottom = uri[6].toFloat();
+    QRectF textRect = QRectF(QPointF(left, top), QPointF(right, bottom));
+    QString text = page->text(textRect);
 
-    QString text = page->text(QRectF(QPointF(left, top), QPointF(right, bottom)));
+    reply.setProperty("File", file);
+    reply.setProperty("PageNumber", QString::number(pageNumber));
+    reply.setProperty("LeftTop" , QString("%1,%2").arg(left).arg(top));
+    reply.setProperty("RightBottom", QString("%1,%2").arg(right).arg(bottom));
 
-    QString s("url=%1\n"
-              "pagenumber=%2\n"
-              "left=%3\n"
-              "top=%4\n"
-              "right=%5\n"
-              "bottom=%6\n"
-              "text=%7");
-    s = s.arg(uri[1])
-            .arg(pageNumber)
-            .arg(QString::number(left))
-            .arg(QString::number(top))
-            .arg(QString::number(right))
-            .arg(QString::number(bottom))
-            .arg(text);
-
-    answer = s.toUtf8();
-    return answer;
+    reply.setData(text.toUtf8());
+    reply.setStatus(PdfReply::OK_Status);
 }
 
-QByteArray PdfServerThread::links(const QStringList &uri)
+void PdfServerThread::links( const QUrl& url, PdfReply& reply)
 {
     QByteArray answer;
 
-    if (uri.length() != 3) return answer;
+    QString file = url.queryItemValue("file");
+    bool pageOk = false;
+    int pageNumber = url.queryItemValue("page").toInt(&pageOk);
 
-    PdfDocument *doc = m_documentCache->document(uri[1]);
-    if (!doc || !doc->isValid()) {
-        return answer;
+    if(file.isEmpty() || !pageOk) {
+        reply.setStatus(PdfReply::NotFound_Status);
+        reply.setErrorString("Not found");
+        return;
     }
 
-    int pageNumber = uri[2].toInt();
+    PdfDocument *doc = m_documentCache->document(file);
+    if (!doc || !doc->isValid()) {
+        reply.setStatus(PdfReply::InternalError_Status);
+        reply.setErrorString("Could not open file");
+        return;
+    }
+
     Poppler::Page *page = doc->page(pageNumber);
     if (!page) {
-        return answer;
+        reply.setStatus(PdfReply::NotFound_Status);
+        reply.setErrorString("Page not found");
+        return;
     }
-
 
     QList<Poppler::Link*> links = page->links();
 
-    QString s("url=%1\n"
-              "pagenumber=%2\n"
-              "numberoflinks=%3\n"
-              "-----------\n");
-    s = s.arg(uri[1])
-            .arg(pageNumber)
-            .arg(links.size());
+    reply.setProperty("File", file);
+    reply.setProperty("PageNumber", QString::number(pageNumber));
+    reply.setProperty("NumberOfLinks", QString::number(links.size()));
 
+    QString s;
     foreach(Poppler::Link* link, links) {
         QRectF linkarea = link->linkArea();
         QString area = QString::number(linkarea.left())
@@ -386,9 +397,8 @@ QByteArray PdfServerThread::links(const QStringList &uri)
         }
     }
 
-    answer = s.toUtf8();
-
-    return answer;
+    reply.setData(s.toUtf8());
+    reply.setStatus(PdfReply::OK_Status);
 }
 
 

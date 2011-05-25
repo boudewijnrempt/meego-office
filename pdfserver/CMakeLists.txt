@@ -9,6 +9,7 @@ set(pdfserver_SRCS
     PdfServerThread.cpp
     PdfDocument.cpp
     PdfDocumentCache.cpp
+    PdfReply.cpp
 )
 
 set(pdfserver_headers
@@ -19,6 +20,7 @@ set(pdfserver_headers
     PdfServerThread.h
     PdfDocument.h
     PdfDocumentCache.h
+    PdfReply.h
 )
 
 kde4_add_executable(pdfserver ${pdfserver_SRCS})

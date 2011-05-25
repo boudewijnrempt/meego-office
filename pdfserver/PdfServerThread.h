@@ -5,6 +5,7 @@
 #include <QTcpSocket>
 
 class PdfDocumentCache;
+class PdfReply;
 
 class PdfServerThread : public QThread
 {
@@ -25,14 +26,12 @@ private:
 
     /**
      * open a document to get the number of pages
-     * @param uri: 2 components
-     * 0: "open"
-     * 1: absolute path to pdf file on the server
+     * @param url The request url. Uses 
      * @return utf-8 encoded bytearray filled with
      * 0: url=$url
      * 1: numberofpages=$number of pages
      * 2: pagelayout=$pagelayout*/
-    QByteArray open(const QStringList &uri);
+    void open(const QUrl &url, PdfReply &reply);
 
     /**
      * render the page on a png and return it
@@ -50,7 +49,7 @@ private:
      * 5: -----------
      * 6: byte array representing a PNG image
      */
-    QByteArray getpage(const QStringList &uri);
+    void getpage(const QUrl &url, PdfReply &reply);
 
     /**
      * retrieve the PDF thumbnail or create one from the page
@@ -69,7 +68,7 @@ private:
      * 5: -----------
      * 6: byte array representing a PNG image of the thumbnail
      */
-    QByteArray thumbnail(const QStringList &uri);
+    void thumbnail(const QUrl &url, PdfReply &reply);
 
     /**
      * Find the rectangles in postscript points that surround the matches
@@ -90,7 +89,7 @@ private:
      * 4: left, top, right, bottom
      * n: left, top, right, bottom
      */
-    QByteArray search(const QStringList &uri);
+    void search(const QUrl &url, PdfReply &reply);
 
     /**
      * return the text under the given area. For now, the text is not encoded
@@ -113,7 +112,7 @@ private:
      * 5: bottom=$bottom
      * 7: text=$text
      */
-    QByteArray text(const QStringList &uri);
+    void text(const QUrl &url, PdfReply &reply);
 
     /**
      * return a list of links on the given page. URL links return the url,
@@ -132,7 +131,7 @@ private:
      * 4: top,left,right,bottom,type,target
      * n: top,left,right,bottom,type,target
      */
-    QByteArray links(const QStringList &uri);
+    void links(const QUrl &url, PdfReply &reply);
 
     void dpi(qreal &dpiX, qreal &dpiY, int zoomlevel);
 

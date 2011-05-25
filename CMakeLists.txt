@@ -54,6 +54,10 @@ set(intel-office-suite_SRCS
     stage/CMStageCanvas.cpp
     stage/CMStageDeclarativeView.cpp
 
+    pdf/PDFCanvas.cpp
+    pdf/PDFDocument.cpp
+    pdf/PDFCanvasController.cpp
+    
     main.cpp
 )
 

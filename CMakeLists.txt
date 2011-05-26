@@ -29,12 +29,15 @@ pkg_check_modules(QSPARQL REQUIRED QtSparql)
 
 include_directories(${QT_INCLUDES} ${KDE4_INCLUDES} ${QSPARQL_INCLUDE_DIRS}
                     ${KOMAIN_INCLUDES} ${KOPAGEAPP_INCLUDES} ${WORDS_INCLUDES}
-                    ${TABLES_INCLUDES} ${STAGE_INCLUDES})
+                    ${TABLES_INCLUDES} ${STAGE_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR})
 
 if(QTMOBILITY_FOUND)
     include_directories(${QT_MOBILITY_GLOBAL_INCLUDE_DIR} ${QT_MOBILITY_SYSTEMINFO_INCLUDE_DIR})
     add_definitions(-DWITH_QT_SYSTEMINFO)
 endif(QTMOBILITY_FOUND)
+
+set(PDF_SERVER_BINARY ${CMAKE_CURRENT_BINARY_DIR}/pdfserver/pdfserver)
+configure_file(pdf/PDFServerConfig.h.in ${CMAKE_CURRENT_BINARY_DIR}/PDFServerConfig.h)
 
 set(intel-office-suite_SRCS
     CMCanvasInputProxy.cpp
@@ -57,6 +60,7 @@ set(intel-office-suite_SRCS
     pdf/PDFCanvas.cpp
     pdf/PDFDocument.cpp
     pdf/PDFCanvasController.cpp
+    pdf/PDFProcessManager.cpp
     
     main.cpp
 )

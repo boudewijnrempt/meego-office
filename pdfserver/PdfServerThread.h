@@ -133,7 +133,7 @@ private:
      */
     void links(const QUrl &url, PdfReply &reply);
 
-    void dpi(qreal &dpiX, qreal &dpiY, int zoomlevel);
+    void dpi( qreal& dpiX, qreal& dpiY, qreal zoomlevel);
 
     int m_socketDescriptor;
     PdfDocumentCache *m_documentCache;

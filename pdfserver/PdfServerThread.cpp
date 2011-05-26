@@ -119,6 +119,9 @@ void PdfServerThread::open( const QUrl& url, PdfReply& reply)
         return;
     }
 
+    qreal dpiX, dpiY;
+    dpi(dpiX, dpiY, 1.0);
+
     reply.setProperty("File", file);
     reply.setProperty("NumberOfPages", QString::number(doc->numberOfPages()));
     reply.setProperty("PageLayout", QString::number(doc->pageLayout()));
@@ -207,6 +210,7 @@ void PdfServerThread::thumbnail( const QUrl& url, PdfReply& reply)
         return;
     }
 
+    qDebug() << pageNumber;
     Poppler::Page *page = doc->page(pageNumber);
     if (!page) {
         reply.setStatus(PdfReply::NotFound_Status);
@@ -402,7 +406,7 @@ void PdfServerThread::links( const QUrl& url, PdfReply& reply)
 }
 
 
-void PdfServerThread::dpi(qreal &dpiX, qreal &dpiY, int zoomlevel)
+void PdfServerThread::dpi(qreal &dpiX, qreal &dpiY, qreal zoomlevel)
 {
     dpiX = 72;
     dpiY = 72;
@@ -419,5 +423,4 @@ void PdfServerThread::dpi(qreal &dpiX, qreal &dpiY, int zoomlevel)
 
     dpiX = dpiX * zoomlevel;
     dpiY = dpiY * zoomlevel;
-
 }

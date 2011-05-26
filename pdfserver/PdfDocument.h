@@ -3,6 +3,7 @@
 
 #include <QTimer>
 #include <QMap>
+#include <QMutex>
 
 #include <poppler/qt4/poppler-qt4.h>
 
@@ -38,6 +39,7 @@ private:
     QString m_url;
     QTimer m_timeout;
     Poppler::Document *m_pdf;
+    QMutex m_mutex;
     QMap<int, Poppler::Page*> m_pageCache;
 };
 

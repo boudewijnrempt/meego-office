@@ -1,5 +1,6 @@
 #include "PdfDocument.h"
 #include <QDebug>
+#include <QMutexLocker>
 
 PdfDocument::PdfDocument(const QString &url)
     : m_url(url)
@@ -13,7 +14,6 @@ PdfDocument::PdfDocument(const QString &url)
     m_pdf->setRenderHint(Poppler::Document::Antialiasing, true);
     m_pdf->setRenderHint(Poppler::Document::TextAntialiasing, true);
 
-
 }
 
 PdfDocument::~PdfDocument()
@@ -24,6 +24,7 @@ PdfDocument::~PdfDocument()
 
 bool PdfDocument::isValid()
 {
+    QMutexLocker lock(&m_mutex);
     return m_pdf && !m_pdf->isLocked();
 }
 
@@ -50,8 +51,9 @@ int PdfDocument::pageLayout()
 
 QMap<QString, QString> PdfDocument::infoMap()
 {
+    QMutexLocker lock(&m_mutex);
     QMap<QString, QString> infos;
-    if (isValid()) {
+    if (m_pdf && !m_pdf->isLocked()) {
         QStringList keys = m_pdf->infoKeys();
         foreach(const QString &key, keys) {
             infos.insert(key, m_pdf->info(key));
@@ -62,8 +64,9 @@ QMap<QString, QString> PdfDocument::infoMap()
 
 Poppler::Page *PdfDocument::page(int pageNumber)
 {
+    QMutexLocker lock(&m_mutex);
     Poppler::Page *page = 0;
-    if (isValid()) {
+    if (m_pdf && !m_pdf->isLocked()) {
         if (m_pageCache.contains(pageNumber)) {
             page = m_pageCache[pageNumber];
         }

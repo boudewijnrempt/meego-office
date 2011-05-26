@@ -14,6 +14,7 @@
 #include "tables/CMTablesCanvas.h"
 #include "stage/CMStageCanvas.h"
 #include "CMDocumentThumbnailListModel.h"
+#include "pdf/PDFCanvasController.h"
 
 int main(int argc, char *argv[])
 {
@@ -48,6 +49,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<CMWordsCanvas>("org.calligra.mobile", 1, 0, "WordsCanvas");
     qmlRegisterType<CMTablesCanvas>("org.calligra.mobile", 1, 0, "TablesCanvas");
     qmlRegisterType<CMStageCanvas>("org.calligra.mobile", 1, 0, "StageCanvas");
+    qmlRegisterType<PDFCanvasController>("org.calligra.mobile", 1, 0, "PDFCanvas");
 
     CMMainWindow window(KStandardDirs::locate("appdata", "main.qml"), fileName);
     window.showMaximized();

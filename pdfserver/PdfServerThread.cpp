@@ -125,6 +125,8 @@ void PdfServerThread::open( const QUrl& url, PdfReply& reply)
     reply.setProperty("File", file);
     reply.setProperty("NumberOfPages", QString::number(doc->numberOfPages()));
     reply.setProperty("PageLayout", QString::number(doc->pageLayout()));
+    reply.setProperty("Width", QString::number(doc->page(0)->pageSizeF().width()));
+    reply.setProperty("Height", QString::number(doc->page(0)->pageSizeF().height()));
 
     QMap<QString, QString> infomap = doc->infoMap();
     foreach(const QString key, infomap.keys()) {

@@ -139,6 +139,10 @@ void PDFDocument::Private::requestFinished(QNetworkReply *reply)
         pageCount = reply->rawHeader("X-PDF-NumberOfPages").toInt();
         pageLayout = reply->rawHeader("X-PDF-PageLayout").toInt();
 
+        documentSize.setWidth(reply->rawHeader("X-PDF-Width").toFloat());
+        documentSize.setHeight((reply->rawHeader("X-PDF-Height").toFloat() + 10) * pageCount);
+        emit q->documentSizeChanged(documentSize);
+
         reply->close();
 
         emit q->opened();
@@ -151,12 +155,6 @@ void PDFDocument::Private::requestFinished(QNetworkReply *reply)
         page->orientation = reply->rawHeader("X-PDF-Orientation").toInt();
         page->width = page->image.width();
         page->height = page->image.height();
-
-        if(!documentSize.isValid()) {
-            documentSize.setWidth(page->width);
-            documentSize.setHeight((page->height + 10) * pageCount);
-            emit q->documentSizeChanged(documentSize);
-        }
 
         pages.insert(page->pageNumber, page);
         requests.remove(page->pageNumber);

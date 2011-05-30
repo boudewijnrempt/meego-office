@@ -6,7 +6,7 @@
 #include <QtGui/QGraphicsScene>
 
 #include <KoShapeManager.h>
-#include <KoViewConverter.h>
+#include <KoZoomHandler.h>
 
 #include "PDFDocument.h"
 
@@ -20,7 +20,7 @@ public:
     PDFCanvas *q;
 
     KoShapeManager *shapeManager;
-    KoViewConverter *viewConverter;
+    KoZoomHandler *viewConverter;
     
     PDFDocument *document;
     QPoint documentOffset;
@@ -32,7 +32,7 @@ PDFCanvas::PDFCanvas(PDFDocument *document, QGraphicsItem *parentItem)
     d->document = document;
 
     d->shapeManager = new KoShapeManager(this);
-    d->viewConverter = new KoViewConverter();
+    d->viewConverter = new KoZoomHandler();
 
     //setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
@@ -139,13 +139,19 @@ void PDFCanvas::paint ( QPainter* painter, const QStyleOptionGraphicsItem* optio
     painter->translate(-d->documentOffset);
     
     int pages = d->document->pageCount();
-    qreal width = d->document->documentSize().width();
-    qreal height = d->document->documentSize().height() / pages - 10;
+    qreal width = d->document->documentSize().width() * d->viewConverter->zoom();
+    qreal height = (d->document->documentSize().height() / pages - 10) * d->viewConverter->zoom();
 
+    QFont font = painter->font();
+    font.setPixelSize(height/10);
+    painter->setFont(font);
+    int textWidth = painter->fontMetrics().width("Loading...");
+    
     painter->setBrush(QBrush(Qt::white));
-    painter->setPen(QPen(QBrush(Qt::black), 2));
+    painter->setPen(QPen(Qt::lightGray));
     for(int i = 0; i < pages; ++i) {
         painter->drawRect(0, i * (height + 10), width, height);
+        painter->drawText((width/2) - textWidth / 2, i * (height + 10) + height/2, "Loading...");
     }
 
     int pageOne = int(d->documentOffset.y() / height);
@@ -155,13 +161,13 @@ void PDFCanvas::paint ( QPainter* painter, const QStyleOptionGraphicsItem* optio
     if(!page) {
         return;
     }
-    painter->drawImage(QRectF(0, (height + 10) * pageOne, page->width, page->height), page->image);
+    painter->drawImage(QRectF(0, (height + 10) * pageOne, width, height), page->image);
 
     page = d->document->page(pageTwo, true);
     if(!page) {
         return;
     }
-    painter->drawImage(QRectF(0, (height + 10) * pageTwo, page->width, page->height), page->image);
+    painter->drawImage(QRectF(0, (height + 10) * pageTwo, width, height), page->image);
 }
 
 #include "PDFCanvas.moc"

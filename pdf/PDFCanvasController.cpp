@@ -1,6 +1,7 @@
 #include "PDFCanvasController.h"
 
 #include <KoZoomController.h>
+#include <KoZoomHandler.h>
 
 #include "PDFDocument.h"
 #include "PDFCanvas.h"

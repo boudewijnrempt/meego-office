@@ -20,7 +20,7 @@
 #include "CMProgressProxy.h"
 #include <Sheet.h>
 #include <KoToolRegistry.h>
-#include <../../KDE/calligra-master/tables/CellStorage.h>
+#include <tables/CellStorage.h>
 
 class CMTablesCanvas::Private
 {

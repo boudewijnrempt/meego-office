@@ -41,6 +41,7 @@ public:
 	TextDocumentType,
         PresentationType,
         SpreadsheetType,
+        PDFDocumentType,
     };
 
     struct DocumentInfo {

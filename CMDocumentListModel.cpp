@@ -182,6 +182,7 @@ CMDocumentListModel::CMDocumentListModel(QObject *parent)
     m_docTypes["ods"] = SpreadsheetType;
     m_docTypes["xls"] = SpreadsheetType;
     m_docTypes["xlsx"] = SpreadsheetType;
+    m_docTypes["pdf"] = PDFDocumentType;
 }
 
 CMDocumentListModel::~CMDocumentListModel()

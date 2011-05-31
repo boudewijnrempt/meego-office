@@ -15,6 +15,8 @@ Item {
             loader.sourceComponent = tablesComponent;
         } else if(settings.currentType == DocumentListModel.PresentationType) {
             loader.sourceComponent = stageComponent;
+        } else if(settings.currentType == DocumentListModel.PDFDocumentTYpe) {
+            loader.sourceComponent = pdfComponent;
         } else {
             console.log("Unable to open file. Unrecognised file type.");
         }
@@ -482,7 +484,6 @@ Item {
             anchors.fill: parent
             function setPage(newPage) { page = newPage }
             onPageChanged: { thumbnailList.currentIndex = newPage; pageDescriptionText.text = "Page " + (newPage + 1) + " of " + document.pageCount; }
-            onDocMoved: thumbnailList.state = ""
         }
     }
 
@@ -493,7 +494,6 @@ Item {
             anchors.fill: parent
             function setPage(newPage) { sheet = newPage }
             onSheetChanged: { thumbnailList.currentIndex = newIndex; pageDescriptionText.text = document.sheetName; }
-            onDocMoved: thumbnailList.state = ""
         }
     }
 
@@ -504,7 +504,16 @@ Item {
             anchors.fill: parent
             function setPage(newPage) { slide = newPage }
             onSlideChanged: { thumbnailList.currentIndex = newSlide; pageDescriptionText.text = "Slide " + (newSlide + 1) + " of " + document.slideCount; }
-            onDocMoved: thumbnailList.state = ""
+        }
+    }
+
+    Component {
+        id: pdfComponent;
+        PDFCanvas {
+            id: document;
+            anchors.fill: parent;
+            function setPage(newPage) { page = newPage }
+            //onPageChangedL: 
         }
     }
 

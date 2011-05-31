@@ -232,6 +232,7 @@ Item {
 	    case 1: return qsTr('Text Document');
 	    case 2: return qsTr('Presentation');
 	    case 3: return qsTr('Spreadsheet');
+            case 4: return qsTr('PDF Document');
 	    default: return qsTr('Unknown');
         }
     }

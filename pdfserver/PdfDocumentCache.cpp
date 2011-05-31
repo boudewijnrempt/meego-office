@@ -39,3 +39,5 @@ void PdfDocumentCache::deleteDocument(const QString &url)
     }
     locker.unlock();
 }
+
+#include "PdfDocumentCache.moc"

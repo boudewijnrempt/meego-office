@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#ifndef QT_SINGLECOREAPPLICATION_H
+#define QT_SINGLECOREAPPLICATION_H
 
 #include <QtCore/QCoreApplication>
 
@@ -64,3 +66,5 @@ Q_SIGNALS:
 private:
     QtLocalPeer* peer;
 };
+
+#endif //QT_SINGLECOREAPPLICATION_H

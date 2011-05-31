@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#ifndef QT_LOCALPEER_H
+#define QT_LOCALPEER_H
 
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
@@ -70,3 +72,5 @@ protected:
 private:
     static const char* ack;
 };
+
+#endif //QT_LOCALPEER_H

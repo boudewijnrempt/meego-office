@@ -1,4 +1,14 @@
-include_directories(${POPPLER_QT4_INCLUDE_DIR})
+project(PdfServer)
+cmake_minimum_required(VERSION 2.6)
+
+find_package(Qt4 REQUIRED)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+find_package(PopplerQt4 REQUIRED)
+
+include_directories(${QT_INCLUDES} ${POPPLER_QT4_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+
+option(BUILD_TESTS "Build unit tests" ON)
 
 set(pdfserver_SRCS
     main.cpp
@@ -23,14 +33,16 @@ set(pdfserver_headers
     PdfReply.h
 )
 
-kde4_add_executable(pdfserver ${pdfserver_SRCS})
+qt4_automoc(${pdfserver_SRCS})
+add_executable(pdfserver ${pdfserver_SRCS})
 target_link_libraries(pdfserver
     ${QT_QTCORE_LIBRARY}
     ${QT_QTNETWORK_LIBRARY}
     ${POPPLER_QT4_LIBRARIES}
 )
 
-set_target_properties(pdfserver PROPERTIES VERSION ${GENERIC_KOFFICE_LIB_VERSION} SOVERSION ${GENERIC_KOFFICE_LIB_SOVERSION})
+install(TARGETS pdfserver RUNTIME DESTINATION bin)
 
-install(TARGETS pdfserver ${INSTALL_TARGETS_DEFAULT_ARGS})
-add_subdirectory(tests)
+if(BUILD_TESTS)
+    add_subdirectory(tests)
+endif()

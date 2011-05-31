@@ -253,3 +253,5 @@ QtLockedFile::~QtLockedFile()
     if (isOpen())
         unlock();
 }
+
+#include "qtlockedfile.moc"

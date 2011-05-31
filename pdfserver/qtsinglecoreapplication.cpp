@@ -146,3 +146,5 @@ QString QtSingleCoreApplication::id() const
 
     \sa sendMessage()
 */
+
+#include "qtsinglecoreapplication.moc"

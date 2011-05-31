@@ -237,3 +237,5 @@ void PdfServerTest::testLink()
 
 
 QTEST_MAIN(PdfServerTest)
+
+#include "PdfServerTest.moc"

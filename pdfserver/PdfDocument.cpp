@@ -79,3 +79,5 @@ Poppler::Page *PdfDocument::page(int pageNumber)
     }
     return page;
 }
+
+#include "PdfDocument.moc"

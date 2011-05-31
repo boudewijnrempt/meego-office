@@ -19,9 +19,6 @@ include(FindPkgConfig)
 # Find Calligra
 find_package(CalligraLibs REQUIRED)
 
-# Find Poppler
-find_package(PopplerQt4 REQUIRED)
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package(QtMobility COMPONENTS SystemInfo)
 
@@ -36,7 +33,7 @@ if(QTMOBILITY_FOUND)
     add_definitions(-DWITH_QT_SYSTEMINFO)
 endif(QTMOBILITY_FOUND)
 
-set(PDF_SERVER_BINARY ${CMAKE_CURRENT_BINARY_DIR}/pdfserver/pdfserver)
+set(PDF_SERVER_BINARY ${CMAKE_CURRENT_BINARY_DIR}/pdfserver/pdfserver CACHE PATH "Path to PDF Server binary")
 configure_file(pdf/PDFServerConfig.h.in ${CMAKE_CURRENT_BINARY_DIR}/PDFServerConfig.h)
 
 set(intel-office-suite_SRCS
@@ -137,5 +134,3 @@ install(FILES ${intel-office-suite_ui_SRCS} DESTINATION ${DATA_INSTALL_DIR}/inte
 install(FILES ${intel-office-suite_ui_components_SRCS} DESTINATION ${DATA_INSTALL_DIR}/intel-office-suite/org/calligra/mobile)
 install(FILES ${intel-office-suite_headers} DESTINATION ${INCLUDE_INSTALL_DIR})
 install(PROGRAMS intel-office-suite.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
-
-add_subdirectory(pdfserver)

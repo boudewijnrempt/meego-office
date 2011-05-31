@@ -20,3 +20,5 @@ void PdfServer::serverThreadError(QTcpSocket::SocketError error)
         qDebug() << "Error" << error << "when executing thread on url" << thread->url();
     }
 }
+
+#include "PdfServer.moc"

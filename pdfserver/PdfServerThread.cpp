@@ -426,3 +426,5 @@ void PdfServerThread::dpi(qreal &dpiX, qreal &dpiY, qreal zoomlevel)
     dpiX = dpiX * zoomlevel;
     dpiY = dpiY * zoomlevel;
 }
+
+#include "PdfServerThread.moc"

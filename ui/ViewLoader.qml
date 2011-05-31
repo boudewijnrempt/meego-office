@@ -184,6 +184,7 @@ Item {
                 State {
                     name: "slideNotesShown"
                     PropertyChanges { target: loader; width: centralView.width * 0.75 }
+                    PropertyChanges { target: showSlideNotes; opacity: 50 }
                 }
             ]
             Behavior on width { NumberAnimation { duration: 150; easing.type: Easing.InOutQuad } }
@@ -226,7 +227,7 @@ Item {
        
         IconButton {
             id: showSlideNotes
-            icon: "image://themedimage/icons/launchers/meego-app-notes"
+            icon: "image://icon/view-pim-notes"
             //hasBackground: false
             width: 48
             height: 48
@@ -235,7 +236,8 @@ Item {
             anchors.verticalCenter: loader.verticalCenter
             z: 10
             onClicked: loader.state = (loader.state === "slideNotesShown" ? "" : "slideNotesShown")
-            visible: loader.item.canHavePageNotes
+            visible: loader.item.canHavePageNotes()
+            Behavior on opacity { NumberAnimation { duration: 150 } }
         }
 
         ModalFog {
@@ -332,52 +334,67 @@ Item {
             IconButton {
                 id: showZoomControlButton;
 
-                anchors.right: zoomInButton.left
-                anchors.rightMargin: 10;
+                x: parent.width / 2
                 anchors.verticalCenter: parent.verticalCenter;
 
                 icon: "image://themedimage/icons/actionbar/mail-message-previous";
                 hasBackground: false;
 
                 onClicked: {
+                    zoomMenu.content.zoomLevel = loader.item.zoomLevel
                     zoomMenu.setPosition(showZoomControlButton.x + (showZoomControlButton.width / 2), mapToItem( window, window.width, showZoomControlButton.y).y);
                     zoomMenu.show();
                 }
             }
-
-            IconButton {
-                id: zoomInButton;
-                anchors.right: zoomOutButton.left;
-                anchors.rightMargin: 10;
-                icon: "image://icon/zoom-in";
-                hasBackground: false;
-
-                onClicked: {
-                    loader.item.zoomIn();
-                }
-            }
-
-            IconButton {
-                id: zoomOutButton;
-                anchors.centerIn: parent;
-                icon: "image://icon/zoom-out";
-                hasBackground: false;
-
-                onClicked: {
-                    loader.item.zoomOut();
-                }
-            }
-            IconButton {
-                id: zoomRestoreButton;
-                anchors.left: zoomOutButton.right;
+            
+            Button {
+                id: zoomLevelText;
+                anchors.left: showZoomControlButton.right;
                 anchors.leftMargin: 10;
-                icon: "image://icon/zoom-original";
+                anchors.verticalCenter: parent.verticalCenter;
+                
+                text: loader.item.zoomLevel + "%"
+
+                textColor: theme.fontColorHighlight;
+                font.pixelSize: theme.toolbarFontPixelSize;
                 hasBackground: false;
 
-                onClicked: {
-                    loader.item.resetZoom();
-                }
+                Component.onCompleted: zoomLevelText.clicked.connect(showZoomControlButton.clicked);
             }
+
+//             IconButton {
+//                 id: zoomInButton;
+//                 anchors.right: zoomOutButton.left;
+//                 anchors.rightMargin: 10;
+//                 icon: "image://icon/zoom-in";
+//                 hasBackground: false;
+// 
+//                 onClicked: {
+//                     loader.item.zoomIn();
+//                 }
+//             }
+// 
+//             IconButton {
+//                 id: zoomOutButton;
+//                 anchors.centerIn: parent;
+//                 icon: "image://icon/zoom-out";
+//                 hasBackground: false;
+// 
+//                 onClicked: {
+//                     loader.item.zoomOut();
+//                 }
+//             }
+//             IconButton {
+//                 id: zoomRestoreButton;
+//                 anchors.left: zoomOutButton.right;
+//                 anchors.leftMargin: 10;
+//                 icon: "image://icon/zoom-original";
+//                 hasBackground: false;
+// 
+//                 onClicked: {
+//                     loader.item.resetZoom();
+//                 }
+//             }
 
 
             IconButton {

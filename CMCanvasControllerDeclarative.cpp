@@ -257,6 +257,13 @@ void CMCanvasControllerDeclarative::zoomBy(const QPoint& center, qreal zoom)
     }
 }
 
+int CMCanvasControllerDeclarative::zoomLevel() const
+{
+    if(!d->zoomHandler)
+        return 100;
+    return d->zoomHandler->zoomInPercent();
+}
+
 void CMCanvasControllerDeclarative::setZoomLevel(int zoomPercentage)
 {
     // Get current position
@@ -277,6 +284,8 @@ void CMCanvasControllerDeclarative::setZoomLevel(int zoomPercentage)
     d->updateCanvasSize();
     resetDocumentOffset(offset.toPoint());
     d->timer->start();
+    
+    emit zoomLevelChanged();
 }
 
 void CMCanvasControllerDeclarative::zoomOut(const QPoint& center)

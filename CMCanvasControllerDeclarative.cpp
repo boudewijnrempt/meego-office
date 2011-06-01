@@ -276,7 +276,7 @@ void CMCanvasControllerDeclarative::setZoomLevel(int zoomPercentage)
     d->zoomController->setZoom(KoZoomMode::ZOOM_CONSTANT, newZoomLevel);
 
     float zoomDif = newZoomLevel / oldZoomLevel;
-    offset.rx() = (offset.x() * zoomDif) + (1 - newZoomLevel) * center.x();
+    offset.rx() = (offset.x() * zoomDif);
     offset.ry() = (offset.y() * zoomDif);
     
     resetDocumentOffset(offset.toPoint());

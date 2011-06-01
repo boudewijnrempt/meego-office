@@ -6,13 +6,14 @@ Window {
     id: window
     signal documentOpened(variant newView)
 
-    bookMenuModel: [ qsTr("All Documents"), qsTr("Presentations"), qsTr("Spreadsheets"), qsTr("Text Documents") ];
-    bookMenuPayload: [ allDocumentsPageComponent, presentationsPageComponent, spreadsheetsPageComponent, textDocumentsPageComponent ];
+    bookMenuModel: [ qsTr("All Documents"), qsTr("PDF Documents"), qsTr("Presentations"), qsTr("Spreadsheets"), qsTr("Text Documents") ];
+    bookMenuPayload: [ allDocumentsPageComponent, pdfDocumentsPageComponent, presentationsPageComponent, spreadsheetsPageComponent, textDocumentsPageComponent ];
     
     Component { id: allDocumentsPageComponent; DocumentsPage { showType: true; } }
-    Component { id: presentationsPageComponent; DocumentsPage { pageTitle: qsTr("Presentations"); filter: DocumentListModel.Presentations; } }
-    Component { id: spreadsheetsPageComponent; DocumentsPage { pageTitle: qsTr("Spreadsheets"); filter: DocumentListModel.Spreadsheets; } }
-    Component { id: textDocumentsPageComponent; DocumentsPage { pageTitle: qsTr("Text Documents"); filter: DocumentListModel.TextDocuments; } }
+    Component { id: pdfDocumentsPageComponent; DocumentsPage { pageTitle: qsTr("PDF Documents"); filter: DocumentListModel.PDFDocumentType; } }
+    Component { id: presentationsPageComponent; DocumentsPage { pageTitle: qsTr("Presentations"); filter: DocumentListModel.PresentationType; } }
+    Component { id: spreadsheetsPageComponent; DocumentsPage { pageTitle: qsTr("Spreadsheets"); filter: DocumentListModel.SpreadsheetType; } }
+    Component { id: textDocumentsPageComponent; DocumentsPage { pageTitle: qsTr("Text Documents"); filter: DocumentListModel.TextDocumentType; } }
 
     Component.onCompleted: { switchBook(allDocumentsPageComponent); }
 

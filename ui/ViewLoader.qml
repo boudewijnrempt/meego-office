@@ -236,7 +236,7 @@ Item {
             anchors.verticalCenter: loader.verticalCenter
             z: 10
             onClicked: loader.state = (loader.state === "slideNotesShown" ? "" : "slideNotesShown")
-            visible: loader.item.canHavePageNotes()
+            visible: settings.currentType == DocumentListModel.PresentationType;
             Behavior on opacity { NumberAnimation { duration: 150 } }
         }
 
@@ -262,7 +262,7 @@ Item {
                 id: showThumbnailsButton;
 
                 anchors.left: parent.left;
-                anchors.leftMargin: 10;
+                anchors.leftMargin: 5;
                 anchors.verticalCenter: parent.verticalCenter;
 
                 icon: "image://themedimage/icons/actionbar/mail-message-previous";
@@ -277,7 +277,7 @@ Item {
             Button {
                 id: pageDescriptionText;
                 anchors.left: showThumbnailsButton.right;
-                anchors.leftMargin: 10;
+                anchors.leftMargin: 5;
                 anchors.verticalCenter: parent.verticalCenter;
 
                 textColor: theme.fontColorHighlight;
@@ -291,7 +291,7 @@ Item {
                 id: prevPageButton;
 
                 anchors.left: pageDescriptionText.right;
-                anchors.leftMargin: 10;
+                anchors.leftMargin: 5;
                 anchors.verticalCenter: parent.verticalCenter;
 
                 icon: "image://themedimage/icons/actionbar/media-backward";
@@ -313,7 +313,7 @@ Item {
                 id: nextPageButton;
 
                 anchors.left: prevPageButton.right;
-                anchors.leftMargin: 10;
+                anchors.leftMargin: 5;
                 anchors.verticalCenter: parent.verticalCenter;
 
                 icon: "image://themedimage/icons/actionbar/media-forward";
@@ -331,13 +331,24 @@ Item {
                 }
             }
 
+            Button {
+                id: separator;
+
+                anchors.left: nextPageButton.right;
+		anchors.leftMargin: 10;
+                anchors.verticalCenter: parent.verticalCenter;
+                hasBackground: false;
+                text: "";
+            }
+
             IconButton {
                 id: showZoomControlButton;
 
-                x: parent.width / 2
+		anchors.left: separator.right;
+		anchors.leftMargin: 10;
                 anchors.verticalCenter: parent.verticalCenter;
 
-                icon: "image://themedimage/icons/actionbar/mail-message-previous";
+                icon: "image://icon/page-zoom";
                 hasBackground: false;
 
                 onClicked: {

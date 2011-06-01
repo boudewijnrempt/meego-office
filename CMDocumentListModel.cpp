@@ -52,9 +52,9 @@ void SearchThread::run()
 		"?u nfo:fileLastAccessed ?lastAccessed . "
 		"?u nfo:fileLastModified ?lastModified . "
 		"?u rdf:type ?type . "
-        "?u nie:isStoredAs ?uuid . "
- 		"{ ?u a nfo:PaginatedTextDocument } UNION { ?u a nfo:Presentation } UNION { ?u a nfo:Spreadsheet }"
-	" }");
+                "?u nie:isStoredAs ?uuid . "
+ 		"FILTER( ?type = nfo:PaginatedTextDocument || ?type = nfo:Presentation || ?type = nfo:Spreadsheet ) . "
+	"} ORDER BY ?name");
     QSparqlResult* result = connection.exec(query);
     result->waitForFinished();
     if(!result->hasError())

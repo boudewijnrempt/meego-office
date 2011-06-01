@@ -60,7 +60,7 @@ private:
     Q_PRIVATE_SLOT(d, void matchFound(KoFindMatch));
     Q_PRIVATE_SLOT(d, void update());
     Q_PRIVATE_SLOT(d, void updatePanGesture(const QPointF &location));
-    Q_PRIVATE_SLOT(d, void moveSelectionHandles());
+    Q_PRIVATE_SLOT(d, void documentOffsetMoved(QPoint newOffset));
 
     QPointF documentToView(const QPointF &point);
     QPointF viewToDocument(const QPointF &point);

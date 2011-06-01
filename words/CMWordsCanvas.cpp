@@ -39,7 +39,7 @@ public:
     void update();
     void updateCanvas();
     void updatePanGesture(const QPointF &location);
-    void moveSelectionHandles();
+    void documentOffsetMoved(QPoint newOffset);
 
     CMWordsCanvas* q;
 
@@ -58,7 +58,7 @@ CMWordsCanvas::CMWordsCanvas(QDeclarativeItem* parent)
     connect(inputProxy(), SIGNAL(updatePanGesture(QPointF)), SLOT(updatePanGesture(QPointF)));
     KoZoomMode::setMinimumZoom(0.5);
     KoZoomMode::setMaximumZoom(2.0);
-    connect(proxyObject, SIGNAL(moveDocumentOffset(QPoint)), this, SLOT(moveSelectionHandles()));
+    connect(proxyObject, SIGNAL(moveDocumentOffset(QPoint)), this, SLOT(documentOffsetMoved(QPoint)));
 }
 
 CMWordsCanvas::~CMWordsCanvas()
@@ -136,6 +136,7 @@ void CMWordsCanvas::loadDocument()
 
     KWDocument* doc = new KWDocument();
     d->doc = doc;
+    doc->setAutoSave(0);
 
     CMProgressProxy *proxy = new CMProgressProxy(this);
     doc->setProgressProxy(proxy);
@@ -149,8 +150,6 @@ void CMWordsCanvas::loadDocument()
     }
 
     d->updateCanvas();
-
-    //KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
 
     QList<QTextDocument*> texts;
     KoFindText::findTextInShapes(d->canvas->shapeManager()->shapes(), texts);
@@ -230,6 +229,7 @@ void CMWordsCanvas::Private::updateCanvas()
         connect(q->proxyObject, SIGNAL(moveDocumentOffset(const QPoint&)), canvas, SLOT(setDocumentOffset(QPoint)));
         connect(canvas, SIGNAL(documentSize(QSizeF)), q->zoomController(), SLOT(setDocumentSize(QSizeF)));
         canvas->updateSize();
+        q->resetDocumentOffset();
     }
 
     canvas->updateCanvas(QRectF(0, 0, q->width(), q->height()));
@@ -357,9 +357,14 @@ void CMWordsCanvas::Private::updatePanGesture(const QPointF& location)
     q->updatePosition(CMTextSelection::UpdatePosition, location);
 }
 
-void CMWordsCanvas::Private::moveSelectionHandles()
+void CMWordsCanvas::Private::documentOffsetMoved(QPoint newOffset)
 {
     q->updateHandlePositions();
+    
+    int pageSize = q->documentSize().height() / doc->pageManager()->pageCount();
+    if(pageSize > 0) {
+        emit q->pageChanged((newOffset.y() + pageSize/2) / pageSize); 
+    }
 }
 
 #include "CMWordsCanvas.moc"

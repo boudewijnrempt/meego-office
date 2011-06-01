@@ -12,24 +12,9 @@ Item {
         anchors.fill: parent
         anchors.margins: 10
         
-//         Text {
-//             id: maxText
-//             text: "200"
-//             anchors.left: parent.left
-//             anchors.top: parent.top
-//             font.pixelSize: 25
-//         }
-//         Text {
-//             id: minText
-//             text: "50"
-//             anchors.left: parent.left
-//             anchors.bottom: parent.bottom
-//             font.pixelSize: 25
-//         }
-        
         Item {
             anchors.left: parent.left
-            anchors.leftMargin: 10
+            anchors.leftMargin: 30
             anchors.top: parent.verticalCenter
             
             VerticalSlider {
@@ -46,8 +31,10 @@ Item {
 
         IconButton {
             id: showMax
-            icon: "image://icon/zoom-in"
-            
+            icon: "image://icon/page-simple"
+            width: 64
+            height: 64
+            iconFill: true
             
             anchors.right: parent.right
             anchors.top: parent.top
@@ -56,19 +43,29 @@ Item {
         }
         IconButton {
             id: showNormal
-            icon: "image://icon/zoom-original"
+            icon: "image://icon/page-simple"
+            width: 48
+            height: 48
+            iconFill: true
             
             anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
+            anchors.rightMargin: 8
+            anchors.top : parent.verticalCenter
+            anchors.topMargin: -8
             
             onClicked: { zoomVal.value = 100;  root.zoomLevelChanged(100) }
         }
         IconButton {
             id: showMin
-            icon: "image://icon/zoom-out"
+            icon: "image://icon/page-simple"
+            width: 32
+            height: 32
+            iconFill: true
             
             anchors.right: parent.right
+            anchors.rightMargin: 16
             anchors.bottom: parent.bottom
+            anchors.bottomMargin: 8
             
             onClicked: { zoomVal.value = 50;  root.zoomLevelChanged(50) }
         }

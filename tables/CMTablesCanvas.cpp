@@ -20,7 +20,11 @@
 #include "CMProgressProxy.h"
 #include <Sheet.h>
 #include <KoToolRegistry.h>
+
 #include <tables/CellStorage.h>
+#include <QtCore/QBuffer>
+#include <QtGui/QApplication>
+
 
 class CMTablesCanvas::Private
 {
@@ -37,8 +41,11 @@ public:
     void updateDocumentSize(const QSize &size);
     void matchFound(KoFindMatch match);
     void updatePanGesture(const QPointF &location);
+    void documentOffsetMoved(const QPoint &newOffset);
     void updateSelectionFromHandles();
     void updateSelectionHandles();
+
+    QString cellAsText(const Calligra::Tables::Cell &cell, bool addTab);
 
     CMTablesCanvas* q;
 
@@ -64,6 +71,8 @@ CMTablesCanvas::CMTablesCanvas(QDeclarativeItem* parent)
 
     KoZoomMode::setMinimumZoom(0.5);
     KoZoomMode::setMaximumZoom(2.0);
+
+    connect(proxyObject, SIGNAL(moveDocumentOffset(QPoint)), this, SLOT(documentOffsetMoved(QPoint)));
 }
 
 CMTablesCanvas::~CMTablesCanvas()
@@ -132,6 +141,39 @@ QString CMTablesCanvas::sheetName() const
 int CMTablesCanvas::matchCount()
 {
     return d->finder->matches().count();
+}
+
+void CMTablesCanvas::copySelection()
+{
+    Calligra::Tables::Selection *sel = d->canvas->selection();
+    if (sel->isSingular()) {
+        const Calligra::Tables::Cell cell(sel->firstSheet(), sel->firstRange().topLeft());
+        QApplication::clipboard()->setText(cell.displayText().replace('\n', ' '));
+    }
+    else
+    {
+        QList<Calligra::Tables::Cell> copiedCells;
+        QRect lastRange = sel->lastRange();
+        // Find area
+        int top = lastRange.top();
+        int bottom = lastRange.bottom();
+        int left = lastRange.left();
+        int right = lastRange.right();
+
+        QString result;
+        for (int row = top; row <= bottom; ++row) {
+            for (int col = left; col <= right; ++col) {
+                Calligra::Tables::Cell cell(sel->lastSheet(), col, row);
+                if(!copiedCells.contains(cell)) {
+                    result += d->cellAsText(cell, col != right);
+                    copiedCells.append(cell);
+                }
+            }
+            result += '\n';
+        }
+        qDebug() << result;
+        QApplication::clipboard()->setText(result);
+    }
 }
 
 void CMTablesCanvas::loadDocument()
@@ -299,15 +341,7 @@ void CMTablesCanvas::onLongTapEnd ( const QPointF& location )
 
 void CMTablesCanvas::Private::updatePanGesture ( const QPointF& location )
 {
-    QPoint diff = canvas->activeSheet()->documentToCellCoordinates(QRectF(canvas->viewConverter()->viewToDocument(location), QSizeF(0, 0))).topLeft();
-    diff -= selection.topLeft();
-    
-    selection.setSize(QSize(diff.x(), diff.y()));
-
-    canvas->selection()->initialize(selection, canvas->activeSheet());
-    canvas->updateCanvas(QRectF(q->x(), q->y(), q->width(), q->height()));
-    
-    updateSelectionHandles();
+    q->selectionCursorHandle()->setPos(location);
 }
 
 void CMTablesCanvas::Private::updateSelectionFromHandles()
@@ -315,8 +349,11 @@ void CMTablesCanvas::Private::updateSelectionFromHandles()
     if(!q->selectionAnchorHandle()->isVisible() || !q->selectionCursorHandle()->isVisible()) {
         return;
     }
+
+    QPointF docAnchorPos = canvas->viewConverter()->viewToDocument(QPointF(q->selectionAnchorHandle()->x(), q->selectionAnchorHandle()->y()) + q->documentOffset());
+    QPointF docCursorPos = canvas->viewConverter()->viewToDocument(QPointF(q->selectionCursorHandle()->x(), q->selectionCursorHandle()->y()) + q->documentOffset());
     
-    selection = canvas->activeSheet()->documentToCellCoordinates(QRectF(canvas->viewConverter()->viewToDocument(QPointF(q->selectionAnchorHandle()->x(), q->selectionAnchorHandle()->y())), canvas->viewConverter()->viewToDocument(QPointF(q->selectionCursorHandle()->x(), q->selectionCursorHandle()->y()))));
+    selection = canvas->activeSheet()->documentToCellCoordinates(QRectF(docAnchorPos, docCursorPos));
 
     canvas->selection()->initialize(selection, canvas->activeSheet());
     canvas->updateCanvas(QRectF(q->x(), q->y(), q->width(), q->height()));
@@ -333,14 +370,37 @@ void CMTablesCanvas::Private::updateSelectionHandles()
     QRectF viewSelection = canvas->viewConverter()->documentToView(canvas->activeSheet()->cellCoordinatesToDocument(selection));
     
     q->selectionAnchorHandle()->blockSignals(true);
-    q->selectionAnchorHandle()->setPos(viewSelection.topLeft());
+    q->selectionAnchorHandle()->setPos(viewSelection.topLeft() - q->documentOffset());
     q->selectionAnchorHandle()->blockSignals(false);
     q->selectionAnchorHandle()->setVisible(true);
     
     q->selectionCursorHandle()->blockSignals(true);
-    q->selectionCursorHandle()->setPos(viewSelection.bottomRight());
+    q->selectionCursorHandle()->setPos(viewSelection.bottomRight() - q->documentOffset());
     q->selectionCursorHandle()->blockSignals(false);
     q->selectionCursorHandle()->setVisible(true);
+}
+
+void CMTablesCanvas::Private::documentOffsetMoved ( const QPoint& newOffset )
+{
+    if(!q->selectionAnchorHandle() || !q->selectionCursorHandle()) {
+        return;
+    }
+
+    if(q->selectionAnchorHandle()->isVisible() && q->selectionCursorHandle()->isVisible()) {
+        updateSelectionHandles();
+    }
+}
+
+QString CMTablesCanvas::Private::cellAsText ( const Calligra::Tables::Cell& cell, bool addTab )
+{
+    QString result;
+    if (!cell.isDefault()) {
+        result += cell.displayText().replace('\n', ' ');
+    }
+    if (addTab) {
+        result += '\t';
+    }
+    return result;
 }
 
 #include "CMTablesCanvas.moc"

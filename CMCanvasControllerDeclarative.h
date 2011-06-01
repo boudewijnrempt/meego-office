@@ -32,6 +32,8 @@ class CALLIGRAMOBILE_EXPORT CMCanvasControllerDeclarative : public QDeclarativeI
     Q_PROPERTY(bool canHavePageNotes READ canHavePageNotes NOTIFY canHavePageNotesChanged)
     Q_PROPERTY(QString currentPageNotes READ currentPageNotes NOTIFY currentPageNotesChanged)
 
+    Q_PROPERTY(int zoomLevel READ zoomLevel WRITE setZoomLevel NOTIFY zoomLevelChanged)
+
 public:
     CMCanvasControllerDeclarative(QDeclarativeItem* parent = 0);
     virtual ~CMCanvasControllerDeclarative();
@@ -82,6 +84,12 @@ public:
 
     QDeclarativeItem *selectionCursorHandle();
     QDeclarativeItem *selectionAnchorHandle();
+    
+    /**
+     * This is the current zoom level in percent, as used by the zoom controller
+     * The value will be between 50 and 200
+     */
+    int zoomLevel() const;
 
 public Q_SLOTS:
     virtual void setVerticalScrollHandle(QDeclarativeItem *handle);
@@ -134,6 +142,8 @@ Q_SIGNALS:
     
     void currentPageNotesChanged();
     void canHavePageNotesChanged();
+    
+    void zoomLevelChanged();
 
 protected:
     virtual bool eventFilter(QObject* target, QEvent* event );

@@ -33,6 +33,8 @@ public:
 
     Q_INVOKABLE int matchCount();
 
+    Q_INVOKABLE void copySelection();
+
 public Q_SLOTS:
     void nextSheet();
     void previousSheet();
@@ -67,6 +69,7 @@ private:
     Q_PRIVATE_SLOT(d, void matchFound(KoFindMatch match));
     Q_PRIVATE_SLOT(d, void updatePanGesture(const QPointF &location));
     Q_PRIVATE_SLOT(d, void updateSelectionFromHandles());
+    Q_PRIVATE_SLOT(d, void documentOffsetMoved(const QPoint &newOffset));
 
 private Q_SLOTS:
     virtual void onSingleTap(const QPointF &location);

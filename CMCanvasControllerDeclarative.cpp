@@ -275,14 +275,13 @@ void CMCanvasControllerDeclarative::setZoomLevel(int zoomPercentage)
     float newZoomLevel = qBound(KoZoomMode::minimumZoom(), ((float)zoomPercentage)/100.0,KoZoomMode::maximumZoom());
     d->zoomController->setZoom(KoZoomMode::ZOOM_CONSTANT, newZoomLevel);
 
-    QPoint center(width()/ 2, height() / 2);
-    float zoomDif = oldZoomLevel - newZoomLevel;
-    offset.rx() = (offset.x() * zoomDif) - (center.x() * zoomDif);
-    offset.ry() = (offset.y() * zoomDif) - (center.y() * zoomDif);
+    float zoomDif = newZoomLevel / oldZoomLevel;
+    offset.rx() = (offset.x() * zoomDif) + (1 - newZoomLevel) * center.x();
+    offset.ry() = (offset.y() * zoomDif);
     
+    resetDocumentOffset(offset.toPoint());
     d->updateMinMax();
     d->updateCanvasSize();
-    resetDocumentOffset(offset.toPoint());
     d->timer->start();
     
     emit zoomLevelChanged();

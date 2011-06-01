@@ -181,10 +181,11 @@ void CMCanvasInputProxy::handleGesture(QGestureEvent* event)
 void CMCanvasInputProxy::handleTouchBegin(QTouchEvent* event)
 {
     if(event->touchPoints().count() > 1) {
+        qDebug() << "TouchBegin";
         d->currentGestures |= PinchGesture;
         event->accept();
-        d->touchPinchScale = 1.0;
-        d->beginPinch();
+        //d->touchPinchScale = 1.0;
+        //d->beginPinch();
     }
 }
 
@@ -214,14 +215,14 @@ void CMCanvasInputProxy::handleTouchUpdate(QTouchEvent* event)
         d->centerPoint = (touchPoint0.pos() - touchPoint1.pos() * 0.5) + touchPoint1.pos();
     }
 
-    d->updatePinch(d->touchPinchScale);
+    //d->updatePinch(d->touchPinchScale);
 }
 
 void CMCanvasInputProxy::Private::handlePinchGesture(QPinchGesture* pinch)
 {
     if(!pinch)
         return;
-
+    
     currentGestures = CMCanvasInputProxy::PinchGesture;
     switch(pinch->state())
     {
@@ -282,12 +283,6 @@ void CMCanvasInputProxy::Private::beginPinch()
 {
     updateCanvas = false;
 
-    qreal zoomX, zoomY;
-    canvasController->zoomHandler()->zoom(&zoomX, &zoomY);
-
-    canvasController->setZoomMax(1.0 + (KoZoomMode::maximumZoom() - zoomX));
-    canvasController->setZoomMin(KoZoomMode::minimumZoom() / zoomX);
-
     QPointF origin = canvasController->mapToScene(canvasController->x(), canvasController->y());
     scaleProxy->setPixmap(QPixmap::grabWindow(QApplication::activeWindow()->winId(),
                                               origin.x(), origin.y(),
@@ -299,13 +294,11 @@ void CMCanvasInputProxy::Private::beginPinch()
 
 void CMCanvasInputProxy::Private::updatePinch(qreal scale)
 {
-    scaleProxy->setTransformOriginPoint(centerPoint);
-    //qreal newScale = scale;
-    if(scale > scaleProxy->scale() && scale > canvasController->zoomMax()) {
-        return;
-    } else if(scale < scaleProxy->scale() && scale < canvasController->zoomMin()) {
+    if(scale <= 0.0f) {
         return;
     }
+    qDebug() << scale;
+    scaleProxy->setTransformOriginPoint(centerPoint);
     scaleProxy->setScale(scale);
 }
 

@@ -135,7 +135,7 @@ CMCanvasControllerDeclarative::CMCanvasControllerDeclarative(QDeclarativeItem* p
 
     d->mass = 10.f;
     d->dragCoeff = 0.01f;
-    d->springCoeff = 0.6f;
+    d->springCoeff = 0.7f;
     d->timeStep = 1000.f / d->timer->interval();
 
     connect(this, SIGNAL(heightChanged()), this, SLOT(updateCanvasSize()));
@@ -191,14 +191,17 @@ void CMCanvasControllerDeclarative::resetDocumentOffset(const QPoint& offset)
     if(!offset.isNull()) {
         o = offset;
     } else {
-        o = QPoint(d->minX, d->minY);
+        o = QPoint(d->minX, d->maxY);
     }
     setDocumentOffset(o);
     proxyObject->emitMoveDocumentOffset(offset);
+
     if(d->inputProxy->updateCanvas()) {
         d->updateCanvasSize();
     }
+
     d->updateScrollHandles();
+    d->timer->start();
 }
 
 void CMCanvasControllerDeclarative::setScrollBarValue(const QPoint& value)
@@ -239,22 +242,24 @@ void CMCanvasControllerDeclarative::zoomBy(const QPoint& center, qreal zoom)
 {
     qreal tempZoom = d->zoom * zoom;
 
-    if(tempZoom > KoZoomMode::minimumZoom() && tempZoom < KoZoomMode::maximumZoom()) {
-        proxyObject->emitZoomBy(zoom);
-        d->zoom = tempZoom;
+    tempZoom = qBound(KoZoomMode::minimumZoom(), tempZoom, KoZoomMode::maximumZoom());
+  
+    proxyObject->emitZoomBy(zoom);
+    d->zoom = tempZoom;
 
-        QPointF offset = documentOffset();
-        QPointF position;
-        position.rx() = (zoom * -offset.x()) + (1 - zoom) * center.x();
-        position.ry() = (zoom * -offset.y()) + (1 - zoom) * center.y();
+    QPointF offset = documentOffset();
+    QPointF position;
+    position.rx() = (zoom * -offset.x()) + (1 - zoom) * center.x();
+    position.ry() = (zoom * -offset.y()) + (1 - zoom) * center.y();
 
-        QPoint oNew = (-position).toPoint();
+    QPoint oNew = (-position).toPoint();
 
-        d->updateMinMax();
-        d->updateCanvasSize();
-        resetDocumentOffset(oNew);
-        d->timer->start();
-    }
+    d->updateMinMax();
+    d->updateCanvasSize();
+    resetDocumentOffset(oNew);
+    d->timer->start();
+     
+    emit zoomLevelChanged();
 }
 
 int CMCanvasControllerDeclarative::zoomLevel() const
@@ -413,10 +418,8 @@ void CMCanvasControllerDeclarative::setCanvas(KoCanvasBase* canvas)
     d->updateCanvasSize();
     d->updateMinMax();
 
-    resetDocumentOffset(QPoint(d->minX, d->minY));
     setFocusProxy(d->canvas->canvasItem());
     proxyObject->emitCanvasSet(this);
-    d->timer->start();
 }
 
 void CMCanvasControllerDeclarative::setDrawShadow(bool drawShadow)
@@ -651,7 +654,7 @@ void CMCanvasControllerDeclarative::Private::timerUpdate()
     if(!isnan(maxY)) {
         if(-position.y() < minY) {
             float diff = (position.y() + minY) * springCoeff;
-            position.setY(-minY + diff * springCoeff);
+            position.setY(-minY + diff);
             if(qAbs(diff) > moveThreshold) {
                 positionValid = false;
             } else {

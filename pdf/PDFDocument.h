@@ -24,8 +24,6 @@ public:
 
     int pageCount();
     int pageLayout();
-    qreal width();
-    qreal height();
 
     QSizeF documentSize();
 

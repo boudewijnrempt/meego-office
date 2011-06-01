@@ -26,6 +26,7 @@ PDFCanvasController::~PDFCanvasController()
 
 void PDFCanvasController::loadDocument()
 {
+    emit progress(1);
     d->document = new PDFDocument(this, QUrl(file()));
     d->document->open();
 
@@ -36,4 +37,7 @@ void PDFCanvasController::loadDocument()
     connect(d->document, SIGNAL(documentSizeChanged(QSizeF)), zoomController(), SLOT(setDocumentSize(QSizeF)));
 
     d->document->requestPage(0);
+
+    emit progress(100);
+    emit completed();
 }

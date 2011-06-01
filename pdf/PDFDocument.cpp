@@ -71,16 +71,6 @@ int PDFDocument::pageLayout()
     return d->pageLayout;
 }
 
-qreal PDFDocument::height()
-{
-    return d->height;
-}
-
-qreal PDFDocument::width()
-{
-    return d->width;
-}
-
 QSizeF PDFDocument::documentSize()
 {
     return d->documentSize;

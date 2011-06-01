@@ -15,7 +15,7 @@ Item {
             loader.sourceComponent = tablesComponent;
         } else if(settings.currentType == DocumentListModel.PresentationType) {
             loader.sourceComponent = stageComponent;
-        } else if(settings.currentType == DocumentListModel.PDFDocumentTYpe) {
+        } else if(settings.currentType == DocumentListModel.PDFDocumentType) {
             loader.sourceComponent = pdfComponent;
         } else {
             console.log("Unable to open file. Unrecognised file type.");

@@ -18,7 +18,7 @@
 
 int main(int argc, char *argv[])
 {
-    //QApplication::setGraphicsSystem("raster");
+    QApplication::setGraphicsSystem("opengl");
     
     KAboutData aboutData(
         "intel-office-suite",

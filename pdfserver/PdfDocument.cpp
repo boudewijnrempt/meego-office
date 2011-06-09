@@ -6,6 +6,8 @@ PdfDocument::PdfDocument(const QString &url)
     : m_url(url)
     , m_pdf(0)
 {
+    m_mutex = new QMutex(QMutex::Recursive);
+    
     connect(&m_timeout, SIGNAL(timeout()), this, SLOT(timeout()));
     // timeout in half an hour
     m_timeout.singleShot(30 * 1000 * 60, this, SLOT(timeout()));
@@ -24,7 +26,6 @@ PdfDocument::~PdfDocument()
 
 bool PdfDocument::isValid()
 {
-    QMutexLocker lock(&m_mutex);
     return m_pdf && !m_pdf->isLocked();
 }
 
@@ -51,7 +52,6 @@ int PdfDocument::pageLayout()
 
 QMap<QString, QString> PdfDocument::infoMap()
 {
-    QMutexLocker lock(&m_mutex);
     QMap<QString, QString> infos;
     if (m_pdf && !m_pdf->isLocked()) {
         QStringList keys = m_pdf->infoKeys();
@@ -64,7 +64,6 @@ QMap<QString, QString> PdfDocument::infoMap()
 
 Poppler::Page *PdfDocument::page(int pageNumber)
 {
-    QMutexLocker lock(&m_mutex);
     Poppler::Page *page = 0;
     if (m_pdf && !m_pdf->isLocked()) {
         if (m_pageCache.contains(pageNumber)) {
@@ -78,6 +77,16 @@ Poppler::Page *PdfDocument::page(int pageNumber)
         }
     }
     return page;
+}
+
+void PdfDocument::lock()
+{
+    m_mutex->lock();
+}
+
+void PdfDocument::unlock()
+{
+    m_mutex->unlock();
 }
 
 #include "PdfDocument.moc"

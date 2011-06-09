@@ -49,7 +49,7 @@ private:
      * 5: -----------
      * 6: byte array representing a PNG image
      */
-    void getpage(const QUrl &url, PdfReply &reply);
+    void page(const QUrl &url, PdfReply &reply);
 
     /**
      * retrieve the PDF thumbnail or create one from the page
@@ -68,7 +68,7 @@ private:
      * 5: -----------
      * 6: byte array representing a PNG image of the thumbnail
      */
-    void thumbnail(const QUrl &url, PdfReply &reply);
+    void image(const QUrl &url, PdfReply &reply);
 
     /**
      * Find the rectangles in postscript points that surround the matches

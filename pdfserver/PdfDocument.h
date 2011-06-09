@@ -25,6 +25,9 @@ public:
 
     Poppler::Page *page(int pageNumber);
 
+    void lock();
+    void unlock();
+
 private slots:
 
     // not accesses for a certain period, let's ask the cache to delete us
@@ -39,7 +42,7 @@ private:
     QString m_url;
     QTimer m_timeout;
     Poppler::Document *m_pdf;
-    QMutex m_mutex;
+    QMutex *m_mutex;
     QMap<int, Poppler::Page*> m_pageCache;
 };
 

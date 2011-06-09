@@ -67,10 +67,10 @@ void PdfServerThread::run()
             QString command = url.path();
             if(command == "/open") {
                 open(url, reply);
-            } else if(command == "/getpage") {
-                getpage(url, reply);
-            } else if(command == "/thumbnail") {
-                thumbnail(url, reply);
+            } else if(command == "/page") {
+                page(url, reply);
+            } else if(command == "/image") {
+                image(url, reply);
             } else if(command == "/search") {
                 search(url, reply);
             } else if(command == "/text") {
@@ -119,6 +119,8 @@ void PdfServerThread::open( const QUrl& url, PdfReply& reply)
         return;
     }
 
+    doc->lock();
+
     qreal dpiX, dpiY;
     dpi(dpiX, dpiY, 1.0);
 
@@ -135,19 +137,19 @@ void PdfServerThread::open( const QUrl& url, PdfReply& reply)
 
     reply.setStatus(PdfReply::OK_Status);
     reply.setData("");
+
+    doc->unlock();
 }
 
-void PdfServerThread::getpage( const QUrl& url, PdfReply& reply)
+void PdfServerThread::page( const QUrl& url, PdfReply& reply)
 {
     QByteArray answer;
 
     QString file = url.queryItemValue("file");
     bool pageOk = false;
     int pageNumber = url.queryItemValue("page").toInt(&pageOk);
-    bool zoomOk = false;
-    qreal zoom = url.queryItemValue("zoom").toDouble(&zoomOk);
 
-    if(file.isEmpty() || !pageOk || !zoomOk) {
+    if(file.isEmpty() || !pageOk) {
         reply.setStatus(PdfReply::NotFound_Status);
         reply.setErrorString("Not found");
         return;
@@ -160,6 +162,8 @@ void PdfServerThread::getpage( const QUrl& url, PdfReply& reply)
         return;
     }
 
+    doc->lock();
+
     Poppler::Page *page = doc->page(pageNumber);
     if (!page) {
         reply.setStatus(PdfReply::NotFound_Status);
@@ -167,27 +171,19 @@ void PdfServerThread::getpage( const QUrl& url, PdfReply& reply)
         return;
     }
 
-    qreal dpiX, dpiY;
-    dpi(dpiX, dpiY, zoom);
-
-    // XXX: rendering quality isn't what it should be. Probably some error here
-    QImage img = page->renderToImage(dpiX, dpiY);
-    QByteArray imageBytes;
-    QBuffer buf(&imageBytes);
-    buf.open(QIODevice::WriteOnly | QIODevice::Append);
-    img.save(&buf, "PNG");
-
     reply.setProperty("File", file);
     reply.setProperty("PageNumber", QString::number(pageNumber));
-    reply.setProperty("ZoomLevel", QString::number(zoom));
     reply.setProperty("Orientation", QString::number(page->orientation()));
+    reply.setProperty("PageWidth", QString::number(page->pageSize().width()));
+    reply.setProperty("PageHeight", QString::number(page->pageSize().height()));
 
-    reply.setData(imageBytes);
-    reply.setContentType(PdfReply::Image_ContentType);
+    reply.setData("");
     reply.setStatus(PdfReply::OK_Status);
+
+    doc->unlock();
 }
 
-void PdfServerThread::thumbnail( const QUrl& url, PdfReply& reply)
+void PdfServerThread::image( const QUrl& url, PdfReply& reply)
 {
     QByteArray answer;
 
@@ -212,7 +208,8 @@ void PdfServerThread::thumbnail( const QUrl& url, PdfReply& reply)
         return;
     }
 
-    qDebug() << pageNumber;
+    doc->lock();
+
     Poppler::Page *page = doc->page(pageNumber);
     if (!page) {
         reply.setStatus(PdfReply::NotFound_Status);
@@ -249,6 +246,8 @@ void PdfServerThread::thumbnail( const QUrl& url, PdfReply& reply)
     reply.setData(imageBytes);
     reply.setContentType(PdfReply::Image_ContentType);
     reply.setStatus(PdfReply::OK_Status);
+
+    doc->unlock();
 }
 
 void PdfServerThread::search( const QUrl& url, PdfReply& reply)
@@ -272,6 +271,8 @@ void PdfServerThread::search( const QUrl& url, PdfReply& reply)
         reply.setErrorString("Could not open file");
         return;
     }
+
+    doc->lock();
 
     Poppler::Page *page = doc->page(pageNumber);
     if (!page) {
@@ -299,6 +300,8 @@ void PdfServerThread::search( const QUrl& url, PdfReply& reply)
 
     reply.setData(s.toUtf8());
     reply.setStatus(PdfReply::OK_Status);
+
+    doc->unlock();
 }
 
 void PdfServerThread::text( const QUrl& url, PdfReply& reply)
@@ -330,6 +333,8 @@ void PdfServerThread::text( const QUrl& url, PdfReply& reply)
         return;
     }
 
+    doc->lock();
+
     Poppler::Page *page = doc->page(pageNumber);
     if (!page) {
         reply.setStatus(PdfReply::NotFound_Status);
@@ -347,6 +352,8 @@ void PdfServerThread::text( const QUrl& url, PdfReply& reply)
 
     reply.setData(text.toUtf8());
     reply.setStatus(PdfReply::OK_Status);
+
+    doc->unlock();
 }
 
 void PdfServerThread::links( const QUrl& url, PdfReply& reply)
@@ -369,6 +376,8 @@ void PdfServerThread::links( const QUrl& url, PdfReply& reply)
         reply.setErrorString("Could not open file");
         return;
     }
+
+    doc->lock();
 
     Poppler::Page *page = doc->page(pageNumber);
     if (!page) {
@@ -405,6 +414,8 @@ void PdfServerThread::links( const QUrl& url, PdfReply& reply)
 
     reply.setData(s.toUtf8());
     reply.setStatus(PdfReply::OK_Status);
+
+    doc->unlock();
 }
 
 

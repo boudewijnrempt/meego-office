@@ -4,18 +4,18 @@
 #include <QtGui/QPainter>
 #include <QtGui/QStyleOptionGraphicsItem>
 #include <QtGui/QGraphicsScene>
+#include <QtNetwork/QNetworkAccessManager>
 
 #include <KoShapeManager.h>
 #include <KoZoomHandler.h>
 
 #include "PDFDocument.h"
+#include "PDFPage.h"
 
 class PDFCanvas::Private
 {
 public:
-    Private(PDFCanvas *qq) : q(qq) { }
-    
-//     void updateSize();
+    Private(PDFCanvas *qq) : q(qq), spacing(10) { }
 
     PDFCanvas *q;
 
@@ -24,17 +24,19 @@ public:
     
     PDFDocument *document;
     QPoint documentOffset;
+
+    qreal spacing;
 };
 
 PDFCanvas::PDFCanvas(PDFDocument *document, QGraphicsItem *parentItem)
     : QGraphicsWidget(parentItem), KoCanvasBase(this), d(new Private(this))
 {
     d->document = document;
+    connect(d->document, SIGNAL(opened()), SLOT(layout()));
+    connect(d->document->networkManager(), SIGNAL(finished(QNetworkReply*)), SLOT(layout()));
 
     d->shapeManager = new KoShapeManager(this);
     d->viewConverter = new KoZoomHandler();
-
-    //setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 PDFCanvas::~PDFCanvas()
@@ -127,6 +129,12 @@ void PDFCanvas::gridSize ( qreal* horizontal, qreal* vertical ) const
 
 }
 
+void PDFCanvas::setSpacing ( qreal spacing )
+{
+    d->spacing = spacing;
+    layout();
+}
+
 void PDFCanvas::update()
 {
     scene()->update(mapToScene(geometry()).boundingRect());
@@ -137,37 +145,27 @@ void PDFCanvas::paint ( QPainter* painter, const QStyleOptionGraphicsItem* optio
     painter->fillRect(geometry(), Qt::darkGray);
     
     painter->translate(-d->documentOffset);
-    
-    int pages = d->document->pageCount();
-    qreal width = d->document->documentSize().width() * d->viewConverter->zoom();
-    qreal height = (d->document->documentSize().height() / pages - 10) * d->viewConverter->zoom();
 
-    QFont font = painter->font();
-    font.setPixelSize(height/10);
-    painter->setFont(font);
-    int textWidth = painter->fontMetrics().width("Loading...");
-    
-    painter->setBrush(QBrush(Qt::white));
-    painter->setPen(QPen(Qt::lightGray));
-    for(int i = 0; i < pages; ++i) {
-        painter->drawRect(0, i * (height + 10), width, height);
-        painter->drawText((width/2) - textWidth / 2, i * (height + 10) + height/2, "Loading...");
+    QMatrix scaled(d->viewConverter->zoom(), 0.0, 0.0, d->viewConverter->zoom(), 0.0, 0.0);
+    QRectF geom(0.0, d->documentOffset.y(), geometry().width(), geometry().height());
+    QList<PDFPage*> visiblePages = d->document->visiblePages(geom);
+    foreach(PDFPage *page, visiblePages) {
+        QPolygonF bounds = page->boundingRect() * scaled;
+        page->paint(painter, bounds.boundingRect());
     }
 
-    int pageOne = int(d->documentOffset.y() / height);
-    int pageTwo = int((d->documentOffset.y() + height) / height);
-    
-    PDFDocument::PDFPage *page = d->document->page(pageOne, true);
-    if(!page) {
-        return;
-    }
-    painter->drawImage(QRectF(0, (height + 10) * pageOne, width, height), page->image);
+    d->document->updateCache();
+}
 
-    page = d->document->page(pageTwo, true);
-    if(!page) {
-        return;
+void PDFCanvas::layout()
+{
+    QList<PDFPage*> pages = d->document->allPages();
+    qreal heightAccum = 0.f;
+    foreach(PDFPage* page, pages) {
+        page->setPositionInDocument(heightAccum);
+        heightAccum += page->height() + d->spacing;
     }
-    painter->drawImage(QRectF(0, (height + 10) * pageTwo, width, height), page->image);
+    update();
 }
 
 #include "PDFCanvas.moc"

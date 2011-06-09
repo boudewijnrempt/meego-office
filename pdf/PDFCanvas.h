@@ -36,8 +36,11 @@ public:
 
     virtual void updateCanvas ( const QRectF& rc );
 
+    void setSpacing(qreal spacing);
+
 public Q_SLOTS:
     void update();
+    void layout();
     void setDocumentOffset(const QPoint &offset);
 
 protected:
@@ -45,9 +48,7 @@ protected:
 
 private:
     class Private;
-    QScopedPointer<Private> d;
-
-//     Q_PRIVATE_SLOT(d, void updateSize());
+    const QScopedPointer<Private> d;
 };
 
 #endif // PDFCANVAS_H

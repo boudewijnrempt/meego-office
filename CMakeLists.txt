@@ -58,6 +58,7 @@ set(intel-office-suite_SRCS
     pdf/PDFDocument.cpp
     pdf/PDFCanvasController.cpp
     pdf/PDFProcessManager.cpp
+    pdf/PDFPage.cpp
     
     main.cpp
 )

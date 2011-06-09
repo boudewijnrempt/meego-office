@@ -32,11 +32,9 @@ void PDFCanvasController::loadDocument()
 
     d->canvas = new PDFCanvas(d->document, this);
     setCanvas(d->canvas);
-    connect(d->document, SIGNAL(newPage(int)), d->canvas, SLOT(update()));
+    //connect(d->document, SIGNAL(newPage(int)), d->canvas, SLOT(update()));
     connect(proxyObject, SIGNAL(moveDocumentOffset(QPoint)), d->canvas, SLOT(setDocumentOffset(QPoint)));
     connect(d->document, SIGNAL(documentSizeChanged(QSizeF)), zoomController(), SLOT(setDocumentSize(QSizeF)));
-
-    d->document->requestPage(0);
 
     emit progress(100);
     emit completed();

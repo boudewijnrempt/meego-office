@@ -16,7 +16,7 @@ public:
 
 private:
     class Private;
-    QScopedPointer<Private> d;
+    const QScopedPointer<Private> d;
 
     Q_PRIVATE_SLOT(d, void error(QProcess::ProcessError error));
 

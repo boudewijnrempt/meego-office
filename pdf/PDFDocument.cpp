@@ -1,31 +1,40 @@
 #include "PDFDocument.h"
 
 #include <QtCore/QDebug>
+#include <QtCore/QTime>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
 
 #include "PDFServerConfig.h"
 #include "PDFProcessManager.h"
+#include "PDFPage.h"
 
 class PDFDocument::Private
 {
 public:
     Private(PDFDocument *qq)
-        : q(qq),
-          manager(0),
-          pageCount(0),
-          pageLayout(-1),
-          width(0.0),
-          height(0.0)
+      : q(qq),
+        manager(0),
+        memoryLimit(104857600), //100MiB
+        currentMemoryUsed(0),
+        minCachedPages(3),
+        pageCount(0),
+        pageLayout(-1),
+        width(0.0),
+        height(0.0)
     { }
     
-    QUrl buildRequestUrl(const QString &command, const QString &arguments = QString());
-    void requestFinished(QNetworkReply *reply);
+    void openRequestFinished();
+    //void updateCache();
 
     PDFDocument *q;
     
     QUrl path;
     QNetworkAccessManager *manager;
+
+    int memoryLimit;
+    int currentMemoryUsed;
+    int minCachedPages;
 
     int pageCount;
     int pageLayout;
@@ -35,8 +44,8 @@ public:
     QSizeF documentSize;
 
     QHash<QString, QString> metaData;
-    QHash<int, PDFPage*> pages;
-    QHash<int, QNetworkReply*> requests;
+    QList<PDFPage*> pages;
+    QList<PDFPage*> loadedPages;
 
     static const QString serverPath;
 };
@@ -48,7 +57,6 @@ PDFDocument::PDFDocument(QObject* parent, const QUrl &path)
 {
     d->path = path;
     d->manager = new QNetworkAccessManager(this);
-    connect(d->manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(requestFinished(QNetworkReply*)));
 }
 
 PDFDocument::~PDFDocument()
@@ -76,35 +84,46 @@ QSizeF PDFDocument::documentSize()
     return d->documentSize;
 }
 
-PDFDocument::PDFPage* PDFDocument::page ( int pageNumber, bool requestIfNotAvailable )
+PDFPage* PDFDocument::page ( int pageNumber )
 {
-    if(d->pages.contains(pageNumber)) {
-        return d->pages.value(pageNumber);
-    }
-
-    if(requestIfNotAvailable) {
-        requestPage(pageNumber);
+    if(pageNumber > 0 && pageNumber < d->pageCount) {
+        return d->pages.at(pageNumber);
     }
 
     return 0;
+}
+
+QList< PDFPage* > PDFDocument::allPages()
+{
+    return d->pages;
+}
+
+QList< PDFPage* > PDFDocument::visiblePages ( const QRectF& viewRect )
+{
+    QList<PDFPage*> pages;
+    foreach(PDFPage *page, d->pages) {
+        if(viewRect.intersects(page->boundingRect())) {
+            pages.append(page);
+        }
+    }
+    return pages;
+}
+
+QNetworkAccessManager* PDFDocument::networkManager()
+{
+    return d->manager;
+}
+
+QNetworkRequest PDFDocument::buildRequest( const QString& command, const QString& arguments )
+{
+    return QNetworkRequest(QUrl(d->serverPath + command + "?file=" + d->path.toLocalFile() + (arguments.isEmpty() ? "" : "&" + arguments)));
 }
 
 void PDFDocument::open()
 {
     PDFProcessManager::instance()->ensureRunning();
 
-    d->manager->get(QNetworkRequest(d->buildRequestUrl("open")));
-}
-
-void PDFDocument::requestPage ( int page, qreal zoom )
-{
-    if(page < 0 || page >= d->pageCount) {
-        return;
-    }
-
-    if(!d->pages.contains(page) || !d->requests.contains(page)) {
-        d->requests.insert(page, d->manager->get(QNetworkRequest(d->buildRequestUrl("getpage", QString("page=%1&zoom=%2").arg(page).arg(zoom)))));
-    }
+    connect(d->manager->get(buildRequest("open")), SIGNAL(finished()), SLOT(openRequestFinished()));
 }
 
 void PDFDocument::setPath ( const QUrl& path )
@@ -112,45 +131,65 @@ void PDFDocument::setPath ( const QUrl& path )
     d->path = path;
 }
 
-QUrl PDFDocument::Private::buildRequestUrl ( const QString& command, const QString& arguments )
+void PDFDocument::setMemoryLimit ( int bytes )
 {
-    return QUrl(serverPath + command + "?file=" + path.toLocalFile() + (arguments.isEmpty() ? "" : "&" + arguments));
+    d->memoryLimit = bytes;
 }
 
-void PDFDocument::Private::requestFinished(QNetworkReply *reply)
+void PDFDocument::setMinimumCachedPages ( int pages )
 {
-    if(reply->error() != QNetworkReply::NoError) {
-        qDebug() << "Error retrieving" << reply->request().url() << "Error:" << reply->errorString();
+    d->minCachedPages = pages;
+}
+
+void PDFDocument::updateCache()
+{
+    QMap<QTime, PDFPage*> sortedPages;
+    foreach(PDFPage* page, d->pages) {
+        sortedPages.insert(page->lastVisibleTime(), page);
     }
 
-    QString command = reply->request().url().path();
-    
-    if(command == "/open") {
-        pageCount = reply->rawHeader("X-PDF-NumberOfPages").toInt();
-        pageLayout = reply->rawHeader("X-PDF-PageLayout").toInt();
-
-        documentSize.setWidth(reply->rawHeader("X-PDF-Width").toFloat());
-        documentSize.setHeight((reply->rawHeader("X-PDF-Height").toFloat() + 10) * pageCount);
-        emit q->documentSizeChanged(documentSize);
-
-        reply->close();
-
-        emit q->opened();
-    } else if(command == "/getpage") {
-        QByteArray data = reply->readAll();
-
-        PDFPage *page = new PDFPage;
-        page->pageNumber = reply->rawHeader("X-PDF-PageNumber").toInt();
-        page->image.loadFromData(data, "PNG");
-        page->orientation = reply->rawHeader("X-PDF-Orientation").toInt();
-        page->width = page->image.width();
-        page->height = page->image.height();
-
-        pages.insert(page->pageNumber, page);
-        requests.remove(page->pageNumber);
-        
-        emit q->newPage(page->pageNumber);
+    QList<PDFPage*> notUnloadPages;
+    int remainingMemory = d->memoryLimit;
+    int numPages = 0;
+    QMap<QTime, PDFPage*>::iterator itr;
+    for(itr = sortedPages.begin(); itr != sortedPages.end(); ++itr) {
+        remainingMemory -= itr.value()->byteSize();
+        numPages++;
+        if(remainingMemory > 0 || numPages < d->minCachedPages) {
+            notUnloadPages.append(itr.value());
+        }
     }
+
+    foreach(PDFPage *page, d->pages) {
+        if(!notUnloadPages.contains(page)) {
+            page->unload();
+        }
+    }
+}
+
+void PDFDocument::Private::openRequestFinished()
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply*>(q->sender());
+    if(!reply || reply->error() != QNetworkReply::NoError) {
+        return;
+    }
+
+    pageCount = reply->rawHeader("X-PDF-NumberOfPages").toInt();
+    pageLayout = reply->rawHeader("X-PDF-PageLayout").toInt();
+
+    documentSize.setWidth(reply->rawHeader("X-PDF-Width").toFloat());
+    documentSize.setHeight((reply->rawHeader("X-PDF-Height").toFloat() + 10) * pageCount);
+    emit q->documentSizeChanged(documentSize);
+
+    reply->close();
+
+    for(int i = 0; i < pageCount; ++i) {
+        PDFPage *newPage = new PDFPage(q, i);
+        newPage->load();
+        pages.append(newPage);
+    }
+
+    emit q->opened();
 }
 
 #include "PDFDocument.moc"

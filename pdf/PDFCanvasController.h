@@ -16,7 +16,7 @@ public Q_SLOTS:
 
 private:
     class Private;
-    QScopedPointer<Private> d;
+    const QScopedPointer<Private> d;
 };
 
 #endif // PDFCANVASCONTROLLER_H

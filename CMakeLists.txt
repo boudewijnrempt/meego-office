@@ -78,6 +78,8 @@ set(intel-office-suite_ui_SRCS
     ui/DocumentsPage.qml
     ui/ViewDocumentPage.qml
     ui/Settings.qml
+    ui/ViewToolBar.qml
+    ui/SearchToolBar.qml
 )
 
 set(intel-office-suite_headers

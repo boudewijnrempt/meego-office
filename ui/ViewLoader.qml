@@ -259,7 +259,7 @@ Item {
         id: mainToolBar;
         
         onShowThumbnailAction: {
-            thumbnailMenu.setPosition(0, mapToItem( window, window.width, position).y);
+            thumbnailMenu.setPosition(x, mapToItem( window, window.width, y).y);
             thumbnailMenu.show();
         }
         
@@ -281,15 +281,17 @@ Item {
         
         onShowZoomAction: {
             zoomMenu.content.zoomLevel = loader.item.zoomLevel
-            zoomMenu.setPosition(showZoomControlButton.x + (showZoomControlButton.width / 2), mapToItem( window, window.width, position).y);
+            zoomMenu.setPosition(x, mapToItem( window, window.width, y).y);
             zoomMenu.show();
         }
         
         onFullScreenAction: {
-            window.fullScreen = true; window.fullContent = true;
+	    mainToolBar.hide();
+            window.fullScreen = true; 
+            window.fullContent = true;
         }
 
-        prevNextVisibile: settings.currentType != DocumentListModel.SpreadsheetType;
+        prevNextVisible: settings.currentType != DocumentListModel.SpreadsheetType;
     }
 
     SearchToolBar {

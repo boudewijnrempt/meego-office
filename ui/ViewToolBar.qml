@@ -5,13 +5,13 @@ import org.calligra.mobile 1.0
 BottomToolBar {
     id: base;
     
-    signal showThumbnailAction(position);
+    signal showThumbnailAction(real x, real y);
     signal nextPageAction();
     signal previousPageAction();
-    signal showZoomAction(position);
+    signal showZoomAction(real x, real y);
     signal fullScreenAction();
 
-    property prevNextVisible: true;
+    property bool prevNextVisible: true;
 
     property alias pageText: pageDescriptionText.text;
     property alias zoomText: zoomLevelText.text;
@@ -27,7 +27,7 @@ BottomToolBar {
             icon: "image://themedimage/icons/actionbar/mail-message-previous";
             hasBackground: false;
 
-            onClicked: base.showThumbnailAction(showThumbnailsButton.y);
+            onClicked: base.showThumbnailAction(showThumbnailsButton.x + showThumbnailsButton.width/2, showThumbnailsButton.y);
         }
 
         Button {
@@ -95,7 +95,7 @@ BottomToolBar {
             icon: "image://icon/page-zoom";
             hasBackground: false;
 
-            onClicked: base.showZoomAction(showZoomControlButton.y);
+            onClicked: base.showZoomAction(showZoomControlButton.x + showZoomControlButton.width/2, showZoomControlButton.y);
         }
 
         Button {

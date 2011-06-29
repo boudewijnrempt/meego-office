@@ -1,4 +1,4 @@
-project(intel-office-suite)
+project(meego-office-suite)
 
 ########################
 #########################
@@ -36,7 +36,7 @@ endif(QTMOBILITY_FOUND)
 set(PDF_SERVER_BINARY ${CMAKE_CURRENT_BINARY_DIR}/pdfserver/pdfserver CACHE PATH "Path to PDF Server binary")
 configure_file(pdf/PDFServerConfig.h.in ${CMAKE_CURRENT_BINARY_DIR}/PDFServerConfig.h)
 
-set(intel-office-suite_SRCS
+set(meego-office-suite_SRCS
     CMCanvasInputProxy.cpp
     CMCanvasControllerDeclarative.cpp
     CMIconImageProvider.cpp
@@ -63,13 +63,13 @@ set(intel-office-suite_SRCS
     main.cpp
 )
 
-set(intel-office-suite_ui_components_SRCS
+set(meego-office-suite_ui_components_SRCS
     components/qmldir
     components/DocumentThumbnailList.qml
     components/ZoomControl.qml
 )
 
-set(intel-office-suite_ui_SRCS
+set(meego-office-suite_ui_SRCS
     ui/main.qml
     ui/DocumentPicker.qml
     ui/Marker.qml
@@ -82,7 +82,7 @@ set(intel-office-suite_ui_SRCS
     ui/SearchToolBar.qml
 )
 
-set(intel-office-suite_headers
+set(meego-office-suite_headers
     CMCanvasControllerDeclarative.h
     CMIconImageProvider.h
     CMMainWindow.h
@@ -97,8 +97,8 @@ set(intel-office-suite_headers
     stage/CMStageDeclarativeView.h
 )
 
-kde4_add_executable(intel-office-suite ${intel-office-suite_SRCS})
-target_link_libraries(intel-office-suite
+kde4_add_executable(meego-office-suite ${meego-office-suite_SRCS})
+target_link_libraries(meego-office-suite
     ${QT_QTCORE_LIBRARY}
     ${QT_QTGUI_LIBRARY}
     ${QT_QTDECLARATIVE_LIBRARY}
@@ -114,26 +114,13 @@ target_link_libraries(intel-office-suite
     calligrastageprivate
 )
 
-set(CALLIGRA_MOBILE_LIBRARIES
-    ${QT_QTCORE_LIBRARY}
-    ${QT_QTGUI_LIBRARY}
-    ${QT_QTDECLARATIVE_LIBRARY}
-    ${KDE4_KDEUI_LIBS}
-    ${FLAKE_LIBRARY}
-    ${KOWIDGETS_LIBRARY}
-    ${KOPAGEAPP_LIBRARY}
-    intel-office-suite
-)
-
 if(QTMOBILITY_FOUND)
-    target_link_libraries(intel-office-suite ${QT_MOBILITY_SYSTEMINFO_LIBRARY})
+    target_link_libraries(meego-office-suite ${QT_MOBILITY_SYSTEMINFO_LIBRARY})
     set(CALLIGRA_MOBILE_LIBRARIES ${CALLIGRA_MOBILE_LIBRARIES} ${QT_MOBILITY_SYSTEMINFO_LIBRARY})
 endif()
 
-set_target_properties(intel-office-suite PROPERTIES VERSION ${GENERIC_KOFFICE_LIB_VERSION} SOVERSION ${GENERIC_KOFFICE_LIB_SOVERSION})
-
-install(TARGETS intel-office-suite ${INSTALL_TARGETS_DEFAULT_ARGS})
-install(FILES ${intel-office-suite_ui_SRCS} DESTINATION ${DATA_INSTALL_DIR}/intel-office-suite)
-install(FILES ${intel-office-suite_ui_components_SRCS} DESTINATION ${DATA_INSTALL_DIR}/intel-office-suite/org/calligra/mobile)
-install(FILES ${intel-office-suite_headers} DESTINATION ${INCLUDE_INSTALL_DIR})
-install(PROGRAMS intel-office-suite.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
+install(TARGETS meego-office-suite ${INSTALL_TARGETS_DEFAULT_ARGS})
+install(FILES ${meego-office-suite_ui_SRCS} DESTINATION ${DATA_INSTALL_DIR}/meego-office-suite)
+install(FILES ${meego-office-suite_ui_components_SRCS} DESTINATION ${DATA_INSTALL_DIR}/meego-office-suite/org/calligra/mobile)
+install(FILES ${meego-office-suite_headers} DESTINATION ${INCLUDE_INSTALL_DIR})
+install(PROGRAMS meego-office-suite.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})

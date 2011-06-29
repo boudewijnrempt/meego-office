@@ -1,9 +1,9 @@
 [Desktop Entry]
 Type=Application
 Name=Office Suite
-Exec=intel-office-suite %u
-GenericName=Document Viewer
-Comment=View documents
+Exec=meego-office-suite %u
+GenericName=Office Suite
+Comment=View Documents
 MimeType=application/vnd.oasis.opendocument.text;application/vnd.oasis.opendocument.text-template;application/x-kword;application/msword;application/rtf;text/plain;application/x-mswrite;application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/vnd.openxmlformats-officedocument.wordprocessingml.template;application/vnd.oasis.opendocument.spreadsheet;application/x-kspread;application/vnd.ms-excel;text/csv;application/x-quattropro;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;application/vnd.openxmlformats-officedocument.spreadsheetml.template;application/vnd.oasis.opendocument.presentation;application/vnd.oasis.opendocument.presentation-template;application/x-kpresenter;application/mspowerpoint;application/vnd.openxmlformats-officedocument.presentationml.presentation;application/vnd.openxmlformats-officedocument.presentationml.template;
 X-KDE-ServiceTypes=Calligra/Application
 Icon=kword

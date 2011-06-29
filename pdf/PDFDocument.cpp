@@ -98,16 +98,18 @@ QList< PDFPage* > PDFDocument::allPages()
     return d->pages;
 }
 
-QList< PDFPage* > PDFDocument::visiblePages ( const QRectF& viewRect )
+QList< PDFPage* > PDFDocument::visiblePages ( const QRectF& viewRect, const QMatrix &scaling )
 {
     QList<PDFPage*> pages;
     foreach(PDFPage *page, d->pages) {
-        if(viewRect.intersects(page->boundingRect())) {
+        if(viewRect.intersects((page->boundingRect() * scaling).boundingRect())) {
             pages.append(page);
         }
     }
     return pages;
 }
+
+
 
 QNetworkAccessManager* PDFDocument::networkManager()
 {
@@ -148,23 +150,32 @@ void PDFDocument::updateCache()
         sortedPages.insert(page->lastVisibleTime(), page);
     }
 
-    QList<PDFPage*> notUnloadPages;
+    QHash<PDFPage*, bool> pageStatus;
     int remainingMemory = d->memoryLimit;
     int numPages = 0;
-    QMap<QTime, PDFPage*>::iterator itr;
-    for(itr = sortedPages.begin(); itr != sortedPages.end(); ++itr) {
-        remainingMemory -= itr.value()->byteSize();
+    QMap<QTime, PDFPage*>::iterator sitr;
+    for(sitr = sortedPages.begin(); sitr != sortedPages.end(); ++sitr) {
+        pageStatus.insert(sitr.value(), remainingMemory <= 0 && numPages > d->minCachedPages);
+
+        remainingMemory -= sitr.value()->byteSize();
         numPages++;
-        if(remainingMemory > 0 || numPages < d->minCachedPages) {
-            notUnloadPages.append(itr.value());
-        }
     }
 
+    QHash<PDFPage*, bool>::const_iterator pitr;
+    for( pitr = pageStatus.begin(); pitr != pageStatus.end(); ++pitr) {
+        if( pitr.value())
+            pitr.key()->unload();
+    }
+}
+
+PDFPage* PDFDocument::pageAt ( const QPointF& location, const QMatrix& scaling )
+{
     foreach(PDFPage *page, d->pages) {
-        if(!notUnloadPages.contains(page)) {
-            page->unload();
+        if((page->boundingRect() * scaling).boundingRect().contains(location)) {
+            return page;
         }
     }
+    return 0;
 }
 
 void PDFDocument::Private::openRequestFinished()
@@ -177,15 +188,16 @@ void PDFDocument::Private::openRequestFinished()
     pageCount = reply->rawHeader("X-PDF-NumberOfPages").toInt();
     pageLayout = reply->rawHeader("X-PDF-PageLayout").toInt();
 
-    documentSize.setWidth(reply->rawHeader("X-PDF-Width").toFloat());
-    documentSize.setHeight((reply->rawHeader("X-PDF-Height").toFloat() + 10) * pageCount);
+    qreal width = reply->rawHeader("X-PDF-Width").toFloat();
+    qreal height = reply->rawHeader("X-PDF-Height").toFloat();
+    documentSize.setWidth(width);
+    documentSize.setHeight((height + 10) * pageCount);
     emit q->documentSizeChanged(documentSize);
 
     reply->close();
 
     for(int i = 0; i < pageCount; ++i) {
-        PDFPage *newPage = new PDFPage(q, i);
-        newPage->load();
+        PDFPage *newPage = new PDFPage(q, i, width, height);
         pages.append(newPage);
     }
 

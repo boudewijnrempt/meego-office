@@ -24,9 +24,10 @@ public:
     QSizeF documentSize();
 
     PDFPage *page(int pageNumber);
+    PDFPage *pageAt(const QPointF &location, const QMatrix &scaling);
     QList<PDFPage*> allPages();
 
-    QList<PDFPage*> visiblePages(const QRectF &viewRect);
+    QList<PDFPage*> visiblePages( const QRectF& viewRect, const QMatrix& scaling);
 
     QNetworkRequest buildRequest(const QString &command, const QString &arguments = QString());
 

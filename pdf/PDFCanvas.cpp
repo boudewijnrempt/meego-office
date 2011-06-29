@@ -11,6 +11,7 @@
 
 #include "PDFDocument.h"
 #include "PDFPage.h"
+#include "PDFSelection.h"
 
 class PDFCanvas::Private
 {
@@ -23,6 +24,7 @@ public:
     KoZoomHandler *viewConverter;
     
     PDFDocument *document;
+    PDFSelection *selection;
     QPoint documentOffset;
 
     qreal spacing;
@@ -37,6 +39,10 @@ PDFCanvas::PDFCanvas(PDFDocument *document, QGraphicsItem *parentItem)
 
     d->shapeManager = new KoShapeManager(this);
     d->viewConverter = new KoZoomHandler();
+
+    d->selection = new PDFSelection(document, this);
+    d->selection->setZValue(5);
+    d->selection->setVisible(false);
 }
 
 PDFCanvas::~PDFCanvas()
@@ -140,6 +146,11 @@ void PDFCanvas::update()
     scene()->update(mapToScene(geometry()).boundingRect());
 }
 
+PDFSelection* PDFCanvas::selection()
+{
+    return d->selection;
+}
+
 void PDFCanvas::paint ( QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget )
 {
     painter->fillRect(geometry(), Qt::darkGray);
@@ -148,7 +159,7 @@ void PDFCanvas::paint ( QPainter* painter, const QStyleOptionGraphicsItem* optio
 
     QMatrix scaled(d->viewConverter->zoom(), 0.0, 0.0, d->viewConverter->zoom(), 0.0, 0.0);
     QRectF geom(0.0, d->documentOffset.y(), geometry().width(), geometry().height());
-    QList<PDFPage*> visiblePages = d->document->visiblePages(geom);
+    QList<PDFPage*> visiblePages = d->document->visiblePages(geom, scaled);
     foreach(PDFPage *page, visiblePages) {
         QPolygonF bounds = page->boundingRect() * scaled;
         page->paint(painter, bounds.boundingRect());
@@ -166,6 +177,11 @@ void PDFCanvas::layout()
         heightAccum += page->height() + d->spacing;
     }
     update();
+}
+
+QMatrix PDFCanvas::scaling()
+{
+    return QMatrix(d->viewConverter->zoom(), 0.0, 0.0, d->viewConverter->zoom(), 0.0, 0.0);
 }
 
 #include "PDFCanvas.moc"

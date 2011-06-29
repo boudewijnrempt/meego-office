@@ -12,7 +12,7 @@ class PDFPage : public QObject
 {
 Q_OBJECT
 public:
-    explicit PDFPage (PDFDocument *document, int pageNumber);
+    explicit PDFPage (PDFDocument *document, int pageNumber, qreal width, qreal height);
     virtual ~PDFPage();
 
     int pageNumber();

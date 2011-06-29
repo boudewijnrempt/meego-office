@@ -5,7 +5,9 @@
 #include <KoCanvasBase.h>
 #include <KoShapeControllerBase.h>
 
+class PDFSelection;
 class PDFDocument;
+class PDFPage;
 class PDFCanvas : public QGraphicsWidget, public KoCanvasBase, public KoShapeControllerBase
 {
 Q_OBJECT
@@ -38,6 +40,9 @@ public:
     virtual void updateCanvas ( const QRectF& rc );
 
     void setSpacing(qreal spacing);
+
+    PDFSelection *selection();
+    QMatrix scaling();
 
 public Q_SLOTS:
     void update();

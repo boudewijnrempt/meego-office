@@ -12,7 +12,7 @@
 class PDFPage::Private
 {
 public:
-    Private() : width(400), height(500) { }
+    Private() : loaded(false) { }
     void requestFinished(QNetworkReply *reply);
     
     PDFDocument *document;
@@ -22,19 +22,24 @@ public:
     qreal documentPosition;
     qreal width;
     qreal height;
+    bool loaded;
 
     QTime lastVisibleTime;
 
     QHash<QString, QImage> images;
+    QList<QNetworkReply*> requests;
 };
 
-PDFPage::PDFPage (PDFDocument *document, int pageNumber)
+PDFPage::PDFPage (PDFDocument *document, int pageNumber, qreal width, qreal height)
     : QObject(document), d(new Private)
 {
     d->document = document;
     d->manager = document->networkManager();
     connect(d->manager, SIGNAL(finished(QNetworkReply*)), SLOT(requestFinished(QNetworkReply*)));
     d->pageNumber = pageNumber;
+
+    d->width = width;
+    d->height = height;
 }
 
 PDFPage::~PDFPage()
@@ -84,7 +89,7 @@ QImage PDFPage::image ( int width, int height )
     if(d->images.contains(id)) {
         return d->images.value(id);
     } else {
-        d->manager->get(d->document->buildRequest("image", QString("page=%1&width=%2&height=%3").arg(d->pageNumber).arg(width).arg(height)));
+        d->requests.append( d->manager->get(d->document->buildRequest("image", QString("page=%1&width=%2&height=%3").arg(d->pageNumber).arg(width).arg(height))) );
         if(d->images.size() > 0) {
             return d->images.begin().value();
         }
@@ -100,14 +105,22 @@ QTime PDFPage::lastVisibleTime()
 
 void PDFPage::load()
 {
-    d->manager->get(d->document->buildRequest("page", QString("page=%1").arg(d->pageNumber)));
+    if(!d->loaded) {
+        d->requests.append( d->manager->get(d->document->buildRequest("page", QString("page=%1").arg(d->pageNumber))) );
+        d->loaded = true;
+    }
 }
 
 void PDFPage::unload()
 {
+    foreach(QNetworkReply *reply, d->requests) {
+        reply->close();
+    }
+
     QImage thumb = d->images.value("40x50");
     d->images.clear();
     d->images.insert("40x50", thumb);
+    d->loaded = false;
 }
 
 void PDFPage::setPositionInDocument ( qreal position )
@@ -117,6 +130,10 @@ void PDFPage::setPositionInDocument ( qreal position )
 
 void PDFPage::paint ( QPainter* painter, const QRectF& target )
 {
+    if(!d->loaded) {
+        load();
+    }
+    
     d->lastVisibleTime = QTime::currentTime();
     
     painter->setBrush(QBrush(Qt::black));
@@ -137,8 +154,14 @@ void PDFPage::paint ( QPainter* painter, const QRectF& target )
 
 void PDFPage::Private::requestFinished ( QNetworkReply* reply )
 {
+    QString command = reply->request().url().path();
+    if(command != "/page" && command != "/image") {
+        return;
+    }
+    
     if(reply->error() != QNetworkReply::NoError) {
         qDebug() << "Error retrieving page:" << reply->errorString();
+        loaded = false;
         return;
     }
 
@@ -146,14 +169,14 @@ void PDFPage::Private::requestFinished ( QNetworkReply* reply )
         return;
     }
 
-    if(reply->request().url().path() == "/page") {
+    requests.removeOne(reply);
+
+    if(command == "/page") {
         width = reply->rawHeader("X-PDF-PageWidth").toFloat();
         height = reply->rawHeader("X-PDF-PageHeight").toFloat();
-        manager->get(document->buildRequest("image", QString("page=%1&width=%2&height=%3").arg(pageNumber).arg(int(width / 10)).arg(int(height / 10))));
     } else {
         QImage image;
         image.loadFromData(reply->readAll());
-
         if(!image.isNull()) {
             images.insert(QString("%1x%2").arg(image.width()).arg(image.height()), image);
         }

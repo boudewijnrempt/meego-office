@@ -94,12 +94,11 @@ void PdfServerThread::run()
         socket.close();
     }
 
-    while(socket.bytesToWrite() > 0) {
-        socket.waitForBytesWritten();
+    while(socket.bytesToWrite() > 0 && socket.state() == QAbstractSocket::ConnectedState) {
+        socket.waitForBytesWritten(5000);
     }
     socket.close();
 }
-
 
 void PdfServerThread::open( const QUrl& url, PdfReply& reply)
 {

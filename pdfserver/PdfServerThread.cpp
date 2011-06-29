@@ -341,7 +341,9 @@ void PdfServerThread::text( const QUrl& url, PdfReply& reply)
         return;
     }
 
-    QRectF textRect = QRectF(QPointF(left, top), QPointF(right, bottom));
+    qreal width = page->pageSizeF().width();
+    qreal height = page->pageSizeF().height();
+    QRectF textRect = QRectF(QPointF(left * width, top * height), QPointF(right * width, bottom * height));
     QString text = page->text(textRect);
 
     reply.setProperty("File", file);

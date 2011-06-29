@@ -13,7 +13,7 @@
 #include <KDE/KCmdLineArgs>
 #include <KDE/KUrl>
 
-#include <kofficeversion.h>
+#include <calligraversion.h>
 
 #include "CMIconImageProvider.h"
 #include "CMCanvasControllerDeclarative.h"
@@ -51,7 +51,7 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
         d->engine->addImportPath(path);
     }
     d->engine->addImageProvider("icon", new CMIconImageProvider);
-    d->view->rootContext()->setContextProperty("KOFFICE_VERSION_STRING", KOFFICE_VERSION_STRING);
+    d->view->rootContext()->setContextProperty("CALLIGRA_VERSION_STRING", CALLIGRA_VERSION_STRING);
     d->view->rootContext()->setContextProperty("qApp", qApp);
 
     d->view->setSource(QUrl(ui));

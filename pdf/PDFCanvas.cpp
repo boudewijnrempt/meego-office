@@ -109,7 +109,7 @@ void PDFCanvas::updateCanvas ( const QRectF& rc )
 
 }
 
-void PDFCanvas::addCommand ( QUndoCommand* command )
+void PDFCanvas::addCommand ( KUndo2Command* command )
 {
 
 }

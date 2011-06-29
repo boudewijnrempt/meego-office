@@ -29,7 +29,8 @@ public:
 
     virtual KoViewConverter* viewConverter() const;
     virtual KoToolProxy* toolProxy() const;
-    virtual void addCommand ( QUndoCommand* command );
+    virtual void addCommand ( KUndo2Command* command );
+
     virtual void setCursor ( const QCursor& cursor );
     virtual bool snapToGrid() const;
     virtual void gridSize ( qreal* horizontal, qreal* vertical ) const;

@@ -17,6 +17,7 @@
 
 #include "words/CMWordsCanvas.h"
 #include "tables/CMTablesCanvas.h"
+#include "tables/CMTablesHeader.h"
 #include "stage/CMStageCanvas.h"
 #include "CMDocumentThumbnailListModel.h"
 #include "pdf/PDFCanvasController.h"
@@ -53,6 +54,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<CMDocumentThumbnailListModel>("org.calligra.mobile", 1, 0, "DocumentThumbnailListModel");
     qmlRegisterType<CMWordsCanvas>("org.calligra.mobile", 1, 0, "WordsCanvas");
     qmlRegisterType<CMTablesCanvas>("org.calligra.mobile", 1, 0, "TablesCanvas");
+    qmlRegisterType<CMTablesHeader>("org.calligra.mobile", 1, 0, "TablesHeader");
     qmlRegisterType<CMStageCanvas>("org.calligra.mobile", 1, 0, "StageCanvas");
     qmlRegisterType<PDFCanvasController>("org.calligra.mobile", 1, 0, "PDFCanvas");
 

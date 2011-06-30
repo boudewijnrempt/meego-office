@@ -48,6 +48,9 @@ Item {
             thumbnailList.currentIndex = 0
             thumbnailList.model.setDocument(loader.item.document, settings.currentUuid);
             slideNotes.text = loader.item.currentPageNotes;
+            print(loader.item);
+            rowHeader.canvas = loader.item;
+            columnHeader.canvas = loader.item;
             loadingScreen.hide();
 	    loader.item.selectionAnchorHandle = anchorMarker;
 	    loader.item.selectionCursorHandle = cursorMarker;
@@ -69,14 +72,29 @@ Item {
             }
         }
 
+        TablesHeader {
+            id: rowHeader
+            vertical: true
+            anchors.top: loader.top
+            anchors.left: parent.left
+            anchors.bottom: loader.bottom
+            width: 20
+        }
+        TablesHeader {
+            id: columnHeader
+            anchors.top: parent.top
+            anchors.left: loader.left
+            anchors.right: loader.right
+            height: 20
+        }
+
         Loader {
             id: loader
-            anchors.top: parent.top;
-            anchors.left: parent.left;
-            width: centralView.width;
+            anchors.top: columnHeader.bottom;
+            anchors.left: rowHeader.right;
+            width: centralView.width - rowHeader.width;
+            height: parent.height - columnHeader.height - (mainToolBar.visible || searchToolBar.visible ? mainToolBar.height : 0);
             clip: true;
-
-            height: parent.height - (mainToolBar.visible || searchToolBar.visible ? mainToolBar.height : 0);
 
             Connections {
                 target: loader.item
@@ -195,7 +213,7 @@ Item {
             anchors.top: loader.top
             anchors.bottom: loader.bottom
             anchors.left: loader.right
-            width: root.width * 0.25
+            width: (root.width * 0.25) - rowHeader.width
             property alias text: noteText.text
             z: 10
             Rectangle {
@@ -341,7 +359,7 @@ Item {
         TablesCanvas {
             id: document
             anchors.fill: parent
-            function setPage(newPage) { sheet = newPage }
+            function setPage(newPage) { document.sheet = newPage }
             onSheetChanged: { thumbnailList.currentIndex = newIndex; mainToolBar.pageText = document.sheetName; }
         }
     }

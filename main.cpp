@@ -21,11 +21,11 @@ int main(int argc, char *argv[])
     QApplication::setGraphicsSystem("opengl");
     
     KAboutData aboutData(
-        "intel-office-suite",
+        "meego-office-suite",
         0,
-        ki18n("Intel Office Suite"),
+        ki18n("MeeGo Office Suite"),
         "0.1",
-        ki18n("Office Suite for Intel"),
+        ki18n("Office Suite for MeeGo, Developed by Intel"),
         KAboutData::License_Unknown,
         ki18n("(c) 2010"),
         ki18n("Some text..."),

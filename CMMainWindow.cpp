@@ -46,13 +46,14 @@ CMMainWindow::CMMainWindow( const QString &ui, const QString &file, QWidget *par
     d->view = new QDeclarativeView(this);
     d->engine = d->view->engine();
 
-    QStringList dataPaths = KGlobal::dirs()->findDirs("data", "intel-office-suite");
+    QStringList dataPaths = KGlobal::dirs()->findDirs("data", "meego-office-suite");
     foreach(const QString& path, dataPaths) {
         d->engine->addImportPath(path);
     }
     d->engine->addImageProvider("icon", new CMIconImageProvider);
     d->view->rootContext()->setContextProperty("CALLIGRA_VERSION_STRING", CALLIGRA_VERSION_STRING);
     d->view->rootContext()->setContextProperty("qApp", qApp);
+    d->view->rootContext()->setContextProperty("mainWindow", this);
 
     d->view->setSource(QUrl(ui));
     d->view->setResizeMode(QDeclarativeView::SizeRootObjectToView);

@@ -43,6 +43,7 @@ set(meego-office-suite_SRCS
     words/CMWordsCanvas.cpp
 
     tables/CMTablesCanvas.cpp
+    tables/CMTablesHeader.cpp
 
     stage/CMStageCanvas.cpp
     stage/CMStageDeclarativeView.cpp

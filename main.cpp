@@ -1,11 +1,16 @@
 #include <QtCore/QDebug>
 #include <QtDeclarative/qdeclarative.h>
 
-#include <KDE/KApplication>
 #include <KDE/KAboutData>
 #include <KDE/KCmdLineArgs>
 #include <KDE/KStandardDirs>
 #include <KDE/KComponentData>
+
+#ifdef __x86_64__
+#include </opt/arch32/usr/include/meegoqmllauncher/launcherapp.h>
+#else
+#include <meegoqmllauncher/launcherapp.h>
+#endif
 
 #include "CMMainWindow.h"
 #include "CMDocumentListModel.h"
@@ -18,8 +23,6 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication::setGraphicsSystem("opengl");
-    
     KAboutData aboutData(
         "meego-office-suite",
         0,
@@ -42,7 +45,7 @@ int main(int argc, char *argv[])
     if(args->count() > 0)
         fileName = args->arg(0);
     
-    KApplication app;
+    LauncherApp app(argc, argv);
  
     qmlRegisterType<CMDocumentListModel>("org.calligra.mobile", 1, 0, "DocumentListModel");
     qmlRegisterType<CMDocumentThumbnailListModel>("org.calligra.mobile", 1, 0, "DocumentThumbnailListModel");
@@ -51,7 +54,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<CMStageCanvas>("org.calligra.mobile", 1, 0, "StageCanvas");
     qmlRegisterType<PDFCanvasController>("org.calligra.mobile", 1, 0, "PDFCanvas");
 
-    CMMainWindow window(KStandardDirs::locate("appdata", "main.qml"), fileName);
+    CMMainWindow window(KStandardDirs::locate("data", "meego-office-suite/main.qml"), fileName);
     window.showMaximized();
 
     return app.exec();

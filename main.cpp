@@ -23,6 +23,8 @@
 
 int main(int argc, char *argv[])
 {
+    QApplication::setGraphicsSystem("opengl");
+
     KAboutData aboutData(
         "meego-office-suite",
         0,

@@ -11,27 +11,20 @@ find_package(KDE4 4.3.0 REQUIRED)
 find_package(Qt4 4.7.1 REQUIRED)
 
 include(KDE4Defaults)
-include(MacroLibrary)
-include(MacroAdditionalCleanFiles)
-include(MacroAddFileDependencies)
-include(FindPkgConfig)
 
 # Find Calligra
 find_package(CalligraLibs REQUIRED)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-find_package(QtMobility COMPONENTS SystemInfo)
-
-pkg_check_modules(QSPARQL REQUIRED QtSparql)
+find_package(QtMobility COMPONENTS Sensors REQUIRED)
+find_package(MeegoQmlLauncher REQUIRED)
+find_package(QtSparql REQUIRED)
 
 include_directories(${QT_INCLUDES} ${KDE4_INCLUDES} ${QSPARQL_INCLUDE_DIRS}
                     ${KOMAIN_INCLUDES} ${KOPAGEAPP_INCLUDES} ${WORDS_INCLUDES}
-                    ${TABLES_INCLUDES} ${STAGE_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR})
-
-if(QTMOBILITY_FOUND)
-    include_directories(${QT_MOBILITY_GLOBAL_INCLUDE_DIR} ${QT_MOBILITY_SYSTEMINFO_INCLUDE_DIR})
-    add_definitions(-DWITH_QT_SYSTEMINFO)
-endif(QTMOBILITY_FOUND)
+                    ${TABLES_INCLUDES} ${STAGE_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR}
+                    ${QTMOBILITY_INCLUDE_DIRS} ${MEEGO_QML_LAUNCHER_INCLUDE_DIR}
+                   )
 
 set(PDF_SERVER_BINARY ${CMAKE_CURRENT_BINARY_DIR}/pdfserver/pdfserver CACHE PATH "Path to PDF Server binary")
 configure_file(pdf/PDFServerConfig.h.in ${CMAKE_CURRENT_BINARY_DIR}/PDFServerConfig.h)
@@ -105,20 +98,18 @@ target_link_libraries(meego-office-suite
     ${QT_QTDECLARATIVE_LIBRARY}
     ${KDE4_KDEUI_LIBS}
     ${KDE4_KFILE_LIBS}
-    ${QSPARQL_LIBRARIES}
+    ${QTSPARQL_LIBRARY}
     ${FLAKE_LIBRARY}
     ${KOWIDGETS_LIBRARY}
     ${KOPAGEAPP_LIBRARY}
-
     wordsprivate
     calligratablescommon
     calligrastageprivate
+    ${QTMOBILITY_LIBRARIES}
+    ${MEEGO_QMLLAUNCHER_LIBRARY}
 )
 
-if(QTMOBILITY_FOUND)
-    target_link_libraries(meego-office-suite ${QT_MOBILITY_SYSTEMINFO_LIBRARY})
-    set(CALLIGRA_MOBILE_LIBRARIES ${CALLIGRA_MOBILE_LIBRARIES} ${QT_MOBILITY_SYSTEMINFO_LIBRARY})
-endif()
+add_subdirectory(icons)
 
 install(TARGETS meego-office-suite ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${meego-office-suite_ui_SRCS} DESTINATION ${DATA_INSTALL_DIR}/meego-office-suite)

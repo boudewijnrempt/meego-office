@@ -20,6 +20,8 @@ Item {
         } else {
             loader.sourceComponent = invalidComponent;
         }
+        rowHeader.canvas = loader.item;
+        columnHeader.canvas = loader.item;
 
         loader.item.file = file
         loader.item.progress.connect(centralView.onProgress);
@@ -48,9 +50,13 @@ Item {
             thumbnailList.currentIndex = 0
             thumbnailList.model.setDocument(loader.item.document, settings.currentUuid);
             slideNotes.text = loader.item.currentPageNotes;
-            print(loader.item);
-            rowHeader.canvas = loader.item;
-            columnHeader.canvas = loader.item;
+            if(settings.currentType == DocumentListModel.SpreadsheetType) {
+                headerSeparator.height = 30;
+                headerSeparator.width = 66;
+            } else {
+                headerSeparator.height = 0;
+                headerSeparator.width = 0;
+            }
             loadingScreen.hide();
 	    loader.item.selectionAnchorHandle = anchorMarker;
 	    loader.item.selectionCursorHandle = cursorMarker;
@@ -92,8 +98,8 @@ Item {
             color: "black"
             anchors.top: parent.top
             anchors.left: parent.left
-            width: 66
-            height: 30
+            width: 0
+            height: 0
         }
 
         Loader {

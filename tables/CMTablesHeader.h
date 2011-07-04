@@ -10,14 +10,14 @@ class CMTablesHeader : public QDeclarativeItem
 {
     Q_OBJECT
     Q_PROPERTY(bool vertical READ vertical WRITE setVertical NOTIFY verticalChanged)
-    Q_PROPERTY(CMTablesCanvas* canvas READ canvas WRITE setCanvas NOTIFY canvasChanged)
+    Q_PROPERTY(QObject* canvas READ canvas WRITE setCanvas NOTIFY canvasChanged)
 
     public:
         explicit CMTablesHeader(QDeclarativeItem *parent = 0);
         void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
         bool vertical() const;
-        CMTablesCanvas* canvas() const;
+        QObject* canvas() const;
 
     signals:
         void verticalChanged();
@@ -25,7 +25,7 @@ class CMTablesHeader : public QDeclarativeItem
 
     public slots:
         void setVertical(bool vertical);
-        void setCanvas(CMTablesCanvas* canvas);
+        void setCanvas(QObject* canvas);
 
     private slots:
         void sheetChanged(int newSheet);

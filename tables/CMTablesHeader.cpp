@@ -81,14 +81,15 @@ bool CMTablesHeader::vertical() const
     return m_vertical;
 }
 
-void CMTablesHeader::setCanvas(CMTablesCanvas* canvas)
+void CMTablesHeader::setCanvas(QObject* canvas)
 {
-    qDebug() << "Setting canvas for header, with the canvas" << canvas;
+    // If we've already got a canvas, disconnect from it
     if(m_canvas)
     {
         disconnect(m_canvas, SIGNAL(docMoved()), this, SLOT(docMoved()));
         disconnect(m_canvas, SIGNAL(sheetChanged()), this, SLOT(sheetChanged()));
     }
+
     m_canvas = qobject_cast<CMTablesCanvas*>(canvas);
     if(m_canvas)
     {
@@ -101,7 +102,7 @@ void CMTablesHeader::setCanvas(CMTablesCanvas* canvas)
     emit canvasChanged();
 }
 
-CMTablesCanvas* CMTablesHeader::canvas() const
+QObject* CMTablesHeader::canvas() const
 {
     return m_canvas;
 }
@@ -112,6 +113,7 @@ void CMTablesHeader::sheetChanged(int newSheet)
     if(!doc)
     {
         qDebug() << "Doc wasn't a doc! :O";
+        m_sheet = 0;
         return;
     }
     m_sheet = doc->map()->sheet( newSheet );

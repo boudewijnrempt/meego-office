@@ -28,7 +28,7 @@ class CMTablesHeader : public QDeclarativeItem
         void setCanvas(CMTablesCanvas* canvas);
 
     private slots:
-        void sheetChanged();
+        void sheetChanged(int newSheet);
         void docMoved();
 
     private:

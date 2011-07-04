@@ -60,6 +60,10 @@ void CMTablesHeader::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
             if(!col)
                 break;
         }
+        // Draw the final line...
+        QPoint pos1 = vc->documentToView(QPoint(cummulativeWidth, 0)).toPoint();
+        QPoint pos2 = vc->documentToView(QPoint(cummulativeWidth, visibleHeight)).toPoint();
+        p->drawLine(pos1, pos2);
     }
 }
 

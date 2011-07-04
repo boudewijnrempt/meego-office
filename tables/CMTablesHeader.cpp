@@ -23,12 +23,12 @@ void CMTablesHeader::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
     if(!m_sheet)
         return;
     p->setPen(Qt::white);
+    KoViewConverter* vc = m_canvas->canvas()->viewConverter();
+    qreal visibleHeight = vc->viewToDocumentY(height());
+    qreal visibleWidth = vc->viewToDocumentX(width());
     if(m_vertical)
     {
         const Calligra::Tables::RowFormatStorage* storage = m_sheet->rowFormats();
-        KoViewConverter* vc = m_canvas->canvas()->viewConverter();
-        qreal visibleHeight = height();
-        qreal visibleWidth = width();
         int i = 0;
         qreal cummulativeHeight = -vc->viewToDocumentY(m_offset.y());
         while(cummulativeHeight < visibleHeight)
@@ -44,9 +44,6 @@ void CMTablesHeader::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
     else
     {
         const Calligra::Tables::ColumnFormat* col = m_sheet->firstCol();
-        KoViewConverter* vc = m_canvas->canvas()->viewConverter();
-        qreal visibleHeight = height();
-        qreal visibleWidth = width();
         qreal cummulativeWidth = -vc->viewToDocumentX(m_offset.x());
         while(cummulativeWidth < visibleWidth)
         {

@@ -14,7 +14,6 @@ CMTablesHeader::CMTablesHeader(QDeclarativeItem *parent)
     , m_vertical(false)
     , m_sheet(0)
 {
-//    setSize(QSizeF(40, 40));
     setFlags(flags() & ~QGraphicsItem::ItemHasNoContents);
 }
 
@@ -26,19 +25,22 @@ void CMTablesHeader::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
     KoViewConverter* vc = m_canvas->canvas()->viewConverter();
     qreal visibleHeight = vc->viewToDocumentY(height());
     qreal visibleWidth = vc->viewToDocumentX(width());
+    int i = 0;
     if(m_vertical)
     {
         const Calligra::Tables::RowFormatStorage* storage = m_sheet->rowFormats();
-        int i = 0;
         qreal cummulativeHeight = -vc->viewToDocumentY(m_offset.y());
         while(cummulativeHeight < visibleHeight)
         {
+            qreal currentHeight = storage->rowHeight(i);
+            ++i;
+            QString rowName = QString::number(i);
             QPoint pos1 = vc->documentToView(QPoint(0, cummulativeHeight)).toPoint();
             QPoint pos2 = vc->documentToView(QPoint(visibleWidth, cummulativeHeight)).toPoint();
+            QPoint pos3 = vc->documentToView(QPoint(visibleWidth, cummulativeHeight + currentHeight)).toPoint();
             p->drawLine(pos1, pos2);
-            qreal currentHeight = storage->rowHeight(i);
+            p->drawText(QRect(pos1, pos3), Qt::AlignCenter, rowName);
             cummulativeHeight += currentHeight;
-            ++i;
         }
     }
     else
@@ -47,9 +49,12 @@ void CMTablesHeader::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
         qreal cummulativeWidth = -vc->viewToDocumentX(m_offset.x());
         while(cummulativeWidth < visibleWidth)
         {
+            QString colName( Calligra::Tables::Cell::columnName(++i) );
             QPoint pos1 = vc->documentToView(QPoint(cummulativeWidth, 0)).toPoint();
             QPoint pos2 = vc->documentToView(QPoint(cummulativeWidth, visibleHeight)).toPoint();
+            QPoint pos3 = vc->documentToView(QPoint(cummulativeWidth + col->width(), visibleHeight)).toPoint();
             p->drawLine(pos1, pos2);
+            p->drawText(QRect(pos1, pos3), Qt::AlignCenter, colName);
             cummulativeWidth += col->width();
             col = col->next();
             if(!col)

@@ -78,14 +78,22 @@ Item {
             anchors.top: loader.top
             anchors.left: parent.left
             anchors.bottom: loader.bottom
-            width: 20
+            width: headerSeparator.width
         }
         TablesHeader {
             id: columnHeader
             anchors.top: parent.top
             anchors.left: loader.left
             anchors.right: loader.right
-            height: 20
+            height: headerSeparator.height
+        }
+        Rectangle {
+            id: headerSeparator
+            color: "black"
+            anchors.top: parent.top
+            anchors.left: parent.left
+            width: 66
+            height: 30
         }
 
         Loader {

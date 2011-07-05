@@ -30,23 +30,23 @@ set(PDF_SERVER_BINARY ${CMAKE_CURRENT_BINARY_DIR}/pdfserver/pdfserver CACHE PATH
 configure_file(pdf/PDFServerConfig.h.in ${CMAKE_CURRENT_BINARY_DIR}/PDFServerConfig.h)
 
 set(meego-office-suite_SRCS
-    CMCanvasInputProxy.cpp
-    CMCanvasControllerDeclarative.cpp
-    CMIconImageProvider.cpp
-    CMMainWindow.cpp
-    CMDocumentListModel.cpp
-    CMDocumentThumbnailListModel.cpp
-    CMPageThumbnailProvider.cpp
-    CMProgressProxy.cpp
-    CMTextSelection.cpp
+    shared/CanvasInputProxy.cpp
+    shared/CanvasControllerDeclarative.cpp
+    shared/IconImageProvider.cpp
+    shared/MainWindow.cpp
+    shared/DocumentListModel.cpp
+    shared/DocumentThumbnailListModel.cpp
+    shared/PageThumbnailProvider.cpp
+    shared/ProgressProxy.cpp
+    shared/TextSelection.cpp
 
-    words/CMWordsCanvas.cpp
+    words/WordsCanvas.cpp
 
-    tables/CMTablesCanvas.cpp
-    tables/CMTablesHeader.cpp
+    tables/TablesCanvas.cpp
+    tables/TablesHeader.cpp
 
-    stage/CMStageCanvas.cpp
-    stage/CMStageDeclarativeView.cpp
+    stage/StageCanvas.cpp
+    stage/StageDeclarativeView.cpp
 
     pdf/PDFCanvas.cpp
     pdf/PDFDocument.cpp
@@ -56,12 +56,6 @@ set(meego-office-suite_SRCS
     pdf/PDFSelection.cpp
     
     main.cpp
-)
-
-set(meego-office-suite_ui_components_SRCS
-    components/qmldir
-    components/DocumentThumbnailList.qml
-    components/ZoomControl.qml
 )
 
 set(meego-office-suite_ui_SRCS
@@ -75,6 +69,8 @@ set(meego-office-suite_ui_SRCS
     ui/Settings.qml
     ui/ViewToolBar.qml
     ui/SearchToolBar.qml
+    ui/DocumentThumbnailList.qml
+    ui/ZoomControl.qml
 )
 
 kde4_add_executable(meego-office-suite ${meego-office-suite_SRCS})
@@ -99,6 +95,5 @@ add_subdirectory(icons)
 
 install(TARGETS meego-office-suite ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${meego-office-suite_ui_SRCS} DESTINATION ${DATA_INSTALL_DIR}/meego-office-suite)
-install(FILES ${meego-office-suite_ui_components_SRCS} DESTINATION ${DATA_INSTALL_DIR}/meego-office-suite/org/calligra/mobile)
 install(PROGRAMS meego-office-suite.desktop DESTINATION
 ${CMAKE_INSTALL_PREFIX}/share/applications)

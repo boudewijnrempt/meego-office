@@ -5,7 +5,7 @@ import org.calligra.mobile 1.0
 Item {
     id: root
     signal viewingFinished()
-    property alias thumbnailListModel: thumbnailList.model
+    //property alias thumbnailListModel: thumbnailList.model
     property alias controller: loader.item
 
     function setFile(file) {
@@ -137,11 +137,11 @@ Item {
                         mainToolBar.show();
                     }
                 }
-		onSelected: {
-		    var winPos = mapToItem(window, origin.x, origin.y);
-		    selectionMenu.setPosition(winPos.x, winPos.y);
-		    selectionMenu.show();
-		}
+                onSelected: {
+                    var winPos = mapToItem(window, origin.x, origin.y);
+                    selectionMenu.setPosition(winPos.x, winPos.y);
+                    selectionMenu.show();
+                }
             }
 
             Marker {
@@ -151,7 +151,7 @@ Item {
                 imageHeight: 41;
 
                 z: 10
-		visible: false;
+                visible: false;
 
                 onDragEnd: loader.item.onLongTapEnd();
             }
@@ -163,7 +163,7 @@ Item {
                 imageHeight: 41;
 
                 z: 10
-		visible: false;
+                visible: false;
 
                 onDragEnd: loader.item.onLongTapEnd();
             }
@@ -210,7 +210,7 @@ Item {
                         }
                     }
                 }
-	    }
+            }
             
             states: [
                 State {
@@ -394,7 +394,7 @@ Item {
             id: document;
             anchors.fill: parent;
             function setPage(newPage) { page = newPage }
-            //onPageChangedL: 
+            onPageChanged: { thumbnailList.currentIndex = newPage; mainToolBar.pageText = "Page " + (newPage + 1) + " of " + document.pageCount; }
         }
     }
 

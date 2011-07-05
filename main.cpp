@@ -12,14 +12,14 @@
 #include <meegoqmllauncher/launcherapp.h>
 #endif
 
-#include "CMMainWindow.h"
-#include "CMDocumentListModel.h"
+#include "shared/MainWindow.h"
+#include "shared/DocumentListModel.h"
+#include "shared/DocumentThumbnailListModel.h"
 
-#include "words/CMWordsCanvas.h"
-#include "tables/CMTablesCanvas.h"
-#include "tables/CMTablesHeader.h"
-#include "stage/CMStageCanvas.h"
-#include "CMDocumentThumbnailListModel.h"
+#include "words/WordsCanvas.h"
+#include "tables/TablesCanvas.h"
+#include "tables/TablesHeader.h"
+#include "stage/StageCanvas.h"
 #include "pdf/PDFCanvasController.h"
 
 int main(int argc, char *argv[])
@@ -45,20 +45,21 @@ int main(int argc, char *argv[])
 
     KCmdLineArgs* args = KCmdLineArgs::parsedArgs();
     QString fileName;
-    if(args->count() > 0)
+    if(args->count() > 0) {
         fileName = args->arg(0);
+    }
     
     LauncherApp app(argc, argv);
  
-    qmlRegisterType<CMDocumentListModel>("org.calligra.mobile", 1, 0, "DocumentListModel");
-    qmlRegisterType<CMDocumentThumbnailListModel>("org.calligra.mobile", 1, 0, "DocumentThumbnailListModel");
-    qmlRegisterType<CMWordsCanvas>("org.calligra.mobile", 1, 0, "WordsCanvas");
-    qmlRegisterType<CMTablesCanvas>("org.calligra.mobile", 1, 0, "TablesCanvas");
-    qmlRegisterType<CMTablesHeader>("org.calligra.mobile", 1, 0, "TablesHeader");
-    qmlRegisterType<CMStageCanvas>("org.calligra.mobile", 1, 0, "StageCanvas");
+    qmlRegisterType<DocumentListModel>("org.calligra.mobile", 1, 0, "DocumentListModel");
+    qmlRegisterType<DocumentThumbnailListModel>("org.calligra.mobile", 1, 0, "DocumentThumbnailListModel");
+    qmlRegisterType<WordsCanvas>("org.calligra.mobile", 1, 0, "WordsCanvas");
+    qmlRegisterType<TablesCanvas>("org.calligra.mobile", 1, 0, "TablesCanvas");
+    qmlRegisterType<TablesHeader>("org.calligra.mobile", 1, 0, "TablesHeader");
+    qmlRegisterType<StageCanvas>("org.calligra.mobile", 1, 0, "StageCanvas");
     qmlRegisterType<PDFCanvasController>("org.calligra.mobile", 1, 0, "PDFCanvas");
 
-    CMMainWindow window(KStandardDirs::locate("data", "meego-office-suite/main.qml"), fileName);
+    MainWindow window(KStandardDirs::locate("data", "meego-office-suite/main.qml"), fileName);
     window.showMaximized();
 
     return app.exec();

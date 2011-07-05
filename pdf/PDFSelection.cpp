@@ -4,9 +4,9 @@
 #include <QtGui/QApplication>
 #include <QtGui/QClipboard>
 #include <QtGui/QPainter>
+#include <QtNetwork/QNetworkReply>
 
 #include "PDFDocument.h"
-#include <QNetworkReply>
 #include "PDFPage.h"
 
 class PDFSelection::Private
@@ -71,7 +71,6 @@ void PDFSelection::copy()
     QRectF sel(QPointF(geom.left() / page->width(), geom.top() / page->height()), QPointF(geom.right() / page->width(), geom.bottom() / page->height()));
         
     QString arguments = QString("page=%1&top=%2&right=%3&bottom=%4&left=%5").arg(page->pageNumber()).arg(sel.top()).arg(sel.right()).arg(sel.bottom()).arg(sel.left());
-    qDebug() << arguments;
     d->textReply = d->document->networkManager()->get(d->document->buildRequest("text", arguments));
     connect(d->textReply, SIGNAL(finished()), SLOT(textRequestFinished()));
 }
@@ -98,13 +97,8 @@ void PDFSelection::Private::textRequestFinished()
         return;
     }
 
-    qDebug() << textReply->rawHeader("X-PDF-PageNumber");
-    qDebug() << textReply->rawHeader("X-PDF-LeftTop");
-    qDebug() << textReply->rawHeader("X-PDF-RightBottom");
-
     QMimeData *mimeData = new QMimeData;
     mimeData->setText(textReply->readAll());
-    qDebug() << mimeData->text();
     QApplication::clipboard()->setMimeData(mimeData);
 }
 

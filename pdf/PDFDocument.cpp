@@ -190,6 +190,7 @@ void PDFDocument::Private::openRequestFinished()
 
     qreal width = reply->rawHeader("X-PDF-Width").toFloat();
     qreal height = reply->rawHeader("X-PDF-Height").toFloat();
+    
     documentSize.setWidth(width);
     documentSize.setHeight((height + 10) * pageCount);
     emit q->documentSizeChanged(documentSize);

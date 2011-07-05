@@ -1,13 +1,13 @@
 #include "PDFPage.h"
 
 #include <QtCore/QDebug>
+#include <QtCore/QDateTime>
 #include <QtGui/QImage>
 #include <QtGui/QPainter>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
 
 #include "PDFDocument.h"
-#include <QDateTime>
 
 class PDFPage::Private
 {

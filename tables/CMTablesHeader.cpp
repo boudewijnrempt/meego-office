@@ -38,9 +38,11 @@ void CMTablesHeader::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
             QPoint pos1 = vc->documentToView(QPoint(0, cummulativeHeight)).toPoint();
             QPoint pos2 = vc->documentToView(QPoint(visibleWidth, cummulativeHeight)).toPoint();
             QPoint pos3 = vc->documentToView(QPoint(visibleWidth, cummulativeHeight + currentHeight)).toPoint();
+            cummulativeHeight += currentHeight;
+            if(cummulativeHeight < 0)
+                continue;
             p->drawLine(pos1, pos2);
             p->drawText(QRect(pos1, pos3), Qt::AlignCenter, rowName);
-            cummulativeHeight += currentHeight;
         }
     }
     else
@@ -53,10 +55,13 @@ void CMTablesHeader::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
             QPoint pos1 = vc->documentToView(QPoint(cummulativeWidth, 0)).toPoint();
             QPoint pos2 = vc->documentToView(QPoint(cummulativeWidth, visibleHeight)).toPoint();
             QPoint pos3 = vc->documentToView(QPoint(cummulativeWidth + col->width(), visibleHeight)).toPoint();
-            p->drawLine(pos1, pos2);
-            p->drawText(QRect(pos1, pos3), Qt::AlignCenter, colName);
             cummulativeWidth += col->width();
             col = col->next();
+            if(cummulativeWidth >= 0)
+            {
+                p->drawLine(pos1, pos2);
+                p->drawText(QRect(pos1, pos3), Qt::AlignCenter, colName);
+            }
             if(!col)
                 break;
         }

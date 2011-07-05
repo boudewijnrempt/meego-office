@@ -77,21 +77,6 @@ set(meego-office-suite_ui_SRCS
     ui/SearchToolBar.qml
 )
 
-set(meego-office-suite_headers
-    CMCanvasControllerDeclarative.h
-    CMIconImageProvider.h
-    CMMainWindow.h
-    calligramobile_export.h
-    CMDocumentListModel.h
-
-    words/CMWordsCanvas.h
-
-    tables/CMTablesCanvas.h
-
-    stage/CMStageCanvas.h
-    stage/CMStageDeclarativeView.h
-)
-
 kde4_add_executable(meego-office-suite ${meego-office-suite_SRCS})
 target_link_libraries(meego-office-suite
     ${QT_QTCORE_LIBRARY}
@@ -115,6 +100,5 @@ add_subdirectory(icons)
 install(TARGETS meego-office-suite ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${meego-office-suite_ui_SRCS} DESTINATION ${DATA_INSTALL_DIR}/meego-office-suite)
 install(FILES ${meego-office-suite_ui_components_SRCS} DESTINATION ${DATA_INSTALL_DIR}/meego-office-suite/org/calligra/mobile)
-install(FILES ${meego-office-suite_headers} DESTINATION ${INCLUDE_INSTALL_DIR})
 install(PROGRAMS meego-office-suite.desktop DESTINATION
 ${CMAKE_INSTALL_PREFIX}/share/applications)

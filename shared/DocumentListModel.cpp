@@ -93,6 +93,7 @@ void SearchThread::run()
     }
 
     QDirIterator it(documentsDir, nameFilters, QDir::Files, QDirIterator::Subdirectories);
+    int i = 0;
     while (it.hasNext() && !m_abort) {
         it.next();
         DocumentListModel::DocumentInfo info;
@@ -103,7 +104,7 @@ void SearchThread::run()
         info.accessedTime = it.fileInfo().lastRead();
         info.fileSize = QString("%1").arg(it.fileInfo().size());
         info.docType = DocumentListModel::typeForFile(info.filePath);
-        info.uuid = "not known...";
+        info.uuid = QString("filesystem-document-").append(i++);
         emit documentFound(info);
     }
 

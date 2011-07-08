@@ -15,6 +15,8 @@ public:
     explicit PDFPage (PDFDocument *document, int pageNumber, qreal width, qreal height);
     virtual ~PDFPage();
 
+    PDFDocument *document();
+
     int pageNumber();
 
     qreal positionInDocument();
@@ -28,10 +30,13 @@ public:
 
     QTime lastVisibleTime();
 
+    QList<QRectF> highlights();
+
 public Q_SLOTS:
     void load();
     void unload();
     void setPositionInDocument(qreal position);
+    void setHighlights(const QList<QRectF> &highlights);
 
     void paint(QPainter *painter, const QRectF &target);
 

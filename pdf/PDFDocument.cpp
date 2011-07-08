@@ -86,7 +86,7 @@ QSizeF PDFDocument::documentSize()
 
 PDFPage* PDFDocument::page ( int pageNumber )
 {
-    if(pageNumber > 0 && pageNumber < d->pageCount) {
+    if(pageNumber >= 0 && pageNumber < d->pageCount) {
         return d->pages.at(pageNumber);
     }
 
@@ -203,6 +203,7 @@ void PDFDocument::Private::openRequestFinished()
     }
 
     emit q->opened();
+    reply->deleteLater();
 }
 
 #include "PDFDocument.moc"

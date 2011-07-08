@@ -9,6 +9,7 @@
 #include "PDFCanvas.h"
 #include "PDFSelection.h"
 #include "PDFPage.h"
+#include "PDFSearch.h"
 
 class PDFCanvasController::Private
 {
@@ -19,10 +20,12 @@ public:
     void updateHandles();
     void moveDocumentOffset(const QPoint &offset);
     void documentLoaded();
+    void searchUpdate();
 
     PDFCanvasController *q;
     PDFDocument *document;
     PDFCanvas *canvas;
+    PDFSearch *search;
     PDFPage *currentPage;
 
     QPoint oldOffset;
@@ -65,6 +68,11 @@ int PDFCanvasController::page() const
     return -1;
 }
 
+int PDFCanvasController::matchCount()
+{
+    return d->search->matches().count();
+}
+
 void PDFCanvasController::loadDocument()
 {
     emit progress(1);
@@ -74,9 +82,11 @@ void PDFCanvasController::loadDocument()
 
     d->canvas = new PDFCanvas(d->document, this);
     setCanvas(d->canvas);
-    //connect(d->document, SIGNAL(newPage(int)), d->canvas, SLOT(update()));
     connect(proxyObject, SIGNAL(moveDocumentOffset(QPoint)), d->canvas, SLOT(setDocumentOffset(QPoint)));
     connect(d->document, SIGNAL(documentSizeChanged(QSizeF)), zoomController(), SLOT(setDocumentSize(QSizeF)));
+
+    d->search = new PDFSearch(d->document, this);
+    connect(d->search, SIGNAL(searchUpdate()), SLOT(searchUpdate()));
 }
 
 void PDFCanvasController::setPage ( int newPage )
@@ -106,12 +116,24 @@ void PDFCanvasController::goToPreviousPage()
     }
 }
 
-void PDFCanvasController::Private::updatePanGesture ( const QPointF& location )
+void PDFCanvasController::find ( const QString& pattern )
 {
-    PDFSelection *sel = canvas->selection();
-    sel->setGeometry(sel->x(), sel->y(), location.x() - sel->x(), location.y() - sel->y());
-    canvas->update();
-    updateHandles();
+    d->search->find(pattern);
+}
+
+void PDFCanvasController::findFinished()
+{
+    
+}
+
+void PDFCanvasController::findNext()
+{
+    d->search->findNext();
+}
+
+void PDFCanvasController::findPrevious()
+{
+    d->search->findPrevious();
 }
 
 void PDFCanvasController::onSingleTap ( const QPointF& location )
@@ -149,6 +171,14 @@ void PDFCanvasController::onLongTapEnd ( const QPointF& location )
     emit selected( d->canvas->selection()->geometry().center() );
 }
 
+void PDFCanvasController::Private::updatePanGesture ( const QPointF& location )
+{
+    PDFSelection *sel = canvas->selection();
+    sel->setGeometry(sel->x(), sel->y(), location.x() - sel->x(), location.y() - sel->y());
+    canvas->update();
+    updateHandles();
+}
+
 void PDFCanvasController::Private::updateHandles()
 {
     PDFSelection *sel = canvas->selection();
@@ -182,6 +212,12 @@ void PDFCanvasController::Private::documentLoaded()
     q->resetDocumentOffset();
     emit q->progress(100);
     emit q->completed();
+}
+
+void PDFCanvasController::Private::searchUpdate()
+{
+    //search->find(search->currentPattern());
+    canvas->update();
 }
 
 #include "PDFCanvasController.moc"

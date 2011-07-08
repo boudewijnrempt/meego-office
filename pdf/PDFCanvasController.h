@@ -3,9 +3,10 @@
 
 #include "shared/CanvasControllerDeclarative.h"
 #include "shared/ProcessInputInterface.h"
+#include "shared/SearchingInterface.h"
 
 class PDFDocument;
-class PDFCanvasController : public CanvasControllerDeclarative, public ProcessInputInterface
+class PDFCanvasController : public CanvasControllerDeclarative, public ProcessInputInterface, public SearchingInterface
 {
     Q_OBJECT
     Q_PROPERTY(QObject* document READ document)
@@ -22,15 +23,24 @@ public:
     int pageCount() const;
     int page() const;
 
+    Q_INVOKABLE virtual int matchCount();
+
 public Q_SLOTS:
     void loadDocument();
     void setPage(int newPage);
     void goToNextPage();
     void goToPreviousPage();
 
+    virtual void find ( const QString& pattern );
+    virtual void findNext();
+    virtual void findPrevious();
+    virtual void findFinished();
+
 Q_SIGNALS:
     void selected(const QPointF &origin);
     void pageChanged(int newPage);
+
+    virtual void findMatchFound ( int match );
 
 private:
     class Private;
@@ -39,6 +49,7 @@ private:
     Q_PRIVATE_SLOT(d, void updatePanGesture(const QPointF &location));
     Q_PRIVATE_SLOT(d, void moveDocumentOffset(const QPoint &offset));
     Q_PRIVATE_SLOT(d, void documentLoaded());
+    Q_PRIVATE_SLOT(d, void searchUpdate());
 
 private Q_SLOTS:
     virtual void onSingleTap ( const QPointF& location );

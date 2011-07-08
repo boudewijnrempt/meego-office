@@ -27,7 +27,8 @@ public:
     QTime lastVisibleTime;
 
     QHash<QString, QImage> images;
-    QList<QNetworkReply*> requests;
+    QHash<QString, QNetworkReply*> requests;
+    QList< QRectF > highlights;
 };
 
 PDFPage::PDFPage (PDFDocument *document, int pageNumber, qreal width, qreal height)
@@ -45,6 +46,11 @@ PDFPage::PDFPage (PDFDocument *document, int pageNumber, qreal width, qreal heig
 PDFPage::~PDFPage()
 {
 
+}
+
+PDFDocument* PDFPage::document()
+{
+    return d->document;
 }
 
 qreal PDFPage::positionInDocument()
@@ -72,6 +78,11 @@ int PDFPage::pageNumber()
     return d->pageNumber;
 }
 
+QList< QRectF > PDFPage::highlights()
+{
+    return d->highlights;
+}
+
 int PDFPage::byteSize()
 {
     int size = 0;
@@ -89,7 +100,10 @@ QImage PDFPage::image ( int width, int height )
     if(d->images.contains(id)) {
         return d->images.value(id);
     } else {
-        d->requests.append( d->manager->get(d->document->buildRequest("image", QString("page=%1&width=%2&height=%3").arg(d->pageNumber).arg(width).arg(height))) );
+        if(!d->requests.contains(id)) {
+            d->requests.insert(id, d->manager->get(d->document->buildRequest("image", QString("page=%1&width=%2&height=%3").arg(d->pageNumber).arg(width).arg(height))) );
+        }
+        
         if(d->images.size() > 0) {
             return d->images.begin().value();
         }
@@ -105,9 +119,8 @@ QTime PDFPage::lastVisibleTime()
 
 void PDFPage::load()
 {
-    if(!d->loaded) {
-        d->requests.append( d->manager->get(d->document->buildRequest("page", QString("page=%1").arg(d->pageNumber))) );
-        d->loaded = true;
+    if(!d->loaded && !d->requests.contains("load")) {
+        d->requests.insert("load", d->manager->get(d->document->buildRequest("page", QString("page=%1").arg(d->pageNumber))) );
     }
 }
 
@@ -115,17 +128,22 @@ void PDFPage::unload()
 {
     foreach(QNetworkReply *reply, d->requests) {
         reply->close();
+        reply->deleteLater();
     }
-
-    QImage thumb = d->images.value("40x50");
+    
+    d->requests.clear();
     d->images.clear();
-    d->images.insert("40x50", thumb);
     d->loaded = false;
 }
 
 void PDFPage::setPositionInDocument ( qreal position )
 {
     d->documentPosition = position;
+}
+
+void PDFPage::setHighlights ( const QList< QRectF >& highlights )
+{
+    d->highlights = highlights;
 }
 
 void PDFPage::paint ( QPainter* painter, const QRectF& target )
@@ -150,6 +168,13 @@ void PDFPage::paint ( QPainter* painter, const QRectF& target )
     painter->setBrush(QBrush(Qt::white));
     painter->drawRect(target);
     painter->drawImage(target, image(target.width(), target.height()));
+
+    painter->setBrush(QBrush(Qt::yellow));
+    painter->setPen(Qt::NoPen);
+    painter->setOpacity(0.5);
+    foreach(const QRectF &highlight, d->highlights) {
+        painter->drawRect(highlight);
+    }
 }
 
 void PDFPage::Private::requestFinished ( QNetworkReply* reply )
@@ -169,11 +194,10 @@ void PDFPage::Private::requestFinished ( QNetworkReply* reply )
         return;
     }
 
-    requests.removeOne(reply);
-
     if(command == "/page") {
         width = reply->rawHeader("X-PDF-PageWidth").toFloat();
         height = reply->rawHeader("X-PDF-PageHeight").toFloat();
+        loaded = true;
     } else {
         QImage image;
         image.loadFromData(reply->readAll());
@@ -181,6 +205,9 @@ void PDFPage::Private::requestFinished ( QNetworkReply* reply )
             images.insert(QString("%1x%2").arg(image.width()).arg(image.height()), image);
         }
     }
+
+    requests.remove(requests.key(reply));
+    reply->deleteLater();
 }
 
 #include "PDFPage.moc"

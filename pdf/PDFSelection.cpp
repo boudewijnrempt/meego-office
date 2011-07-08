@@ -14,8 +14,8 @@ class PDFSelection::Private
 public:
     Private(PDFSelection *qq)
         : q(qq),
-          currentPage(0),
-          textReply(0)
+          textReply(0),
+          currentPage(0)
     { }
     
     void geometryChanged();
@@ -100,6 +100,9 @@ void PDFSelection::Private::textRequestFinished()
     QMimeData *mimeData = new QMimeData;
     mimeData->setText(textReply->readAll());
     QApplication::clipboard()->setMimeData(mimeData);
+
+    textReply->deleteLater();
+    textReply = 0;
 }
 
 #include "PDFSelection.moc"

@@ -54,6 +54,7 @@ set(meego-office-suite_SRCS
     pdf/PDFProcessManager.cpp
     pdf/PDFPage.cpp
     pdf/PDFSelection.cpp
+    pdf/PDFSearch.cpp
     
     main.cpp
 )

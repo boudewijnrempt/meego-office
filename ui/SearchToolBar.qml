@@ -16,9 +16,9 @@ BottomToolBar {
             id: findPreviousButton;
 
             anchors.right: findMatchesText.left;
-            anchors.verticalCenter: parent.verticalCenter;
             anchors.leftMargin: 5;
             anchors.rightMargin: 5;
+            anchors.topMargin: (64 - height) / 2;
 
             icon: "image://themedimage/icons/actionbar/mail-message-previous";
             hasBackground: false;
@@ -31,7 +31,7 @@ BottomToolBar {
             anchors.horizontalCenter: parent.horizontalCenter;
             anchors.leftMargin: 5;
             anchors.rightMargin: 5;
-            anchors.verticalCenter: parent.verticalCenter;
+            anchors.verticalCenter: findPreviousButton.verticalCenter;
 
             font.pixelSize: theme.toolbarFontPixelSize;
             color: theme.fontColorHighlight;
@@ -42,7 +42,7 @@ BottomToolBar {
             anchors.left: findMatchesText.right;
             anchors.leftMargin: 5;
             anchors.rightMargin: 5;
-            anchors.verticalCenter: parent.verticalCenter;
+            anchors.verticalCenter: findPreviousButton.verticalCenter;
 
             icon: "image://themedimage/icons/actionbar/mail-message-next";
             hasBackground: false;
@@ -55,14 +55,14 @@ BottomToolBar {
             anchors.right: parent.right;
             anchors.leftMargin: 5;
             anchors.rightMargin: 5;
-            anchors.verticalCenter: parent.verticalCenter;
+            anchors.verticalCenter: findPreviousButton.verticalCenter;
 
             icon: "image://themedimage/images/contacts/icn_cross_up";
             iconDown: "image://themedimage/images/contacts/icn_cross_dn";
             hasBackground: false;
 
             height: findNextButton.height;
-            onClicked: base.closeACtion();
+            onClicked: base.closeAction();
         }
     }
 }

@@ -107,7 +107,7 @@ Item {
             anchors.top: columnHeader.bottom;
             anchors.left: rowHeader.right;
             width: centralView.width - rowHeader.width;
-            height: parent.height - columnHeader.height - (mainToolBar.visible || searchToolBar.visible ? mainToolBar.height : 0);
+            height: parent.height - columnHeader.height; // - (mainToolBar.visible || searchToolBar.visible ? mainToolBar.height : 0);
             clip: true;
 
             Connections {
@@ -119,7 +119,7 @@ Item {
                         mainToolBar.hide();
                         searchToolBar.show();
                     }
-                    findMatchesText.text = "Match " + match + " of " + loader.item.matchCount();
+                    searchToolBar.matchText = "Match " + match + " of " + loader.item.matchCount();
                 }
 
                 onShowVerticalScrollHandle: vertScrollHandle.opacity = 0.75;
@@ -328,6 +328,7 @@ Item {
 
     SearchToolBar {
         id: searchToolBar;
+        height: 110;
 
         onFindPreviousAction: loader.item.findPrevious();
         onFindNextAction: loader.item.findNext();

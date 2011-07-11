@@ -21,6 +21,7 @@ public:
     void moveDocumentOffset(const QPoint &offset);
     void documentLoaded();
     void searchUpdate();
+    void matchFound(const KoFindMatch &match);
 
     PDFCanvasController *q;
     PDFDocument *document;
@@ -87,6 +88,7 @@ void PDFCanvasController::loadDocument()
 
     d->search = new PDFSearch(d->document, this);
     connect(d->search, SIGNAL(searchUpdate()), SLOT(searchUpdate()));
+    connect(d->search, SIGNAL(matchFound(KoFindMatch)), SLOT(matchFound(KoFindMatch)));
 }
 
 void PDFCanvasController::setPage ( int newPage )
@@ -123,7 +125,7 @@ void PDFCanvasController::find ( const QString& pattern )
 
 void PDFCanvasController::findFinished()
 {
-    
+    d->search->finished();
 }
 
 void PDFCanvasController::findNext()
@@ -216,8 +218,27 @@ void PDFCanvasController::Private::documentLoaded()
 
 void PDFCanvasController::Private::searchUpdate()
 {
-    //search->find(search->currentPattern());
+    search->find(search->currentPattern());
     canvas->update();
+}
+
+void PDFCanvasController::Private::matchFound ( const KoFindMatch& match )
+{
+    if(!match.isValid()) {
+        return;
+    }
+
+    foreach(PDFPage *page, document->allPages()) {
+        page->setCurrentHighlight(QRectF());
+    }
+
+    PDFPage *page = match.container().value<PDFPage*>();
+    QRectF rect = match.location().toRectF();
+    
+    page->setCurrentHighlight(rect);
+    q->ensureVisible(rect.translated(0, page->positionInDocument()));
+
+    emit q->findMatchFound(search->matches().indexOf(match) + 1);
 }
 
 #include "PDFCanvasController.moc"

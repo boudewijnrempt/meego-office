@@ -4,10 +4,12 @@
 #include <QtCore/QDateTime>
 #include <QtGui/QImage>
 #include <QtGui/QPainter>
+#include <QtGui/QApplication>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
 
 #include "PDFDocument.h"
+#include <QPalette>
 
 class PDFPage::Private
 {
@@ -29,6 +31,7 @@ public:
     QHash<QString, QImage> images;
     QHash<QString, QNetworkReply*> requests;
     QList< QRectF > highlights;
+    QRectF currentHighlight;
 };
 
 PDFPage::PDFPage (PDFDocument *document, int pageNumber, qreal width, qreal height)
@@ -146,6 +149,11 @@ void PDFPage::setHighlights ( const QList< QRectF >& highlights )
     d->highlights = highlights;
 }
 
+void PDFPage::setCurrentHighlight ( const QRectF& highlight )
+{
+    d->currentHighlight = highlight;
+}
+
 void PDFPage::paint ( QPainter* painter, const QRectF& target )
 {
     if(!d->loaded) {
@@ -173,7 +181,14 @@ void PDFPage::paint ( QPainter* painter, const QRectF& target )
     painter->setPen(Qt::NoPen);
     painter->setOpacity(0.5);
     foreach(const QRectF &highlight, d->highlights) {
-        painter->drawRect(highlight);
+        if(highlight != d->currentHighlight) {
+            painter->drawRect(highlight.translated(0, d->documentPosition));
+        }
+    }
+
+    if(d->currentHighlight.isValid()) {
+        painter->setBrush(QBrush(QApplication::palette().highlight()));
+        painter->drawRect(d->currentHighlight.translated(0, d->documentPosition));
     }
 }
 

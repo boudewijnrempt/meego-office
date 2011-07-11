@@ -15,6 +15,9 @@ public:
 
     QString currentPattern();
 
+public Q_SLOTS:
+    virtual void finished();
+
 Q_SIGNALS:
     void searchUpdate();
 

@@ -40,7 +40,7 @@ Q_SIGNALS:
     void selected(const QPointF &origin);
     void pageChanged(int newPage);
 
-    virtual void findMatchFound ( int match );
+    void findMatchFound ( int match );
 
 private:
     class Private;
@@ -50,6 +50,7 @@ private:
     Q_PRIVATE_SLOT(d, void moveDocumentOffset(const QPoint &offset));
     Q_PRIVATE_SLOT(d, void documentLoaded());
     Q_PRIVATE_SLOT(d, void searchUpdate());
+    Q_PRIVATE_SLOT(d, void matchFound(const KoFindMatch &match));
 
 private Q_SLOTS:
     virtual void onSingleTap ( const QPointF& location );

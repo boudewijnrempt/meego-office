@@ -37,6 +37,7 @@ public Q_SLOTS:
     void unload();
     void setPositionInDocument(qreal position);
     void setHighlights(const QList<QRectF> &highlights);
+    void setCurrentHighlight(const QRectF &highlight);
 
     void paint(QPainter *painter, const QRectF &target);
 

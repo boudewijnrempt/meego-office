@@ -361,9 +361,12 @@ void WordsCanvas::Private::documentOffsetMoved(QPoint newOffset)
 {
     q->updateHandlePositions();
     
-    int pageSize = q->documentSize().height() / doc->pageManager()->pageCount();
+    int pageSize = q->documentSize().height() / doc->pageCount();
     if(pageSize > 0) {
-        emit q->pageChanged((newOffset.y() + pageSize/2) / pageSize); 
+        int page = (newOffset.y() + pageSize/2) / pageSize;
+        if(page > 0 && page < doc->pageCount()) {
+            emit q->pageChanged(page);
+        }
     }
 }
 

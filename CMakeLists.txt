@@ -26,7 +26,7 @@ include_directories(${QT_INCLUDES} ${KDE4_INCLUDES} ${QSPARQL_INCLUDE_DIRS}
                     ${QTMOBILITY_INCLUDE_DIRS} ${MEEGO_QML_LAUNCHER_INCLUDE_DIR}
                    )
 
-set(PDF_SERVER_BINARY ${CMAKE_CURRENT_BINARY_DIR}/pdfserver/pdfserver CACHE PATH "Path to PDF Server binary")
+set(PDF_SERVER_BINARY /usr/bin/pdfserver CACHE PATH "Path to PDF Server binary")
 configure_file(pdf/PDFServerConfig.h.in ${CMAKE_CURRENT_BINARY_DIR}/PDFServerConfig.h)
 
 set(meego-office-suite_SRCS

@@ -185,7 +185,6 @@ void CanvasInputProxy::handleGesture(QGestureEvent* event)
 void CanvasInputProxy::handleTouchBegin(QTouchEvent* event)
 {
     if(event->touchPoints().count() > 1) {
-        qDebug() << "TouchBegin";
         d->currentGestures |= PinchGesture;
         event->accept();
         //d->touchPinchScale = 1.0;
@@ -257,7 +256,6 @@ void CanvasInputProxy::Private::handleSwipeGesture(QSwipeGesture* swipe)
     if(!swipe)
         return;
 
-    qDebug() << "swipe-swipe";
     switch(swipe->state())
     {
         case Qt::GestureFinished:
@@ -301,7 +299,6 @@ void CanvasInputProxy::Private::updatePinch(qreal scale)
     if(scale <= 0.0f) {
         return;
     }
-    qDebug() << scale;
     scaleProxy->setTransformOriginPoint(centerPoint);
     scaleProxy->setScale(scale);
 }

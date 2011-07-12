@@ -13,6 +13,15 @@ AppPage {
         anchors.fill: parent;
     }
 
+    actionMenuModel: [ qsTr("About") ];
+    actionMenuPayload: [ 0 ];
+
+    onActionMenuTriggered: {
+        if(selectedItem == 0) {
+            aboutDialog.show();
+        }
+    }
+
     Component.onCompleted: {
         view.setFile(settings.currentFile);
     }
@@ -27,5 +36,9 @@ AppPage {
 
     onDeactivated: {
         settings.reset();
+    }
+
+    AboutDialog {
+        id: aboutDialog;
     }
 }

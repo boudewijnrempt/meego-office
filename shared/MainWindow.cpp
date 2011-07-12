@@ -36,6 +36,7 @@ MainWindow::MainWindow( const QString &ui, const QString &file, QWidget *parent)
     engine()->addImageProvider("icon", new IconImageProvider);
     engine()->addImageProvider("pagethumbnails", new PageThumbnailProvider());
     rootContext()->setContextProperty("CALLIGRA_VERSION_STRING", CALLIGRA_VERSION_STRING);
+    rootContext()->setContextProperty("MEEGO_OFFICE_VERSION", "0.85");
 
     setSource(QUrl(ui));
     setResizeMode(QDeclarativeView::SizeRootObjectToView);

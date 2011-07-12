@@ -24,12 +24,14 @@ AppPage {
 
     Component { id: viewDocumentPageComponent; ViewDocumentPage { } }
 
-    /*actionMenuModel: [ qsTr("All"), qsTr("Recently Added"), qsTr("Favourites"), qsTr("Last Viewed") ];
-    actionMenuPayload: [ 1, 2, 3, 4 ];
+    actionMenuModel: [ qsTr("About") ]; //qsTr("All"), qsTr("Recently Added"), qsTr("Favourites"), qsTr("Last Viewed") ];
+    actionMenuPayload: [ 0 ];
 
     onActionMenuTriggered: {
-        console.log("ActionMenuTriggered: " + selectedItem);
-    }*/
+        if(selectedItem == 0) {
+            aboutDialog.show();
+        }
+    }
 
     function openFile(file, type, uuid) {
         settings.currentFile = file;
@@ -38,5 +40,9 @@ AppPage {
         settings.currentType = type;
         window.actionMenuActive = false;
         window.addPage(viewDocumentPageComponent);
+    }
+
+    AboutDialog {
+        id: aboutDialog;
     }
 }

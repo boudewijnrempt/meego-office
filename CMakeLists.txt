@@ -72,6 +72,7 @@ set(meego-office-suite_ui_SRCS
     ui/SearchToolBar.qml
     ui/DocumentThumbnailList.qml
     ui/ZoomControl.qml
+    ui/AboutDialog.qml
 )
 
 kde4_add_executable(meego-office-suite ${meego-office-suite_SRCS})

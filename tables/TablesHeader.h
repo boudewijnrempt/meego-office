@@ -43,6 +43,8 @@ class TablesHeader : public QDeclarativeItem
         void docMoved();
 
     private:
+        void paintHorizontal(QPainter* p);
+
         bool m_vertical;
         TablesCanvas* m_canvas;
         QColor m_backgroundColor;

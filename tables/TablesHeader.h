@@ -44,6 +44,7 @@ class TablesHeader : public QDeclarativeItem
 
     private:
         void paintHorizontal(QPainter* p);
+        void paintVertical(QPainter* p);
 
         bool m_vertical;
         TablesCanvas* m_canvas;

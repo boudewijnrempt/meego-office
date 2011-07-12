@@ -12,7 +12,7 @@ ModalDialog {
         
         Image {
             anchors.horizontalCenter: parent.horizontalCenter;
-            source: "image://systemicon/meego-office-suite";
+            source: "/usr/share/icons/hicolor/128x128/apps/meego-office-suite.png";
         }
 
         Text {

@@ -15,6 +15,8 @@
 TablesHeader::TablesHeader(QDeclarativeItem *parent)
     : QDeclarativeItem(parent)
     , m_vertical(false)
+    , m_backgroundColor(Qt::black)
+    , m_textColor(Qt::white)
     , m_sheet(0)
 {
     setFlags(flags() & ~QGraphicsItem::ItemHasNoContents);
@@ -22,9 +24,13 @@ TablesHeader::TablesHeader(QDeclarativeItem *parent)
 
 void TablesHeader::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
+    // draw full background...
+    p->fillRect(0, 0, width(), height(), m_backgroundColor);
+
     if(!m_sheet)
         return;
-    p->setPen(Qt::white);
+
+    p->setPen(m_textColor);
     KoViewConverter* vc = m_canvas->canvas()->viewConverter();
     qreal visibleHeight = vc->viewToDocumentY(height());
     qreal visibleWidth = vc->viewToDocumentX(width());
@@ -130,4 +136,26 @@ void TablesHeader::sheetChanged(int newSheet)
 void TablesHeader::docMoved()
 {
     m_offset = m_canvas->getDocumentOffset();
+}
+
+QColor TablesHeader::backgroundColor() const
+{
+    return m_backgroundColor;
+}
+
+void TablesHeader::setBackgroundColor(QColor color)
+{
+    m_backgroundColor = color;
+    emit backgroundColorChanged();
+}
+
+QColor TablesHeader::textColor() const
+{
+    return m_textColor;
+}
+
+void TablesHeader::setTextColor(QColor color)
+{
+    m_textColor = color;
+    emit textColorChanged();
 }

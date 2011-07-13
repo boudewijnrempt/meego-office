@@ -312,9 +312,9 @@ Item {
         }
         
         onShowZoomAction: {
-            zoomMenu.content.zoomLevel = loader.item.zoomLevel
             zoomMenu.setPosition(x, mapToItem( window, window.width, y).y);
             zoomMenu.show();
+            zoomControlTool.setZoomLevel(loader.item.zoomLevel);
         }
         
         onFullScreenAction: {

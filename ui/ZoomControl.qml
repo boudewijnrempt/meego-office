@@ -5,7 +5,9 @@ Item {
     id: root
     signal zoomLevelChanged(int newZoomLevel)
     
-    property alias zoomLevel: zoomVal.value
+    function setZoomLevel(newZoomLevel) {
+        zoomVal.value = (100 * (newZoomLevel - 50) / 150)
+    }
     
     Item {
         id: container
@@ -15,17 +17,20 @@ Item {
         Item {
             anchors.left: parent.left
             anchors.leftMargin: 30
-            anchors.top: parent.verticalCenter
+            anchors.top: parent.top
+            anchors.topMargin: 10
+            height: parent.height - 20
+            width: 30
             
             VerticalSlider {
                 id: zoomVal
-                min: 50
-                max: 200
-                textOverlayVisible: true
+                min: 0
+                max: 100
+                textOverlayVisible: false
                 
-                anchors.centerIn: parent
+                anchors.top: parent.top
                 
-                onSliderChanged: root.zoomLevelChanged(value)
+                onSliderChanged: root.zoomLevelChanged(50 + (150 * value / 100))
             }
         }
 
@@ -39,7 +44,7 @@ Item {
             anchors.right: parent.right
             anchors.top: parent.top
             
-            onClicked: { zoomVal.value = 200;  root.zoomLevelChanged(200) }
+            onClicked: { zoomVal.value = 100;  root.zoomLevelChanged(200) }
         }
         IconButton {
             id: showNormal
@@ -53,7 +58,7 @@ Item {
             anchors.top : parent.verticalCenter
             anchors.topMargin: -8
             
-            onClicked: { zoomVal.value = 100;  root.zoomLevelChanged(100) }
+            onClicked: { zoomVal.value = 33;  root.zoomLevelChanged(100) }
         }
         IconButton {
             id: showMin
@@ -67,7 +72,7 @@ Item {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 8
             
-            onClicked: { zoomVal.value = 50;  root.zoomLevelChanged(50) }
+            onClicked: { zoomVal.value = 0;  root.zoomLevelChanged(50) }
         }
     }
 }

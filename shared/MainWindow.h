@@ -14,7 +14,7 @@ class MainWindow : public LauncherWindow
 public:
     explicit MainWindow( const QString &ui, const QString &file = QString(), QWidget *parent = 0);
     virtual ~MainWindow();
-    
+
 private:
     class Private;
     Private * const d;

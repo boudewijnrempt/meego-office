@@ -15,6 +15,7 @@
 #include "CanvasControllerDeclarative.h"
 #include "PageThumbnailProvider.h"
 #include "DocumentListModel.h"
+#include <QApplication>
 
 class MainWindow::Private
 {
@@ -27,6 +28,7 @@ public:
 MainWindow::MainWindow( const QString &ui, const QString &file, QWidget *parent)
     : LauncherWindow(true, 1280, 800, false, false, parent), d(new Private)
 {
+    QApplication::instance()->installEventFilter(this);
     setWindowTitle(tr("MeeGo Office Suite"));
 
     QStringList dataPaths = KGlobal::dirs()->findDirs("data", "meego-office-suite");
@@ -48,7 +50,7 @@ MainWindow::MainWindow( const QString &ui, const QString &file, QWidget *parent)
 
         DocumentListModel::DocumentType type = DocumentListModel::typeForFile(cleanFileName);
 
-        QDeclarativeExpression expr(rootContext(), rootObject(), QString("pageStack.currentPage.openFile('%1','%2')").arg(cleanFileName, type));
+        QDeclarativeExpression expr(rootContext(), rootObject(), QString("pageStack.currentPage.openFile('%1','%2', '0000')").arg(cleanFileName).arg(type));
         expr.evaluate();
         if(expr.hasError()) {
             qDebug() << expr.error();

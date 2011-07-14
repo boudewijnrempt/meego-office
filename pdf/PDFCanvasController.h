@@ -51,6 +51,7 @@ private:
     Q_PRIVATE_SLOT(d, void documentLoaded());
     Q_PRIVATE_SLOT(d, void searchUpdate());
     Q_PRIVATE_SLOT(d, void matchFound(const KoFindMatch &match));
+    Q_PRIVATE_SLOT(d, void updateDocSize(const QSizeF &newSize));
 
 private Q_SLOTS:
     virtual void onSingleTap ( const QPointF& location );

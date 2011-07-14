@@ -22,6 +22,7 @@ public:
     void documentLoaded();
     void searchUpdate();
     void matchFound(const KoFindMatch &match);
+    void updateDocSize(const QSizeF &newSize);
 
     PDFCanvasController *q;
     PDFDocument *document;
@@ -84,7 +85,7 @@ void PDFCanvasController::loadDocument()
     d->canvas = new PDFCanvas(d->document, this);
     setCanvas(d->canvas);
     connect(proxyObject, SIGNAL(moveDocumentOffset(QPoint)), d->canvas, SLOT(setDocumentOffset(QPoint)));
-    connect(d->document, SIGNAL(documentSizeChanged(QSizeF)), zoomController(), SLOT(setDocumentSize(QSizeF)));
+    connect(d->document, SIGNAL(documentSizeChanged(QSizeF)), SLOT(updateDocSize(QSizeF)));
 
     d->search = new PDFSearch(d->document, this);
     connect(d->search, SIGNAL(searchUpdate()), SLOT(searchUpdate()));
@@ -239,6 +240,11 @@ void PDFCanvasController::Private::matchFound ( const KoFindMatch& match )
     q->ensureVisible(rect.translated(0, page->positionInDocument()));
 
     emit q->findMatchFound(search->matches().indexOf(match) + 1);
+}
+
+void PDFCanvasController::Private::updateDocSize(const QSizeF &size)
+{
+    q->zoomController()->setDocumentSize(canvas->viewConverter()->viewToDocument(size));
 }
 
 #include "PDFCanvasController.moc"

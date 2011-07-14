@@ -224,6 +224,7 @@ void StageCanvas::Private::updateCanvas()
         connect(q->proxyObject, SIGNAL(moveDocumentOffset(const QPoint&)), canvas, SLOT(slotSetDocumentOffset(QPoint)));
         connect(canvas, SIGNAL(documentSize(const QSize&)), q, SLOT(setDocumentSize(const QSize&)));
         canvas->updateSize();
+        q->resetDocumentOffset();
     }
 
     canvas->updateCanvas(QRectF(0, 0, q->width(), q->height()));
@@ -231,7 +232,7 @@ void StageCanvas::Private::updateCanvas()
 
 void StageCanvas::Private::setDocumentSize(const QSize& size)
 {
-    q->zoomController()->setDocumentSize(size);
+    q->zoomController()->setDocumentSize(canvas->viewConverter()->viewToDocument(size));
 }
 
 void StageCanvas::onSingleTap(const QPointF &location)

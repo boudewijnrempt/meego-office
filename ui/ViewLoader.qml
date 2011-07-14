@@ -171,7 +171,7 @@ Item {
             Rectangle {
                 id: horizScrollHandle;
 
-                anchors.bottom: parent.bottom;
+                y: window.fullScreen ? root.height - height : root.height - mainToolBar.height - height;
 
                 color: "#000000";
                 opacity: 0;

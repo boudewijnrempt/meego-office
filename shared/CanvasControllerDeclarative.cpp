@@ -109,7 +109,7 @@ CanvasControllerDeclarative::CanvasControllerDeclarative(QDeclarativeItem* paren
 
     d->mass = 10.f;
     d->dragCoeff = 0.01f;
-    d->springCoeff = 0.7f;
+    d->springCoeff = 0.3f;
     d->timeStep = 1000.f / d->timer->interval();
 
     connect(this, SIGNAL(heightChanged()), this, SLOT(updateCanvasSize()));

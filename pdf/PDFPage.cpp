@@ -210,8 +210,8 @@ void PDFPage::Private::requestFinished ( QNetworkReply* reply )
     }
 
     if(command == "/page") {
-        width = reply->rawHeader("X-PDF-PageWidth").toFloat();
-        height = reply->rawHeader("X-PDF-PageHeight").toFloat();
+        width = reply->rawHeader("X-PDF-PageWidth").toFloat() * PDF_SCALING_FACTOR;
+        height = reply->rawHeader("X-PDF-PageHeight").toFloat() * PDF_SCALING_FACTOR;
         loaded = true;
     } else {
         QImage image;

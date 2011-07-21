@@ -157,7 +157,7 @@ void PDFCanvas::paint ( QPainter* painter, const QStyleOptionGraphicsItem* optio
     
     painter->translate(-d->documentOffset);
 
-    QMatrix scaled(d->viewConverter->zoom(), 0.0, 0.0, d->viewConverter->zoom(), 0.0, 0.0);
+    QMatrix scaled = scaling();
     QRectF geom(0.0, d->documentOffset.y(), geometry().width(), geometry().height());
     QList<PDFPage*> visiblePages = d->document->visiblePages(geom, scaled);
     foreach(PDFPage *page, visiblePages) {

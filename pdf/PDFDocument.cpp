@@ -188,8 +188,8 @@ void PDFDocument::Private::openRequestFinished()
     pageCount = reply->rawHeader("X-PDF-NumberOfPages").toInt();
     pageLayout = reply->rawHeader("X-PDF-PageLayout").toInt();
 
-    qreal width = reply->rawHeader("X-PDF-Width").toFloat();
-    qreal height = reply->rawHeader("X-PDF-Height").toFloat();
+    qreal width = reply->rawHeader("X-PDF-Width").toFloat() * PDF_SCALING_FACTOR;
+    qreal height = reply->rawHeader("X-PDF-Height").toFloat() * PDF_SCALING_FACTOR;
     
     documentSize.setWidth(width);
     documentSize.setHeight((height + 10) * pageCount);

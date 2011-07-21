@@ -5,6 +5,8 @@
 #include <QtCore/QUrl>
 #include <QtGui/QImage>
 
+#define PDF_SCALING_FACTOR 1.31f
+
 class QNetworkRequest;
 class QNetworkAccessManager;
 class PDFPage;

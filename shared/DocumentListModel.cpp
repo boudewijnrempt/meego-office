@@ -301,7 +301,7 @@ DocumentListModel::DocumentType DocumentListModel::typeForFile ( const QString& 
         sm_extensions["pdf"] = PDFDocumentType;
     }
 
-    QString ext = file.split('.').last();
+    QString ext = file.toLower().split('.').last();
     if(sm_extensions.contains(ext)) {
         return sm_extensions.value(ext);
     }

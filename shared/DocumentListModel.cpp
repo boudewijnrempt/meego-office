@@ -82,8 +82,6 @@ void SearchThread::run()
         emit finished();
         return;
     }
-    else
-        qDebug() << "Error while querying Tracker:" << result->lastError().message();
 
     // Get documents from the device storage's document directory...
     QString documentsDir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
@@ -114,7 +112,7 @@ void SearchThread::run()
 class DocumentListModel::Private
 {
 public:
-    Private( DocumentListModel *qq) : q(qq) { }
+    Private( DocumentListModel *qq) : q(qq), searchThread(0) { }
     
     void relayout();
 
@@ -186,12 +184,7 @@ void DocumentListModel::addDocument(const DocumentInfo &info)
     }
     
     d->allDocumentInfos.append(info);
-    
-    if(d->filter == UnknownType || info.docType == d->filter) {
-        beginInsertRows(QModelIndex(), d->currentDocumentInfos.count() - 1, d->currentDocumentInfos.count());
-        d->currentDocumentInfos.append(info);
-        endInsertRows();
-    }
+    d->relayout();
 }
 
 int DocumentListModel::rowCount(const QModelIndex &parent) const

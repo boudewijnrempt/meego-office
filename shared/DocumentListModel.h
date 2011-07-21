@@ -11,9 +11,11 @@ class SearchThread;
 class DocumentListModel : public QAbstractListModel, public QDeclarativeParserStatus
 {
     Q_OBJECT
-    Q_PROPERTY(DocumentType filter READ filter WRITE setFilter)
     Q_ENUMS(DocumentType)
     Q_INTERFACES(QDeclarativeParserStatus)
+
+    Q_PROPERTY(DocumentType filter READ filter WRITE setFilter)
+    Q_PROPERTY(QString search READ search WRITE setSearch)
 
 public:
     DocumentListModel(QObject *parent = 0);
@@ -62,6 +64,7 @@ public:
     void componentComplete();
 
     DocumentType filter();
+    QString search();
     
     static QString prettyTime(const QDateTime &theTime);
     static DocumentType typeForFile(const QString &file);
@@ -71,6 +74,7 @@ public slots:
     void stopSearch();
     void addDocument(const DocumentListModel::DocumentInfo &info);
     void setFilter(DocumentType newFilter);
+    void setSearch(const QString &search);
 
 private slots:
     void searchFinished();

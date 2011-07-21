@@ -227,6 +227,12 @@ Item {
         id: activePalette;
     }
 
+    Connections {
+        target: window;
+
+        onSearch: documentListModel.search = needle;
+    }
+
     function documentTypeToString(type) {
         switch(type) {
 	    case 1: return qsTr('Text Document');

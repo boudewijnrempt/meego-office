@@ -124,6 +124,7 @@ public:
     SearchThread *searchThread;
 
     DocumentType filter;
+    QString searchPattern;
 };
 
 QHash<QString, DocumentListModel::DocumentType> DocumentListModel::sm_extensions = QHash<QString, DocumentListModel::DocumentType>();
@@ -165,8 +166,10 @@ void DocumentListModel::startSearch()
 
 void DocumentListModel::stopSearch()
 {
-    if (d->searchThread)
+    if (d->searchThread) {
         d->searchThread->abort();
+        d->searchThread->deleteLater();
+    }
 }
 
 void DocumentListModel::searchFinished()
@@ -272,9 +275,20 @@ DocumentListModel::DocumentType DocumentListModel::filter()
     return d->filter;
 }
 
+QString DocumentListModel::search()
+{
+    return d->searchPattern;
+}
+
 void DocumentListModel::setFilter( DocumentListModel::DocumentType newFilter)
 {
     d->filter = newFilter;
+    d->relayout();
+}
+
+void DocumentListModel::setSearch ( const QString& search )
+{
+    d->searchPattern = search;
     d->relayout();
 }
 
@@ -316,7 +330,9 @@ void DocumentListModel::Private::relayout()
     QList<DocumentInfo> newList;
     foreach(const DocumentInfo &docInfo, allDocumentInfos) {
         if(filter == UnknownType || docInfo.docType == filter) {
-            newList.append(docInfo);
+            if(searchPattern.isEmpty() || docInfo.fileName.contains(searchPattern, Qt::CaseInsensitive)) {
+                newList.append(docInfo);
+            }
         }
     }
 

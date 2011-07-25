@@ -92,6 +92,7 @@ void TextSelection::updateFromHandles()
         updatePosition(UpdatePosition, QPointF(d->positionHandle->x(), d->positionHandle->y()));
         d->updateHandles = true;
     }
+    updateHandlePositions();
 }
 
 void TextSelection::updateHandlePositions(const QTextCursor &cursor)

@@ -21,6 +21,6 @@ cmake options:
  -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug
 
 Install the following packages:
-  qt-mobility-devel
+  libqtsparql-tracker qt-mobility-devel meego-qml-launcher-devel libqtsparql-devel libqtsparql-tracker-extensions-devel
 
 Optionally install kdebase-runtime, which is needed for the oxygen icons (not currently available in any form in the intel tablet ux repositories, this will need fixing)

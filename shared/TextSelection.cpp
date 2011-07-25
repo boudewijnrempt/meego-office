@@ -107,14 +107,14 @@ void TextSelection::updateHandlePositions(const QTextCursor &cursor)
 
     KoTextDocumentLayout * layout = qobject_cast<KoTextDocumentLayout*>(d->selection.document()->documentLayout());
 
-    QTextLine line = d->selection.block().layout()->lineForTextPosition(d->selection.positionInBlock());
+    QTextCursor positionCursor = QTextCursor(d->selection.document());
+    positionCursor.setPosition(d->selection.position());
+    QTextLine line = positionCursor.block().layout()->lineForTextPosition(positionCursor.positionInBlock());
     if(line.isValid()) {
-        QRectF textRect(line.cursorToX(d->selection.positionInBlock()) , line.y(), 1, line.height());
-
         KoShape *shape = layout->rootAreaForPosition(d->selection.position())->associatedShape();
         KoTextShapeData *shapeData = qobject_cast<KoTextShapeData *>(shape->userData());
 
-        QPointF pos = shape->absoluteTransformation(0).map(textRect.center()) - QPointF(0, shapeData->documentOffset());
+        QPointF pos = shape->shapeToDocument(layout->selectionBoundingBox(positionCursor).center());
         pos = documentToView(pos) - d->controller->getDocumentOffset();
 
         d->positionHandle->blockSignals(true);
@@ -127,12 +127,10 @@ void TextSelection::updateHandlePositions(const QTextCursor &cursor)
     anchorCursor.setPosition(d->selection.anchor());
     line = anchorCursor.block().layout()->lineForTextPosition(anchorCursor.positionInBlock());
     if(line.isValid()) {
-        QRectF textRect(line.cursorToX(anchorCursor.positionInBlock()) , line.y(), 1, line.height());
-
         KoShape *shape = layout->rootAreaForPosition(anchorCursor.position())->associatedShape();
         KoTextShapeData *shapeData = qobject_cast<KoTextShapeData *>(shape->userData());
 
-        QPointF pos = shape->absoluteTransformation(0).map(textRect.center()) - QPointF(0, shapeData->documentOffset());
+        QPointF pos = shape->shapeToDocument(layout->selectionBoundingBox(anchorCursor).center());
         pos = documentToView(pos) - d->controller->getDocumentOffset();
 
         d->anchorHandle->blockSignals(true);

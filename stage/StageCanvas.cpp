@@ -45,6 +45,7 @@ public:
     void update();
     void updatePanGesture(const QPointF &location);
     void moveSelectionHandles();
+    void clearSelection();
 
     StageCanvas* q;
 
@@ -111,6 +112,7 @@ void StageCanvas::changeSlide(int newSlide)
     if(newSlide >= slideCount())
         newSlide = 0;
 
+    d->clearSelection();
     d->view->setPage(newSlide);
     emit slideChanged(newSlide);
     emit currentPageNotesChanged();
@@ -254,9 +256,7 @@ void StageCanvas::onSingleTap(const QPointF &location)
     KoSelection *selection = shapeManager->selection();
     if (!selection) return;
     selection->select(shape);
-    setHasSelection(false);
-    selectionAnchorHandle()->setVisible(false);
-    selectionCursorHandle()->setVisible(false);
+    d->clearSelection();
 
     // The text tool is responsible for handling clicks...
     KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
@@ -285,7 +285,8 @@ void StageCanvas::onDoubleTap ( const QPointF& location )
 
 void StageCanvas::onLongTap ( const QPointF& location )
 {
-   KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
+    d->clearSelection();
+    KoToolManager::instance()->switchToolRequested("TextToolFactory_ID");
 
     updatePosition(UpdatePosition, location);
     KoTextShapeData * shapeData = textShapeDataForPosition(location);
@@ -315,12 +316,12 @@ void StageCanvas::onLongTapEnd(const QPointF &location)
 
 QPointF StageCanvas::documentToView(const QPointF& point)
 {
-    return d->canvas->viewConverter()->documentToView(point);
+    return d->view->zoomHandler()->documentToView(point);
 }
 
 QPointF StageCanvas::viewToDocument(const QPointF& point)
 {
-    return d->canvas->viewConverter()->viewToDocument(point);
+    return d->view->zoomHandler()->viewToDocument(point);
 }
 
 void StageCanvas::updateFromHandles()
@@ -352,6 +353,22 @@ void StageCanvas::Private::updatePanGesture(const QPointF& location)
 void StageCanvas::Private::moveSelectionHandles()
 {
     q->updateHandlePositions();
+}
+
+void StageCanvas::Private::clearSelection()
+{
+    QList<KoShape*> shapes = canvas->shapeManager()->shapes();
+    foreach(KoShape* shape, shapes) {
+        KoTextShapeData *data = qobject_cast<KoTextShapeData*>(shape->userData());
+        if(data) {
+            KoTextEditor *editor = KoTextDocument(data->document()).textEditor();
+            editor->clearSelection();
+        }
+    }
+
+    q->setHasSelection(false);
+    q->selectionAnchorHandle()->setVisible(false);
+    q->selectionCursorHandle()->setVisible(false);
 }
 
 #include "StageCanvas.moc"

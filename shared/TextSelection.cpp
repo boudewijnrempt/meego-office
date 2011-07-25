@@ -146,7 +146,6 @@ void TextSelection::updatePosition( TextSelection::UpdateWhat update, const QPoi
 {
     KoTextShapeData * shapeData = textShapeDataForPosition(position + d->controller->getDocumentOffset());
     if(!shapeData) {
-        qDebug() << "No shape data found";
         return;
     }
 

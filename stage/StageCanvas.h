@@ -48,6 +48,8 @@ public Q_SLOTS:
     virtual void setSelectionAnchorHandle(QDeclarativeItem* handle);
     virtual void setSelectionCursorHandle(QDeclarativeItem* handle);
 
+    virtual void onLongTapEnd(const QPointF& location = QPointF());
+
 Q_SIGNALS:
     void slideChanged(int newSlide);
     void findMatchFound ( int match );
@@ -72,7 +74,6 @@ private Q_SLOTS:
     virtual void onSingleTap(const QPointF &location);
     virtual void onDoubleTap ( const QPointF& location );
     virtual void onLongTap ( const QPointF& location );
-    virtual void onLongTapEnd(const QPointF& location);
 };
 
 #endif // CALLIGRAMOBILE_STAGECANVAS_H

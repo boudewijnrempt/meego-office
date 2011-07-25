@@ -301,10 +301,15 @@ void StageCanvas::onLongTap ( const QPointF& location )
     }
 }
 
-void StageCanvas::onLongTapEnd(const QPointF& location)
+void StageCanvas::onLongTapEnd(const QPointF &location)
 {
     if(hasSelection()) {
-        emit selected(location);
+        QPointF start(selectionAnchorHandle()->x(), selectionAnchorHandle()->y());
+        QPointF end(selectionCursorHandle()->x(), selectionCursorHandle()->y());
+
+        QPointF center = (start + end) / 2.0f;
+
+        emit selected(center);
     }
 }
 

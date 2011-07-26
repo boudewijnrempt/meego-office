@@ -12,13 +12,19 @@ find_package(Qt4 4.7.1 REQUIRED)
 
 include(KDE4Defaults)
 
+option(WITH_MEEGO_QMLLAUNCHER "Support MeeGo QML Launcher for creating the Application and UI." ON)
+
 # Find Calligra
 find_package(CalligraLibs REQUIRED)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-find_package(QtMobility COMPONENTS Sensors REQUIRED)
-find_package(MeegoQmlLauncher REQUIRED)
 find_package(QtSparql REQUIRED)
+
+if(WITH_MEEGO_QMLLAUNCHER)
+    find_package(QtMobility COMPONENTS Sensors REQUIRED)
+    find_package(MeegoQmlLauncher REQUIRED)
+    add_definitions(-DUSE_MEEGO_QMLLAUNCHER)
+endif()
 
 include_directories(${QT_INCLUDES} ${KDE4_INCLUDES} ${QSPARQL_INCLUDE_DIRS}
                     ${KOMAIN_INCLUDES} ${KOPAGEAPP_INCLUDES} ${WORDS_INCLUDES}

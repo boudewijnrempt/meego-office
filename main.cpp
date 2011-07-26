@@ -6,10 +6,10 @@
 #include <KDE/KStandardDirs>
 #include <KDE/KComponentData>
 
-#ifdef __x86_64__
-#include </opt/arch32/usr/include/meegoqmllauncher/launcherapp.h>
-#else
+#ifdef USE_MEEGO_QMLLAUNCHER
 #include <meegoqmllauncher/launcherapp.h>
+#else
+#include <QtGui/QApplication>
 #endif
 
 #include "shared/MainWindow.h"
@@ -48,10 +48,15 @@ int main(int argc, char *argv[])
     if(args->count() > 0) {
         fileName = args->arg(0);
     }
-    
+
+#ifdef USE_MEEGO_QMLLAUNCHER
     LauncherApp app(argc, argv);
     app.setApplicationName("com.meego.officesuite");
     app.setPreinit(true);
+#else
+    QApplication app(argc, argv);
+    app.setApplicationName("com.meego.officesuite");
+#endif
 
     qmlRegisterType<DocumentListModel>("org.calligra.mobile", 1, 0, "DocumentListModel");
     qmlRegisterType<DocumentThumbnailListModel>("org.calligra.mobile", 1, 0, "DocumentThumbnailListModel");
@@ -63,10 +68,12 @@ int main(int argc, char *argv[])
 
     MainWindow window(KStandardDirs::locate("data", "meego-office-suite/main.qml"), fileName);
 
+#ifdef USE_MEEGO_QMLLAUNCHER
     app.updateSplash();
     app.dbusInit(argc, argv);
     app.setPreinit(false);
     app.setOrientationLocked(false);
+#endif
  
     window.showMaximized();
 

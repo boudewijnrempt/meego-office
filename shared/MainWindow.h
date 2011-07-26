@@ -1,14 +1,17 @@
 #ifndef CALLIGRAMOBILE_MAINWINDOW_H
 #define CALLIGRAMOBILE_MAINWINDOW_H
 
-#ifdef __x86_64__
-#include </opt/arch32/usr/include/meegoqmllauncher/launcherwindow.h>
-#else
+#ifdef USE_MEEGO_QMLLAUNCHER
 #include <meegoqmllauncher/launcherwindow.h>
-#endif
 
 class MainWindow : public LauncherWindow
 {
+#else
+#include <QtDeclarative/QDeclarativeView>
+
+class MainWindow : public QDeclarativeView
+{
+#endif
     Q_OBJECT
 
 public:

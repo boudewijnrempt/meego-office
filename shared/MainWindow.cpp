@@ -26,7 +26,11 @@ public:
 };
 
 MainWindow::MainWindow( const QString &ui, const QString &file, QWidget *parent)
+#ifdef USE_MEEGO_QMLLAUNCHER
     : LauncherWindow(true, 1280, 800, false, false, parent), d(new Private)
+#else
+    : QDeclarativeView(parent), d(new Private)
+#endif
 {
     QApplication::instance()->installEventFilter(this);
     setWindowTitle(tr("MeeGo Office Suite"));
@@ -39,6 +43,11 @@ MainWindow::MainWindow( const QString &ui, const QString &file, QWidget *parent)
     engine()->addImageProvider("pagethumbnails", new PageThumbnailProvider());
     rootContext()->setContextProperty("CALLIGRA_VERSION_STRING", CALLIGRA_VERSION_STRING);
     rootContext()->setContextProperty("MEEGO_OFFICE_VERSION", "0.85");
+
+#ifndef USE_MEEGO_QMLLAUNCHER
+    rootContext()->setContextProperty("mainWindow", this);
+    rootContext()->setContextProperty("qApp", qApp);
+#endif
 
     setSource(QUrl(ui));
     setResizeMode(QDeclarativeView::SizeRootObjectToView);

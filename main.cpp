@@ -50,7 +50,9 @@ int main(int argc, char *argv[])
     }
     
     LauncherApp app(argc, argv);
- 
+    app.setApplicationName("com.meego.officesuite");
+    app.setPreinit(true);
+
     qmlRegisterType<DocumentListModel>("org.calligra.mobile", 1, 0, "DocumentListModel");
     qmlRegisterType<DocumentThumbnailListModel>("org.calligra.mobile", 1, 0, "DocumentThumbnailListModel");
     qmlRegisterType<WordsCanvas>("org.calligra.mobile", 1, 0, "WordsCanvas");
@@ -60,6 +62,12 @@ int main(int argc, char *argv[])
     qmlRegisterType<PDFCanvasController>("org.calligra.mobile", 1, 0, "PDFCanvas");
 
     MainWindow window(KStandardDirs::locate("data", "meego-office-suite/main.qml"), fileName);
+
+    app.updateSplash();
+    app.dbusInit(argc, argv);
+    app.setPreinit(false);
+    app.setOrientationLocked(false);
+ 
     window.showMaximized();
 
     return app.exec();

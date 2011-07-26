@@ -1,5 +1,18 @@
 please update this file just before tagging for a release/drop!
 
+========================
+testing snapshot: 20110726
+mos: dev20110726 ()
+calligra: dd1774d226819c5c6b890834eb194bfec045a0be
+
+========================
+testing snapshot: 20110712
+mos: 210046340f21bda4d9c311d092679bdd411d9cbd
+calligra: 22a2586489a240ce721988a572dee8b04e9745be
+
+========================
 drop version: 20110711
-calligra revision: 394c61c81a41d653271b1f6101d84196f47050f6
+mos: drop20110711 (a9bf6e485366a0b96b9076c902f931ab3636dfc0)
+calligra: 394c61c81a41d653271b1f6101d84196f47050f6
+========================
 

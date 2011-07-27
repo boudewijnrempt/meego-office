@@ -14,14 +14,16 @@
 #include <KoToolManager.h>
 #include <KoToolRegistry.h>
 
-#include <tables/ui/Selection.h>
-#include <tables/part/Doc.h>
-#include <tables/part/CanvasItem.h>
-#include <tables/Map.h>
-#include <tables/Find.h>
-#include <tables/part/ToolRegistry.h>
 #include <tables/Sheet.h>
 #include <tables/CellStorage.h>
+#include <tables/Map.h>
+#include <tables/ui/Selection.h>
+#include <tables/ui/SheetView.h>
+#include <tables/part/Doc.h>
+#include <tables/part/CanvasItem.h>
+#include <tables/part/Find.h>
+#include <tables/part/ToolRegistry.h>
+
 
 #include "shared/ProgressProxy.h"
 
@@ -92,8 +94,8 @@ QObject* TablesCanvas::doc() const
 void TablesCanvas::setActiveSheetIndex(int index)
 {
     d->activeSheetIndex = index;
-    emit sheetChanged(d->activeSheetIndex);
     d->updateCanvas();
+    emit sheetChanged(d->activeSheetIndex);
 }
 
 bool TablesCanvas::hasNextSheet() const
@@ -128,8 +130,7 @@ void TablesCanvas::previousSheet()
 
 void TablesCanvas::changeSheet(int newIndex)
 {
-    d->canvas->setActiveSheet( d->doc->map()->sheet(newIndex) );
-    emit sheetChanged(newIndex);
+    setActiveSheetIndex(newIndex);
 }
 
 QString TablesCanvas::sheetName() const
@@ -264,7 +265,13 @@ void TablesCanvas::Private::updateCanvas()
     canvas->updateCanvas(QRectF(0, 0, q->width(), q->height()));
     if (canvas && activeSheetIndex >= 0) {
         canvas->setActiveSheet(doc->map()->sheet(activeSheetIndex));
-        finder->setCurrentSheet(doc->map()->sheet(activeSheetIndex));
+
+        Calligra::Tables::SheetView *view = canvas->sheetView(canvas->activeSheet());
+        QColor activeHighlight = QApplication::palette().highlight().color();
+        activeHighlight.setAlpha(128);
+        view->setActiveHighlightColor(activeHighlight);
+        
+        finder->setCurrentSheet(canvas->activeSheet(), view);
     }
 }
 
@@ -277,8 +284,8 @@ void TablesCanvas::Private::matchFound ( KoFindMatch match )
 
     Calligra::Tables::Sheet* sheet = match.container().value<Calligra::Tables::Sheet*>();
     Calligra::Tables::Cell cell = match.location().value<Calligra::Tables::Cell>();
-    canvas->selection()->initialize(cell.cellPosition());
-    QRectF pos = sheet->cellCoordinatesToDocument(QRect(canvas->selection()->anchor(), canvas->selection()->cursor()));
+    
+    QRectF pos = sheet->cellCoordinatesToDocument(QRect(cell.cellPosition(), QSize(1, 1)));
     pos = canvas->viewConverter()->documentToView(pos);
     q->ensureVisible(pos, false);
 }
@@ -289,27 +296,6 @@ void TablesCanvas::onSingleTap ( const QPointF& location )
     d->canvas->updateCanvas(QRectF(x(), y(), width(), height()));
     selectionAnchorHandle()->hide();
     selectionCursorHandle()->hide();
-//     KoToolManager::instance()->switchToolRequested(d->KSpreadCellToolId);
-// 
-//     // convert the position from qgraphicsscene to the canvas item
-//     QPointF docPos = canvas()->viewConverter()->viewToDocument(canvas()->canvasItem()->mapFromScene(location) + documentOffset());
-//     
-//     // Click...
-//     QMouseEvent press(QEvent::MouseButtonPress,
-//                       location.toPoint(),
-//                       Qt::LeftButton,
-//                       Qt::LeftButton,
-//                       Qt::NoModifier);
-//     canvas()->toolProxy()->mousePressEvent(&press, docPos);
-// 
-// 
-//     // And release...
-//     QMouseEvent release(QEvent::MouseButtonRelease,
-//                         location.toPoint(),
-//                         Qt::LeftButton,
-//                         Qt::LeftButton,
-//                         Qt::NoModifier);
-//     canvas()->toolProxy()->mouseReleaseEvent(&release, docPos);
 }
 
 void TablesCanvas::onDoubleTap ( const QPointF& location )

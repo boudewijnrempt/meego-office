@@ -334,6 +334,17 @@ void StageCanvas::Private::matchFound ( KoFindMatch match )
     matchNumber = finder->matches().indexOf(match) + 1;
     emit q->findMatchFound(matchNumber);
 
+    KoTextDocumentLayout *layout = qobject_cast<KoTextDocumentLayout*>(match.container().value<QTextDocument*>()->documentLayout());
+    KoShape* shape = layout->rootAreas().at(0)->associatedShape();
+    KoPAPage* page = dynamic_cast<KoPAPage*>(shape);
+    while(!page && shape->parent()) {
+        shape = shape->parent();
+        page = dynamic_cast<KoPAPage*>(shape);
+    }
+    if(page && view->activePage() != page) {
+        view->setActivePage(page);
+    }
+
     QTextCursor cursor = match.location().value<QTextCursor>();
     QTextLine line = cursor.block().layout()->lineForTextPosition(cursor.position() - cursor.block().position());
     QRectF textRect(line.cursorToX(cursor.anchor() - cursor.block().position()) , line.y(), 1, line.height());

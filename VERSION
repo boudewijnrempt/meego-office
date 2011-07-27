@@ -1,6 +1,11 @@
 please update this file just before tagging for a release/drop!
 
 ========================
+testing snapshot: 20110726-2 (without meego-qml-launcher API)
+mos: fe8babab76ee0b3056b92bcee9e9cbc2f84eeaaf
+calligra: dd1774d226819c5c6b890834eb194bfec045a0be
+
+========================
 testing snapshot: 20110726
 mos: dev20110726 (0313548a82c8a675c7e0b372236ccb02a1a44891)
 calligra: dd1774d226819c5c6b890834eb194bfec045a0be

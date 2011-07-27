@@ -86,6 +86,11 @@ public:
      * The value will be between 50 and 200
      */
     int zoomLevel() const;
+    
+    /**
+     * The height in pixels of the area obscured by the toolbar.
+     */
+    int visibleToolbarHeight() const;
 
 public Q_SLOTS:
     virtual void setVerticalScrollHandle(QDeclarativeItem *handle);
@@ -116,6 +121,8 @@ public Q_SLOTS:
      * and is only truthified by a particular type of document
      */
     virtual bool canHavePageNotes() const { return false; }
+
+    void setVisibleToolbarHeight(int newHeight);
 
 Q_SIGNALS:
     void docMoved();

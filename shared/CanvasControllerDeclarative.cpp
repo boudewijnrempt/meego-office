@@ -35,6 +35,7 @@ public:
         , moveThreshold(5)
         , verticalScrollHandle(0)
         , horizontalScrollHandle(0)
+        , visibleToolbarHeight(0)
     {
     }
     ~Private() { }
@@ -91,6 +92,8 @@ public:
 
     QDeclarativeItem *selectionAnchorHandle;
     QDeclarativeItem *selectionCursorHandle;
+    
+    int visibleToolbarHeight;
 };
 
 CanvasControllerDeclarative::CanvasControllerDeclarative(QDeclarativeItem* parent)
@@ -241,6 +244,16 @@ int CanvasControllerDeclarative::zoomLevel() const
     if(!d->zoomHandler)
         return 100;
     return d->zoomHandler->zoomInPercent();
+}
+
+int CanvasControllerDeclarative::visibleToolbarHeight() const
+{
+    return d->visibleToolbarHeight;
+}
+
+void CanvasControllerDeclarative::setVisibleToolbarHeight(int newHeight)
+{
+    d->visibleToolbarHeight = newHeight;
 }
 
 void CanvasControllerDeclarative::setZoomLevel(int zoomPercentage)

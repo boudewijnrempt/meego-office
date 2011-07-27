@@ -288,7 +288,7 @@ void CanvasInputProxy::Private::beginPinch()
     QPointF origin = canvasController->mapToScene(canvasController->x(), canvasController->y());
     scaleProxy->setPixmap(QPixmap::grabWindow(QApplication::activeWindow()->winId(),
                                               origin.x(), origin.y(),
-                                              canvasController->width(), canvasController->height()));
+                                              canvasController->width(), canvasController->height() - canvasController->visibleToolbarHeight()));
     scaleProxy->setScale(1.0);
     scaleProxy->setVisible(true);
     canvasController->canvas()->canvasItem()->setVisible(false);

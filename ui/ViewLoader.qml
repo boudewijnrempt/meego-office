@@ -30,6 +30,8 @@ Item {
         loader.item.verticalScrollHandle = vertScrollHandle;
         window.search.connect(centralView.find);
         window.showToolBarSearchChanged.connect(centralView.searchVisibleChanged);
+        searchToolBar.visibleChanged.connect(centralView.updateToolbarVisibleHeight);
+        mainToolBar.visibleChanged.connect(centralView.updateToolbarVisibleHeight);
         loadingScreen.show();
         mainToolBar.show();
         return true
@@ -70,6 +72,15 @@ Item {
             loader.item.find(text);
         }
 
+        function updateToolbarVisibleHeight() {
+            if(searchToolBar.visible) {
+                loader.item.setVisibleToolbarHeight(searchToolBar.height);
+            } else if(mainToolBar.visible) {
+                loader.item.setVisibleToolbarHeight(mainToolBar.height);
+            } else {
+                loader.item.setVisibleToolbarHeight(0);
+            }
+        }
         function searchVisibleChanged() {
             if(!window.showToolBarSearch) {
                 searchToolBar.hide();

@@ -149,7 +149,17 @@ Item {
                     }
                 }
                 onSelected: {
-                    var winPos = mapToItem(window, origin.x, origin.y);
+                    var item = cursorMarker.y < anchorMarker.y ? cursorMarker : anchorMarker;
+                    
+                    var winPos;
+                    if(item.y > loader.item.y + selectionMenu.sizeHintMaxHeight) {
+                        winPos = mapToItem(window, item.x, item.y - 10);
+                        selectionMenu.forceFingerMode = 3;
+                    } else {
+                        var otherItem = item == cursorMarker ? anchorMarker : cursorMarker;
+                        winPos = mapToItem(window, otherItem.x, otherItem.y + 10);
+                        selectionMenu.forceFingerMode = 2;
+                    }
                     selectionMenu.setPosition(winPos.x, winPos.y);
                     selectionMenu.show();
                 }
@@ -206,6 +216,8 @@ Item {
 
             ModalContextMenu {
                 id: selectionMenu;
+                forceFingerMode: 3;
+                sizeHintMaxHeight: 100;
 
                 content: ActionMenu {
                     model: [qsTr("Copy")];

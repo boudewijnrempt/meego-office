@@ -21,7 +21,7 @@ TablesHeader::TablesHeader(QDeclarativeItem *parent)
     , m_textColor(Qt::white)
     , m_sheet(0)
 {
-    setFlags(flags() & ~QGraphicsItem::ItemHasNoContents);
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 void TablesHeader::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
@@ -62,7 +62,7 @@ void TablesHeader::paintHorizontal(QPainter* p)
         xPos -= vc->unzoomItX(m_offset.x());
     }
 
-    const qreal height = this->height();
+    const qreal height = this->height() - 1;
 
     int deltaX = 1;
     if (m_sheet->layoutDirection() == Qt::RightToLeft) {
@@ -110,7 +110,7 @@ void TablesHeader::paintVertical(QPainter* p)
     // Align to the offset
     yPos -= vc->unzoomItY(m_offset.y());
 
-    const qreal width = this->width();
+    const qreal width = this->width() - 1;
 
     // Loop through the rows, until we are out of range
     while (yPos <= paintRect.bottom() && y <= KS_rowMax) {
@@ -217,6 +217,7 @@ void TablesHeader::sheetChanged(int newSheet)
 void TablesHeader::docMoved()
 {
     m_offset = m_canvas->getDocumentOffset();
+    update();
 }
 
 QColor TablesHeader::backgroundColor() const

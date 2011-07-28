@@ -31,10 +31,15 @@ public Q_SLOTS:
     void goToNextPage();
     void goToPreviousPage();
 
+    virtual void setSelectionAnchorHandle ( QDeclarativeItem* handle );
+    virtual void setSelectionCursorHandle ( QDeclarativeItem* handle );
+
     virtual void find ( const QString& pattern );
     virtual void findNext();
     virtual void findPrevious();
     virtual void findFinished();
+
+    virtual void onLongTapEnd ( const QPointF& location = QPointF() );
 
 Q_SIGNALS:
     void selected(const QPointF &origin);
@@ -52,11 +57,11 @@ private:
     Q_PRIVATE_SLOT(d, void searchUpdate());
     Q_PRIVATE_SLOT(d, void matchFound(const KoFindMatch &match));
     Q_PRIVATE_SLOT(d, void updateDocSize(const QSizeF &newSize));
+    Q_PRIVATE_SLOT(d, void updateSelectionFromHandles());
 
 private Q_SLOTS:
     virtual void onSingleTap ( const QPointF& location );
     virtual void onLongTap ( const QPointF& location );
-    virtual void onLongTapEnd ( const QPointF& location );
     virtual void onDoubleTap ( const QPointF& location );
     
 };

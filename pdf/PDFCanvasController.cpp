@@ -23,6 +23,7 @@ public:
     void searchUpdate();
     void matchFound(const KoFindMatch &match);
     void updateDocSize(const QSizeF &newSize);
+    void updateSelectionFromHandles();
 
     PDFCanvasController *q;
     PDFDocument *document;
@@ -139,6 +140,20 @@ void PDFCanvasController::findPrevious()
     d->search->findPrevious();
 }
 
+void PDFCanvasController::setSelectionAnchorHandle ( QDeclarativeItem* handle )
+{
+    CanvasControllerDeclarative::setSelectionAnchorHandle(handle);
+    connect(handle, SIGNAL(xChanged()), SLOT(updateSelectionFromHandles()));
+    connect(handle, SIGNAL(yChanged()), SLOT(updateSelectionFromHandles()));
+}
+
+void PDFCanvasController::setSelectionCursorHandle ( QDeclarativeItem* handle )
+{
+    CanvasControllerDeclarative::setSelectionCursorHandle(handle);
+    connect(handle, SIGNAL(xChanged()), SLOT(updateSelectionFromHandles()));
+    connect(handle, SIGNAL(yChanged()), SLOT(updateSelectionFromHandles()));
+}
+
 void PDFCanvasController::onSingleTap ( const QPointF& location )
 {
     PDFSelection *sel = d->canvas->selection();
@@ -245,6 +260,20 @@ void PDFCanvasController::Private::matchFound ( const KoFindMatch& match )
 void PDFCanvasController::Private::updateDocSize(const QSizeF &size)
 {
     q->zoomController()->setDocumentSize(canvas->viewConverter()->viewToDocument(size));
+}
+
+void PDFCanvasController::Private::updateSelectionFromHandles()
+{
+    QDeclarativeItem *anchor = q->selectionAnchorHandle();
+    QDeclarativeItem *cursor = q->selectionCursorHandle();
+
+    qreal x = qMin(anchor->x(), cursor->x());
+    qreal y = qMin(anchor->y(), cursor->y());
+
+    qreal width = qAbs(cursor->x() - anchor->x());
+    qreal height = qAbs(cursor->y() - anchor->y());
+
+    canvas->selection()->setGeometry(x, y, width, height);
 }
 
 #include "PDFCanvasController.moc"

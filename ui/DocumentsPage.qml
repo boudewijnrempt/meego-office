@@ -18,6 +18,7 @@ AppPage {
         showHeader: true;
 
         onSelected: {
+            window.showToolBarSearch = false;
 	    openFile(filePath, fileType, uuid);
         }
     }

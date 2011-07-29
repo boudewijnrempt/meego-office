@@ -564,17 +564,18 @@ void CanvasControllerDeclarative::Private::updateMinMax()
 
         minX = halfWindowWidth - (halfDocWidth + margin) + qMin(0, halfWindowWidth - halfDocWidth);
         if(q->width() < q->documentSize().width()) {
-            maxX = minX + ( qMax(0, -(halfWindowWidth - halfDocWidth)) + q->margin()) * 2;
+            maxX = minX + ( qMax(0, -(halfWindowWidth - halfDocWidth)) + margin) * 2;
         } else {
             maxX = std::numeric_limits<qreal>::quiet_NaN();
         }
 
         int halfWindowHeight = q->height() / 2;
-        int halfDocHeight = q->documentSize().height() / 2;
+        int docHeight = q->documentSize().height() + q->visibleToolbarHeight();
+        int halfDocHeight = (docHeight / 2);
 
         minY = halfWindowHeight - (halfDocHeight + margin) + qMin(0, halfWindowHeight - halfDocHeight);
-        if(q->height() < q->documentSize().height()) {
-            maxY = minY + ( qMax(0, -(halfWindowHeight - halfDocHeight)) + q->margin()) * 2;
+        if(q->height() < (docHeight + (margin * 2))) {
+            maxY = minY + ( qMax(0, -(halfWindowHeight - halfDocHeight)) + margin) * 2;
         } else {
             maxY = std::numeric_limits<qreal>::quiet_NaN();
         }
@@ -594,6 +595,8 @@ void CanvasControllerDeclarative::Private::updateCanvasSize()
         canvas->canvasItem()->setGeometry(0, 0, q->width(), q->height());
         canvas->updateCanvas(canvas->viewConverter()->viewToDocument(QRectF(0, 0, q->width(), q->height())));
         canvas->canvasItem()->update();
+        updateMinMax();
+        timer->start();
     }
 }
 

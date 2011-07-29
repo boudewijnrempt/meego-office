@@ -1,6 +1,11 @@
 please update this file just before tagging for a release/drop!
 
 ========================
+drop version: 20110729
+mos: drop20110729 ()
+calligra: 6cbc512a12a205260b5361315af718684b4f17b4
+
+========================
 testing snapshot: 20110728 (WITH_MEEGO_QMLLAUNCHER=OFF)
 mos: 23a7c04c12f6ee741f67ac22346380c8048eed20
 calligra: 26eda3e351b991dbb0c7846b6a841a86cf705174

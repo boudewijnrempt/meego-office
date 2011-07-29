@@ -5,6 +5,12 @@ import org.calligra.mobile 1.0
 BottomToolBar {
     id: base;
 
+    function show() {
+        //Nasty hack to prevent the toolbar from stealing focus.
+        visible = true;
+        base.children[1].extend = true;
+    }
+
     signal findNextAction();
     signal findPreviousAction();
     signal closeAction();

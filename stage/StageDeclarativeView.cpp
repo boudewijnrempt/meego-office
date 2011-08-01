@@ -262,6 +262,7 @@ void StageDeclarativeView::setPage(int newPage)
     
     if (theNewPage != d->page) {
         setActivePage(theNewPage);
+        d->canvas->update();
     }
 }
 

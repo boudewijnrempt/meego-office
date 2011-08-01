@@ -147,6 +147,28 @@ void StageCanvas::loadDocument()
     connect(d->finder, SIGNAL(matchFound(KoFindMatch)), this, SLOT(matchFound(KoFindMatch)));
     connect(d->finder, SIGNAL(updateCanvas()), this, SLOT(update()));
 
+    // Set the initial zoom level to such a level that the slide
+    // plus margins fits inside the view
+    int zoomX = 100 * (width() / documentSize().width());
+    int  zoomY = 100 * ((height() - visibleToolbarHeight() ) / documentSize().height());
+    if(zoomX < 100 || zoomY < 100)
+    {
+        if(zoomX < zoomY)
+        {
+            if(zoomX > 50)
+                setZoomLevel(zoomX);
+            else
+                setZoomLevel(50);
+        }
+        else
+        {
+            if(zoomY > 50)
+                setZoomLevel(zoomY);
+            else
+                setZoomLevel(50);
+        }
+    }
+
     emit progress(100);
     emit completed();
     emit slideChanged(0);

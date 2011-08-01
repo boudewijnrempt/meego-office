@@ -28,8 +28,7 @@ Item {
         loader.item.completed.connect(centralView.onCompleted);
         loader.item.horizontalScrollHandle = horizScrollHandle;
         loader.item.verticalScrollHandle = vertScrollHandle;
-        window.search.connect(centralView.find);
-        window.showToolBarSearchChanged.connect(centralView.searchVisibleChanged);
+        
         searchToolBar.visibleChanged.connect(centralView.updateToolbarVisibleHeight);
         mainToolBar.visibleChanged.connect(centralView.updateToolbarVisibleHeight);
         loadingScreen.show();
@@ -40,6 +39,16 @@ Item {
     function loadDocument() {
         if(loader.item) {
             loader.item.loadDocument();
+        }
+    }
+
+    Connections {
+        target: window;
+        onSearch: loader.item.find(text);
+        onSearchRetracted: {
+            searchToolBar.hide();
+            loader.item.findFinished();
+            mainToolBar.show();
         }
     }
 
@@ -68,10 +77,6 @@ Item {
             loadingScreenProgressBar.percentage = progress;
         }
 
-        function find(text) {
-            loader.item.find(text);
-        }
-
         function updateToolbarVisibleHeight() {
             if(searchToolBar.visible) {
                 loader.item.setVisibleToolbarHeight(searchToolBar.height);
@@ -79,13 +84,6 @@ Item {
                 loader.item.setVisibleToolbarHeight(mainToolBar.height);
             } else {
                 loader.item.setVisibleToolbarHeight(0);
-            }
-        }
-        function searchVisibleChanged() {
-            if(!window.showToolBarSearch) {
-                searchToolBar.hide();
-                loader.item.findFinished();
-                mainToolBar.show();
             }
         }
 

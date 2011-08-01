@@ -47,6 +47,11 @@ int main(int argc, char *argv[])
     QString fileName;
     if(args->count() > 0) {
         fileName = args->arg(0);
+        // Don't accept .desktop files here - this alleviates trouble
+        // with the meego launcher adding the .desktop file to the
+        // command line, causing failure in launch
+        if(fileName.toLower().endsWith(".desktop"))
+            fileName = "";
     }
 
 #ifdef USE_MEEGO_QMLLAUNCHER

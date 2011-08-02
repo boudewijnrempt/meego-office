@@ -12,8 +12,8 @@ Item {
     signal selected(int index, string filePath, string fileType, string uuid)
 
     property int textPixelSize: theme.fontPixelSizeLarge;
-    property variant columnWidth:       [ 0.05, 0.3, 0.25, 0.15, 0.17, 0.08 ];
-    property variant narrowColumnWidth: [ 0.05, 0.5, 0,    0.3,  0.3,  0 ];
+    property variant columnWidth:       [ 0.05, 0.5, 0, 0.2, 0.17, 0.08 ];
+    property variant narrowColumnWidth: [ 0.05, 0.5, 0, 0.3,  0.3,  0 ];
     property int columnSpacing: 20;
     property int narrowSize: 700;
     property int adjustedParentWidth: parent.width - (columnSpacing * columnWidth.length)

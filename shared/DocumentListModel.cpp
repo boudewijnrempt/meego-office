@@ -130,6 +130,8 @@ public:
 
     DocumentType filter;
     QString searchPattern;
+
+    QTimer *timer;
 };
 
 QHash<QString, DocumentListModel::DocumentType> DocumentListModel::sm_extensions = QHash<QString, DocumentListModel::DocumentType>();
@@ -149,6 +151,10 @@ DocumentListModel::DocumentListModel(QObject *parent)
     roleNames[ModifiedTimeRole] = "modifiedTime";
     roleNames[UUIDRole] = "uuid";
     setRoleNames(roleNames);
+
+    d->timer = new QTimer;
+    connect(d->timer, SIGNAL(timeout()), SLOT(startSearch()));
+    d->timer->start(30000);
 }
 
 DocumentListModel::~DocumentListModel()
@@ -162,6 +168,7 @@ void DocumentListModel::startSearch()
         qDebug() << "Already searching or finished search";
         return;
     }
+    d->allDocumentInfos.clear();
     d->searchThread = new SearchThread();
     connect(d->searchThread, SIGNAL(documentFound( DocumentListModel::DocumentInfo)), this, SLOT(addDocument( DocumentListModel::DocumentInfo)));
     connect(d->searchThread, SIGNAL(finished()), this, SLOT(searchFinished()));

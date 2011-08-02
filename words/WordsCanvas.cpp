@@ -259,7 +259,7 @@ void WordsCanvas::Private::matchFound(KoFindMatch match)
 
 void WordsCanvas::Private::update()
 {
-    canvas->updateCanvas(QRectF(QPointF(0.f, 0.f), canvas->canvasItem()->size()));
+    canvas->updateCanvas(canvas->viewMode()->viewToDocument(QRectF(q->x(), q->y(), q->width(), q->height()).translated(q->getDocumentOffset()), canvas->viewConverter()));
 }
 
 void WordsCanvas::onSingleTap( const QPointF& location )

@@ -251,15 +251,30 @@ void WordsCanvas::Private::matchFound(KoFindMatch match)
     matchNumber = find->matches().indexOf(match) + 1;
     emit q->findMatchFound(matchNumber);
 
+    QTextDocument *tdoc = match.container().value<QTextDocument*>();
+    KoTextDocumentLayout *layout = qobject_cast<KoTextDocumentLayout*>(tdoc->documentLayout());
     QTextCursor cursor = match.location().value<QTextCursor>();
-    QTextLine line = cursor.block().layout()->lineForTextPosition(cursor.position() - cursor.block().position());
-    QRectF textRect(line.cursorToX(cursor.anchor() - cursor.block().position()) , line.y(), 1, line.height());
-    q->ensureVisible(canvas->viewConverter()->documentToView(textRect), false);
+
+//    KWPage* page = doc->pageManager()->page()
+
+    KoShape *shape = layout->rootAreaForPosition(cursor.position())->associatedShape();
+    KoTextShapeData *shapeData = qobject_cast<KoTextShapeData *>(shape->userData());
+
+//    qDebug() << layout->rootAreaForPosition(cursor.position())->selectionBoundingBox(cursor);
+
+    QRectF rect = shape->shapeToDocument(layout->rootAreaForPosition(cursor.position())->selectionBoundingBox(cursor));
+    rect = canvas->viewConverter()->documentToView(rect);
+    
+//    QRectF textRect = layout->selectionBoundingBox(cursor);
+//     QTextCursor cursor = match.location().value<QTextCursor>();
+//     QTextLine line = cursor.block().layout()->lineForTextPosition(cursor.position() - cursor.block().position());
+//     QRectF textRect(line.cursorToX(cursor.anchor() - cursor.block().position()) , line.y(), 1, line.height());
+    q->ensureVisible(rect, false);
 }
 
 void WordsCanvas::Private::update()
 {
-    canvas->updateCanvas(canvas->viewMode()->viewToDocument(QRectF(q->x(), q->y(), q->width(), q->height()).translated(q->getDocumentOffset()), canvas->viewConverter()));
+    canvas->updateCanvas(canvas->viewMode()->viewToDocument(QRectF(q->x(), q->y(), q->width(), q->height()).translated(q->getDocumentOffset()), canvas->viewConverter() ));
 }
 
 void WordsCanvas::onSingleTap( const QPointF& location )

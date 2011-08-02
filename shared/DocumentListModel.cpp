@@ -8,10 +8,15 @@
 #include <QTimer>
 
 #include <KDE/KGlobal>
-#include <KDE/KLocale>
 #include <KDE/KSharedConfig>
 #include <KDE/KConfigGroup>
 #include <KDE/KFileItem>
+
+#ifdef USE_MEEGO_LOCALE
+#include <meegolocale.h>
+#else
+#include <KDE/KLocale>
+#endif
 
 #include <QtSparql/QSparqlConnection>
 #include <QtSparql/QSparqlResult>
@@ -49,7 +54,7 @@ void SearchThread::run()
             "?u nie:isStoredAs ?uuid . "
             "FILTER( ?type = nfo:PaginatedTextDocument || ?type = nfo:Presentation || ?type = nfo:Spreadsheet ) . "
         "} ORDER BY ?name");
-    
+
     QSparqlResult* result = connection.exec(query);
     result->waitForFinished();
     if(!result->hasError())
@@ -64,7 +69,7 @@ void SearchThread::run()
             info.accessedTime = result->binding(3).value().toDateTime();
             info.modifiedTime = result->binding(4).value().toDateTime();
             info.uuid = result->binding(6).value().toString();
-            
+
             /* Uncomment this once tracker starts behaving irt rdf:Type of documents.
             QString type = result->binding(5).value().toString();
 	    if(type == textDocumentType) {
@@ -113,14 +118,14 @@ class DocumentListModel::Private
 {
 public:
     Private( DocumentListModel *qq) : q(qq), searchThread(0), filter(DocumentListModel::UnknownType) { }
-    
+
     void relayout();
 
     DocumentListModel* q;
-    
+
     QList<DocumentInfo> allDocumentInfos;
     QList<DocumentInfo> currentDocumentInfos;
-    
+
     SearchThread *searchThread;
 
     DocumentType filter;
@@ -133,7 +138,7 @@ DocumentListModel::DocumentListModel(QObject *parent)
     : QAbstractListModel(parent), d(new Private(this))
 {
     qRegisterMetaType<DocumentListModel::DocumentInfo>();
-    
+
     QHash<int, QByteArray> roleNames = QAbstractListModel::roleNames();
     roleNames[FileNameRole] = "fileName";
     roleNames[FilePathRole] = "filePath";
@@ -185,7 +190,7 @@ void DocumentListModel::addDocument(const DocumentInfo &info)
     {
         return;
     }
-    
+
     d->allDocumentInfos.append(info);
     d->relayout();
 }
@@ -207,7 +212,7 @@ QVariant DocumentListModel::data(const QModelIndex &index, int role) const
     if (!index.isValid()) {
         return QVariant();
     }
-    
+
     const int row = index.row();
     const DocumentInfo &info = d->currentDocumentInfos[row];
 
@@ -227,15 +232,14 @@ QVariant DocumentListModel::data(const QModelIndex &index, int role) const
 
 QString DocumentListModel::prettyTime( const QDateTime& theTime)
 {
+#ifdef USE_MEEGO_LOCALE
+    meego::Locale locale;
+    QString localDate = locale.localDate(theTime.date(), meego::Locale::DateFullShort);
+    QString localTime = locale.localTime(theTime.time(), meego::Locale::TimeFull24);
+    return localDate + " " + localTime;
+#else
     return KGlobal::locale()->formatDateTime( theTime, KLocale::FancyShortDate );
-    
-    /*if( theTime.date().day() == QDateTime::currentDateTime().date().day() )
-        
-    else if( theTime.daysTo( QDateTime::currentDateTime() ) < 7 )
-        return KGlobal::locale()->formatDate( theTime.date(), KLocale::FancyShortDate );
-    else
-        return KGlobal::locale()->formatDate( theTime.date(), KLocale::ShortDate );
-        */
+#endif
 }
 
 QVariant DocumentListModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -245,7 +249,7 @@ QVariant DocumentListModel::headerData(int section, Qt::Orientation orientation,
     Q_UNUSED(role)
     return QVariant();
 //     if (orientation == Qt::Vertical || role != Qt::DisplayRole)
-//         
+//
 //     switch (section) {
 //         case 0: return tr("Filename");
 //         case 1: return tr("Path");

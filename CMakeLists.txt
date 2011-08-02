@@ -13,6 +13,7 @@ find_package(Qt4 4.7.1 REQUIRED)
 include(KDE4Defaults)
 
 option(WITH_MEEGO_QMLLAUNCHER "Support MeeGo QML Launcher for creating the Application and UI." ON)
+option(WITH_MEEGO_LOCALE "Use MeeGo's Locale system for date/time formatting." ON)
 
 # Find Calligra
 find_package(CalligraLibs REQUIRED)
@@ -26,10 +27,16 @@ if(WITH_MEEGO_QMLLAUNCHER)
     add_definitions(-DUSE_MEEGO_QMLLAUNCHER)
 endif()
 
+if(WITH_MEEGO_LOCALE)
+    find_package(MeegoLocale REQUIRED)
+    add_definitions(-DUSE_MEEGO_LOCALE)
+endif()
+
 include_directories(${QT_INCLUDES} ${KDE4_INCLUDES} ${QSPARQL_INCLUDE_DIRS}
                     ${KOMAIN_INCLUDES} ${KOPAGEAPP_INCLUDES} ${WORDS_INCLUDES}
                     ${TABLES_INCLUDES} ${STAGE_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR}
                     ${QTMOBILITY_INCLUDE_DIRS} ${MEEGO_QML_LAUNCHER_INCLUDE_DIR}
+                    ${MEEGO_LOCALE_INCLUDES}
                    )
 
 set(PDF_SERVER_BINARY /usr/bin/pdfserver CACHE PATH "Path to PDF Server binary")
@@ -61,7 +68,7 @@ set(meego-office-suite_SRCS
     pdf/PDFPage.cpp
     pdf/PDFSelection.cpp
     pdf/PDFSearch.cpp
-    
+
     main.cpp
 )
 
@@ -97,6 +104,7 @@ target_link_libraries(meego-office-suite
     calligrastageprivate
     ${QTMOBILITY_LIBRARIES}
     ${MEEGO_QMLLAUNCHER_LIBRARY}
+    ${MEEGO_LOCALE_LIBRARY}
 )
 
 add_subdirectory(icons)

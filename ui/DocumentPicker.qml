@@ -8,11 +8,11 @@ Item {
     property alias filter: documentListModel.filter;
     property alias showHeader: header.visible;
     property bool showType: false;
-    
+
     signal selected(int index, string filePath, string fileType, string uuid)
 
     property int textPixelSize: theme.fontPixelSizeLarge;
-    property variant columnWidth:       [ 0.05, 0.3, 0.25, 0.15, 0.15, 0.1 ];
+    property variant columnWidth:       [ 0.05, 0.3, 0.25, 0.15, 0.17, 0.08 ];
     property variant narrowColumnWidth: [ 0.05, 0.5, 0,    0.3,  0.3,  0 ];
     property int columnSpacing: 20;
     property int narrowSize: 700;
@@ -25,7 +25,7 @@ Item {
         }
         return adjustedParentWidth * percentage;
     }
-    
+
     Image {
         id: header;
         anchors.left: parent.left;
@@ -41,7 +41,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter;
 
             width: getColumnWidth(1);
-            
+
             text: "Filename";
             font.pixelSize: textPixelSize;
             font.bold: true;
@@ -51,7 +51,7 @@ Item {
         Text {
             id: authorHeader
             visible: width > 5 ? true : false;
-            
+
             anchors.left: filenameHeader.right;
             anchors.leftMargin: columnSpacing;
             anchors.verticalCenter: parent.verticalCenter;
@@ -77,7 +77,7 @@ Item {
 
         Text {
             id: modifiedHeader
-            
+
             anchors.left: typeHeader.right;
             anchors.leftMargin: columnSpacing;
             anchors.verticalCenter: parent.verticalCenter;
@@ -91,7 +91,7 @@ Item {
         Text {
             id: sizeHeader
             visible: width > 5 ? true : false;
-            
+
             anchors.left: modifiedHeader.right;
             anchors.leftMargin: columnSpacing;
             anchors.verticalCenter: parent.verticalCenter;
@@ -101,7 +101,7 @@ Item {
             color: theme.fontColorHighlightBlue;
         }
     }
-    
+
     ListView {
         id: documentListView
         clip: true
@@ -112,14 +112,14 @@ Item {
         anchors.left: parent.left;
         anchors.right: parent.right;
         anchors.bottom: parent.bottom;
-        
+
         model: DocumentListModel { id: documentListModel; }
         delegate: deletegateComponent;
     }
 
     Component {
         id: deletegateComponent;
-        
+
         Rectangle {
             id: delegate
 
@@ -131,7 +131,7 @@ Item {
                 id: icon;
                 anchors.verticalCenter: parent.verticalCenter;
                 width: getColumnWidth(0);
-                
+
                 Image {
                     anchors.centerIn: parent;
                     width: 32;
@@ -152,7 +152,7 @@ Item {
                 font.pixelSize: textPixelSize;
                 font.bold: true;
             }
-            
+
             Text {
                 id: author
                 visible: width > 5 ? true : false;
@@ -160,7 +160,7 @@ Item {
                 anchors.leftMargin: columnSpacing;
                 anchors.verticalCenter: parent.verticalCenter;
                 width: getColumnWidth(2);
-                
+
                 text: authorName;
                 font.pixelSize: textPixelSize;
                 font.bold: false
@@ -176,15 +176,15 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter;
 
                 width: getColumnWidth(3);
-                
+
                 text: documentTypeToString(docType);
                 font.pixelSize: textPixelSize;
                 font.bold: false
             }
-            
+
             Text {
                 id: mtime
-                
+
                 anchors.left: type.right
                 anchors.leftMargin: columnSpacing
                 anchors.verticalCenter: parent.verticalCenter
@@ -197,7 +197,7 @@ Item {
             Text {
                 id: size
                 visible: width > 5 ? true : false;
-                
+
                 anchors.left: mtime.right
                 anchors.leftMargin: columnSpacing
                 anchors.verticalCenter: parent.verticalCenter
@@ -219,7 +219,7 @@ Item {
             }
         }
     }
-    
+
     Theme {
         id: theme;
     }

@@ -112,7 +112,7 @@ void SearchThread::run()
 class DocumentListModel::Private
 {
 public:
-    Private( DocumentListModel *qq) : q(qq), searchThread(0) { }
+    Private( DocumentListModel *qq) : q(qq), searchThread(0), filter(DocumentListModel::UnknownType) { }
     
     void relayout();
 

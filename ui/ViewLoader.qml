@@ -28,7 +28,7 @@ Item {
         loader.item.completed.connect(centralView.onCompleted);
         loader.item.horizontalScrollHandle = horizScrollHandle;
         loader.item.verticalScrollHandle = vertScrollHandle;
-        
+
         searchToolBar.visibleChanged.connect(centralView.updateToolbarVisibleHeight);
         mainToolBar.visibleChanged.connect(centralView.updateToolbarVisibleHeight);
         loadingScreen.show();
@@ -44,7 +44,7 @@ Item {
 
     Connections {
         target: window;
-        onSearch: loader.item.find(text);
+        onSearch: loader.item.find(needle);
         onSearchRetracted: {
             searchToolBar.hide();
             loader.item.findFinished();
@@ -148,7 +148,7 @@ Item {
                 }
                 onSelected: {
                     var item = cursorMarker.y < anchorMarker.y ? cursorMarker : anchorMarker;
-                    
+
                     var winPos;
                     if(item.y > loader.item.y + selectionMenu.sizeHintMaxHeight) {
                         winPos = mapToItem(window, item.x, item.y - 10);
@@ -232,7 +232,7 @@ Item {
                     }
                 }
             }
-            
+
             states: [
                 State {
                     name: "slideNotesShown"
@@ -264,7 +264,7 @@ Item {
                     text: loader.item.currentPageNotes
                 }
             }
-            
+
             Text {
                 id: noNote
                 anchors.centerIn: parent
@@ -277,7 +277,7 @@ Item {
                 visible: ( slideNotes.text === "" )
             }
         }
-       
+
         IconButton {
             id: showSlideNotes
             icon: "image://icon/view-pim-notes"
@@ -310,12 +310,12 @@ Item {
 
     ViewToolBar {
         id: mainToolBar;
-        
+
         onShowThumbnailAction: {
             thumbnailMenu.setPosition(x, mapToItem( window, window.width, y).y);
             thumbnailMenu.show();
         }
-        
+
         onPreviousPageAction: {
              if(settings.currentType == DocumentListModel.PresentationType) {
                 loader.item.changeSlide(loader.item.slide - 1);
@@ -331,16 +331,16 @@ Item {
                 loader.item.goToNextPage();
             }
         }
-        
+
         onShowZoomAction: {
             zoomMenu.setPosition(x, mapToItem( window, window.width, y).y);
             zoomMenu.show();
             zoomControlTool.setZoomLevel(loader.item.zoomLevel);
         }
-        
+
         onFullScreenAction: {
 	    mainToolBar.hide();
-            window.fullScreen = true; 
+            window.fullScreen = true;
             window.fullContent = true;
         }
 

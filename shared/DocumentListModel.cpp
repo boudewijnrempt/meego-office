@@ -151,10 +151,6 @@ DocumentListModel::DocumentListModel(QObject *parent)
     roleNames[ModifiedTimeRole] = "modifiedTime";
     roleNames[UUIDRole] = "uuid";
     setRoleNames(roleNames);
-
-    d->timer = new QTimer;
-    connect(d->timer, SIGNAL(timeout()), SLOT(startSearch()));
-    d->timer->start(30000);
 }
 
 DocumentListModel::~DocumentListModel()
@@ -168,7 +164,7 @@ void DocumentListModel::startSearch()
         qDebug() << "Already searching or finished search";
         return;
     }
-    qDebug() << "timer";
+
     d->allDocumentInfos.clear();
     d->searchThread = new SearchThread();
     connect(d->searchThread, SIGNAL(documentFound( DocumentListModel::DocumentInfo)), this, SLOT(addDocument( DocumentListModel::DocumentInfo)));
@@ -256,27 +252,7 @@ QVariant DocumentListModel::headerData(int section, Qt::Orientation orientation,
     Q_UNUSED(orientation)
     Q_UNUSED(role)
     return QVariant();
-//     if (orientation == Qt::Vertical || role != Qt::DisplayRole)
-//
-//     switch (section) {
-//         case 0: return tr("Filename");
-//         case 1: return tr("Path");
-//         case 2: return tr("Type");
-//         case 3: return tr("Size");
-//         case 4: return tr("Author");
-//         case 5: return tr("Last Accessed");
-//         case 6: return tr("Last Modified");
-//         default: return QVariant();
-//     }
 }
-
-// void CMDocumentListModel::groupBy(GroupBy role)
-// {
-//     if (m_groupBy == role)
-//         return;
-//     m_groupBy = role;
-//     relayout();
-// }
 
 void DocumentListModel::classBegin()
 {
@@ -309,6 +285,11 @@ void DocumentListModel::componentComplete()
     startSearch();
 }
 
+void DocumentListModel::refresh()
+{
+    startSearch();
+}
+
 DocumentListModel::DocumentType DocumentListModel::typeForFile ( const QString& file )
 {
     if(sm_extensions.isEmpty()) {
@@ -316,6 +297,7 @@ DocumentListModel::DocumentType DocumentListModel::typeForFile ( const QString& 
         sm_extensions["fodt"] = TextDocumentType;
         sm_extensions["doc"] = TextDocumentType;
         sm_extensions["docx"] = TextDocumentType;
+        sm_extensions["txt"] = TextDocumentType;
         sm_extensions["odp"] = PresentationType;
         sm_extensions["fodp"] = PresentationType;
         sm_extensions["ppt"] = PresentationType;

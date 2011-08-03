@@ -52,7 +52,7 @@ void SearchThread::run()
             "?u nfo:fileLastModified ?lastModified . "
             "?u rdf:type ?type . "
             "?u nie:isStoredAs ?uuid . "
-            "FILTER( ?type = nfo:PaginatedTextDocument || ?type = nfo:Presentation || ?type = nfo:Spreadsheet ) . "
+            "FILTER( ?type = nfo:TextDocument || ?type = nfo:Presentation || ?type = nfo:Spreadsheet ) . "
         "} ORDER BY ?name");
 
     QSparqlResult* result = connection.exec(query);
@@ -61,9 +61,12 @@ void SearchThread::run()
     {
         while (result->next() && !m_abort) {
             DocumentListModel::DocumentInfo info;
+            info.docType = DocumentListModel::typeForFile(info.filePath);
+            if(info.docType == DocumentListModel::UnknownType) {
+                continue;
+            }
             info.fileName = result->binding(0).value().toString();
             info.filePath = result->binding(1).value().toString();
-            info.docType = DocumentListModel::typeForFile(info.filePath);
             info.fileSize = result->binding(2).value().toString();
             info.authorName = "-";
             info.accessedTime = result->binding(3).value().toDateTime();

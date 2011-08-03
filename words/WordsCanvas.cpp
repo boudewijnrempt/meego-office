@@ -152,15 +152,9 @@ void WordsCanvas::loadDocument()
 
         KoFilter::ConversionStatus status;
         path = manager->importDocument(file(), type->name(), status);
-        if(status != KoFilter::OK) {
-            return;
-        }
     }
 
-    if(!doc->openUrl(KUrl(path))) {
-        kWarning() << "Could not open file:" << file();
-        return;
-    }
+    doc->openUrl(KUrl(path));
 
     setMargin(10);
     d->updateCanvas();
@@ -390,11 +384,13 @@ void WordsCanvas::Private::documentOffsetMoved(QPoint newOffset)
 {
     q->updateHandlePositions();
 
-    int pageSize = q->documentSize().height() / doc->pageCount();
-    if(pageSize > 0) {
-        int page = (newOffset.y() + pageSize/2) / pageSize;
-        if(page > 0 && page < doc->pageCount()) {
-            emit q->pageChanged(page);
+    if(doc->pageCount() > 0) {
+        int pageSize = q->documentSize().height() / doc->pageCount();
+        if(pageSize > 0) {
+            int page = (newOffset.y() + pageSize/2) / pageSize;
+            if(page > 0 && page < doc->pageCount()) {
+                emit q->pageChanged(page);
+            }
         }
     }
 }

@@ -168,6 +168,7 @@ void DocumentListModel::startSearch()
         qDebug() << "Already searching or finished search";
         return;
     }
+    qDebug() << "timer";
     d->allDocumentInfos.clear();
     d->searchThread = new SearchThread();
     connect(d->searchThread, SIGNAL(documentFound( DocumentListModel::DocumentInfo)), this, SLOT(addDocument( DocumentListModel::DocumentInfo)));
@@ -189,6 +190,7 @@ void DocumentListModel::searchFinished()
     Q_ASSERT(d->searchThread);
     delete d->searchThread;
     d->searchThread = 0;
+    d->relayout();
 }
 
 void DocumentListModel::addDocument(const DocumentInfo &info)
@@ -199,7 +201,6 @@ void DocumentListModel::addDocument(const DocumentInfo &info)
     }
 
     d->allDocumentInfos.append(info);
-    d->relayout();
 }
 
 int DocumentListModel::rowCount(const QModelIndex &parent) const

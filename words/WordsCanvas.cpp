@@ -151,9 +151,10 @@ void WordsCanvas::loadDocument()
         manager->setBatchMode(true);
 
         KoFilter::ConversionStatus status;
-        path = manager->importDocument(file(), type->name(), status);
+	qDebug() << file();
+        path = manager->importDocument(KUrl(file()).toLocalFile(), type->name(), status);
     }
-
+    qDebug() << path;
     doc->openUrl(KUrl(path));
 
     setMargin(10);

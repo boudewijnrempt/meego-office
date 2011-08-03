@@ -26,6 +26,8 @@
 
 #include "shared/ProgressProxy.h"
 #include "shared/CanvasInputProxy.h"
+#include <KoFilterManager.h>
+#include <KMimeType>
 
 class WordsCanvas::Private
 {
@@ -142,13 +144,25 @@ void WordsCanvas::loadDocument()
     doc->setProgressProxy(proxy);
     connect(proxy, SIGNAL(valueChanged(int)), SIGNAL(progress(int)));
 
-    setMargin(10);
+    KMimeType::Ptr type = KMimeType::findByPath(file());
+    QString path = file();
+    if(type->name() != doc->nativeFormatMimeType()) {
+        KoFilterManager *manager = new KoFilterManager(doc,  doc->progressUpdater());
+        manager->setBatchMode(true);
 
-    if(!doc->openUrl(KUrl(file()))) {
+        KoFilter::ConversionStatus status;
+        path = manager->importDocument(file(), type->name(), status);
+        if(status != KoFilter::OK) {
+            return;
+        }
+    }
+
+    if(!doc->openUrl(KUrl(path))) {
         kWarning() << "Could not open file:" << file();
         return;
     }
 
+    setMargin(10);
     d->updateCanvas();
 
     QList<QTextDocument*> texts;
@@ -264,7 +278,7 @@ void WordsCanvas::Private::matchFound(KoFindMatch match)
 
     QRectF rect = shape->shapeToDocument(layout->rootAreaForPosition(cursor.position())->selectionBoundingBox(cursor));
     rect = canvas->viewConverter()->documentToView(rect);
-    
+
 //    QRectF textRect = layout->selectionBoundingBox(cursor);
 //     QTextCursor cursor = match.location().value<QTextCursor>();
 //     QTextLine line = cursor.block().layout()->lineForTextPosition(cursor.position() - cursor.block().position());
@@ -375,7 +389,7 @@ void WordsCanvas::Private::updatePanGesture(const QPointF& location)
 void WordsCanvas::Private::documentOffsetMoved(QPoint newOffset)
 {
     q->updateHandlePositions();
-    
+
     int pageSize = q->documentSize().height() / doc->pageCount();
     if(pageSize > 0) {
         int page = (newOffset.y() + pageSize/2) / pageSize;

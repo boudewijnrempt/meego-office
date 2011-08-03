@@ -61,12 +61,12 @@ void SearchThread::run()
     {
         while (result->next() && !m_abort) {
             DocumentListModel::DocumentInfo info;
+            info.filePath = result->binding(1).value().toString();
             info.docType = DocumentListModel::typeForFile(info.filePath);
             if(info.docType == DocumentListModel::UnknownType) {
                 continue;
             }
             info.fileName = result->binding(0).value().toString();
-            info.filePath = result->binding(1).value().toString();
             info.fileSize = result->binding(2).value().toString();
             info.authorName = "-";
             info.accessedTime = result->binding(3).value().toDateTime();

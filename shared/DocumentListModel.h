@@ -65,7 +65,7 @@ public:
 
     DocumentType filter();
     QString search();
-    
+
     static QString prettyTime(const QDateTime &theTime);
     static DocumentType typeForFile(const QString &file);
 
@@ -75,13 +75,14 @@ public slots:
     void addDocument(const DocumentListModel::DocumentInfo &info);
     void setFilter(DocumentType newFilter);
     void setSearch(const QString &search);
+    void refresh();
 
 private slots:
     void searchFinished();
 
 private:
     friend class SearchThread;
-    
+
     class Private;
     const QScopedPointer<Private> d;
 

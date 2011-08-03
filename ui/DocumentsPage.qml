@@ -34,6 +34,8 @@ AppPage {
         }
     }
 
+    onActivating: picker.model.refresh();
+
     function openFile(file, type, uuid) {
         settings.currentFile = file;
         settings.currentUuid = uuid;

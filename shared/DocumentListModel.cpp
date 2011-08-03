@@ -152,9 +152,9 @@ DocumentListModel::DocumentListModel(QObject *parent)
     roleNames[UUIDRole] = "uuid";
     setRoleNames(roleNames);
 
-    d->timer = new QTimer;
-    connect(d->timer, SIGNAL(timeout()), SLOT(startSearch()));
-    d->timer->start(30000);
+//     d->timer = new QTimer;
+//     connect(d->timer, SIGNAL(timeout()), SLOT(startSearch()));
+//     d->timer->start(30000);
 }
 
 DocumentListModel::~DocumentListModel()
@@ -309,6 +309,11 @@ void DocumentListModel::componentComplete()
     startSearch();
 }
 
+void DocumentListModel::refresh()
+{
+    startSearch();
+}
+
 DocumentListModel::DocumentType DocumentListModel::typeForFile ( const QString& file )
 {
     if(sm_extensions.isEmpty()) {
@@ -316,6 +321,7 @@ DocumentListModel::DocumentType DocumentListModel::typeForFile ( const QString& 
         sm_extensions["fodt"] = TextDocumentType;
         sm_extensions["doc"] = TextDocumentType;
         sm_extensions["docx"] = TextDocumentType;
+        sm_extensions["txt"] = TextDocumentType;
         sm_extensions["odp"] = PresentationType;
         sm_extensions["fodp"] = PresentationType;
         sm_extensions["ppt"] = PresentationType;

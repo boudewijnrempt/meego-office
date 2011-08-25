@@ -36,15 +36,21 @@ Item {
                     return height * 1.0;
                 } else {
                     return height * 1.0;
-                }
+                } + 24 // the left and right margin of the imageFrame
             }
 
             Rectangle {
                 id: imageFrame
 
-                y: parent.y + 3
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: parent.width - 6
+                anchors {
+                    topMargin: 3
+                    bottomMargin: 3
+                    leftMargin: 12
+                    rightMargin: 12
+                    top: parent.top
+                    left: parent.left
+                    right: parent.right
+                }
                 height: parent.height - 36
 
                 border.color: ListView.isCurrentItem ? "green" : "black"
@@ -53,11 +59,9 @@ Item {
 
                 Image {
                     id: imageField
-                    anchors.centerIn: parent
-                    width: parent.width - 6
-                    height: parent.height - 6
+                    anchors.fill: parent
+                    anchors.margins: 3
                     fillMode: Image.PreserveAspectFit
-                    //asynchronous: true
                     source: model.thumbnail
                 }
             }
@@ -65,20 +69,24 @@ Item {
             Text {
                 id: txtOwnPageNumber
                 text: root.model.hasOwnPageNumbering() ? model.pageName : ""
-                height: 15
-                font.pointSize: 10
+                height: root.model.hasOwnPageNumbering() ? 12 : 9
+                font.pixelSize: 12
                 font.weight: Font.Light
+                anchors.left: imageFrame.left
+                anchors.right: imageFrame.right
                 anchors.top: imageFrame.bottom
-                anchors.horizontalCenter: parent.horizontalCenter
+                horizontalAlignment: Text.AlignHCenter
             }
             Text {
                 id: txtPageNumber
                 text: model.pageNumber
-                height: 15
-                font.pointSize: 12
+                height: 20
+                font.pixelSize: 20
                 font.weight: Font.Bold
+                anchors.left: imageFrame.left
+                anchors.right: imageFrame.right
                 anchors.top: txtOwnPageNumber.bottom
-                anchors.horizontalCenter: parent.horizontalCenter
+                horizontalAlignment: Text.AlignHCenter
                 color: thumbTile.ListView.isCurrentItem ? "green" : "black"
             }
 

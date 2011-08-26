@@ -13,7 +13,8 @@ class DocumentThumbnailListModel : public QAbstractListModel
         enum ThumbInfoRoles {
             PageThumbnailRole = Qt::UserRole + 1,
             PageNumberRole,
-            PageNameRole
+            PageNameRole,
+            PageWidthRatioRole
         };
         
         explicit DocumentThumbnailListModel(QObject* parent = 0);

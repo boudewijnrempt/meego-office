@@ -55,6 +55,7 @@ DocumentThumbnailListModel::DocumentThumbnailListModel(QObject* parent)
     roles[PageThumbnailRole] = "thumbnail";
     roles[PageNumberRole] = "pageNumber";
     roles[PageNameRole] = "pageName";
+    roles[PageWidthRatioRole] = "pageWidthRatio";
     setRoleNames(roles);
 }
 
@@ -88,9 +89,33 @@ QVariant DocumentThumbnailListModel::data(const QModelIndex& index, int role) co
         case PageThumbnailRole:
             // This is the thumbnail
             if(qobject_cast<PDFDocument*>(d->document)) {
-                var = qobject_cast<PDFDocument*>(d->document)->buildRequest("image", QString("page=%1&width=87&height=130").arg(index.row()) ).url();
+                int height = 130;
+                PDFPage* page = qobject_cast<PDFDocument*>(d->document)->page(index.row());
+                int width = height * (page->width() / page->height());
+                var = qobject_cast<PDFDocument*>(d->document)->buildRequest("image", QString("page=%1&width=%2&height=%3").arg(index.row()).arg(width).arg(height) ).url();
             } else {
                 var = QVariant::fromValue<QString>( QString("image://pagethumbnails/%1/%2").arg(d->uuid).arg(index.row() + 1) );
+            }
+            break;
+        case PageWidthRatioRole:
+            if(qobject_cast<Calligra::Tables::DocBase*>(d->document)) {
+                var = QVariant::fromValue<qreal>( 1.0 );
+            } else if(qobject_cast<KoPADocument*>(d->document)) {
+                KoPAPageBase* page = qobject_cast<KoPADocument*>(d->document)->pageByIndex(index.row(), false);
+                QSizeF size = page->size();
+                var = QVariant::fromValue<qreal>( size.width() / size.height() );
+            } else if(qobject_cast<KWDocument*>(d->document)) {
+                KWPage page = qobject_cast<KWDocument*>(d->document)->pageManager()->page(index.row() + 1);
+                var = QVariant::fromValue<qreal>( page.width() / page.height() );
+            } else if(qobject_cast<KoDocument*>(d->document)) {
+                KoPageLayout pl = qobject_cast<KoDocument*>(d->document)->pageLayout(index.row() + 1);
+                var = QVariant::fromValue<qreal>( pl.width / pl.height );
+                qDebug() << pl.height << pl.width;
+            } else if(qobject_cast<PDFDocument*>(d->document)) {
+                PDFPage* page = qobject_cast<PDFDocument*>(d->document)->page( index.row() );
+                var = QVariant::fromValue<qreal>( page->width() / page->height() );
+            } else {
+                var = QVariant::fromValue<qreal>( 1.0 );
             }
             break;
     }
@@ -156,12 +181,15 @@ void DocumentThumbnailListModel::setDocument(QObject* doc, QString uuid)
     PDFDocument *pdfDocument = qobject_cast<PDFDocument*>(d->document);
 
     if(stageDocument) {
-        QSize thumbSize(156, 130);
+        int height = 130;
         int i = 0;
         foreach(KoPAPageBase *page, stageDocument->pages(false)) {
             QString id = QString("%1/%2").arg(d->uuid).arg(++i);
             if(provider->hasThumbnail(id))
                 continue;
+            QSizeF size = page->size();
+            int width = height * (size.width() / size.height());
+            QSize thumbSize(width, height);
             provider->addThumbnail(id, page->thumbnail(thumbSize).toImage());
         }
     } else if(tablesDocument) {
@@ -196,7 +224,7 @@ void DocumentThumbnailListModel::setDocument(QObject* doc, QString uuid)
             }
         }
     } else if(wordsDocument) {
-        QSize thumbSize(87, 130);
+        int height = 130;
         WordsCanvas* canvas = qobject_cast<WordsCanvas*>(d->controller.data());
         KoShapeManager* shapeManager = canvas->canvas()->shapeManager();
         QList<KWPage> pages = wordsDocument->pageManager()->pages();
@@ -205,11 +233,12 @@ void DocumentThumbnailListModel::setDocument(QObject* doc, QString uuid)
             QString id = QString("%1/%2").arg(d->uuid).arg(++i);
             if(provider->hasThumbnail(id))
                 continue;
+            int width = height * (page.width() / page.height());
+            QSize thumbSize(width, height);
             QImage thumb = page.thumbnail(thumbSize, shapeManager);
             provider->addThumbnail(id, thumb);
         }
     } else if(pdfDocument) {
-        int width = 87;
         int height = 130;
 
         QList<PDFPage*> pages = pdfDocument->allPages();
@@ -218,6 +247,7 @@ void DocumentThumbnailListModel::setDocument(QObject* doc, QString uuid)
             QString id = QString("%1/%2").arg(d->uuid).arg(++i);
             if(provider->hasThumbnail(id))
                 continue;
+            int width = height * (page->width() / page->height());
             QImage thumb = page->image(width, height);
             provider->addThumbnail(id, thumb);
         }

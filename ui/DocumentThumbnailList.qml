@@ -25,19 +25,9 @@ Item {
         Item {
             id: thumbTile
             height: ListView.view.height
-            width: {
-                if(settings.currentType == DocumentListModel.TextDocumentType) {
-                    return height * 0.67;
-                } else if(settings.currentType == DocumentListModel.PDFDocumentType) {
-                    return height * 0.67;
-                } else if(settings.currentType == DocumentListModel.PresentationType) {
-                    return height * 1.2;
-                } else if(settings.currentType == DocumentListModel.SpreadsheetType) {
-                    return height * 1.0;
-                } else {
-                    return height * 1.0;
-                } + 24 // the left and right margin of the imageFrame
-            }
+            // the 24 is the left and right margin of the imageFrame
+            // A bit magic-numberish, but it's so close anyway ;)
+            width: (model.pageWidthRatio * imageFrame.height) + 24
 
             Rectangle {
                 id: imageFrame
@@ -45,6 +35,7 @@ Item {
                 anchors {
                     topMargin: 3
                     bottomMargin: 3
+                    // When changing these two, remember the thumbTile.width
                     leftMargin: 12
                     rightMargin: 12
                     top: parent.top

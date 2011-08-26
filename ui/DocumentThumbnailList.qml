@@ -60,12 +60,12 @@ Item {
             Text {
                 id: txtOwnPageNumber
                 text: root.model.hasOwnPageNumbering() ? model.pageName : ""
-                height: root.model.hasOwnPageNumbering() ? 12 : 9
+                height: 12
                 font.pixelSize: 12
                 font.weight: Font.Light
                 anchors.left: imageFrame.left
                 anchors.right: imageFrame.right
-                anchors.top: imageFrame.bottom
+                anchors.bottom: txtPageNumber.top
                 horizontalAlignment: Text.AlignHCenter
             }
             Text {
@@ -76,7 +76,8 @@ Item {
                 font.weight: Font.Bold
                 anchors.left: imageFrame.left
                 anchors.right: imageFrame.right
-                anchors.top: txtOwnPageNumber.bottom
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: root.model.hasOwnPageNumbering() ? 0 : 6
                 horizontalAlignment: Text.AlignHCenter
                 color: thumbTile.ListView.isCurrentItem ? "green" : "black"
             }

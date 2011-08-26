@@ -362,7 +362,7 @@ Item {
         forceFingerMode: 3;
         content: DocumentThumbnailList {
             id: thumbnailList;
-            height: 130;
+            height: 172;
             width: window.width * 0.98
             onSelected: loader.item.setPage(index);
         }

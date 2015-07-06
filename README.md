@@ -1,0 +1,24 @@
+These are instructions for compiling Calligra's libraries for MeeGo using
+the tiny profile, and with only words, tables and kpresenter enabled, with
+no docs built, and the mobile version turned off.
+
+This is what is needed for the intel project's codebase, the compilation of
+which is described afterwards.
+
+=================================================
+calligra:
+
+cmake options:
+ -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug -DTINY=on -DBUILD_doc=off -DBUILD_mobile=off -DBUILD_active=off -DGHNS=off
+
+Install the following packages:
+ git kde-mobile-devel libX11-devel libpng-devel mesa-libGL-devel qca2-devel exiv2-devel lcms-devel libxslt-devel libgsf-devel poppler-qt-devel libphonon-devel libeigen2-devel libqtopengl-devel boost-devel libqtwebkit-devel
+
+=================================================
+intel code:
+
+cmake options:
+ -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug
+
+Install the following packages:
+  libqtsparql-tracker kde-mobile-runtime qt-mobility-devel meego-qml-launcher-devel libqtsparql-devel libqtsparql-tracker-extensions-devel
